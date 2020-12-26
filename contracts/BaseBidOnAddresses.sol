@@ -388,6 +388,7 @@ abstract contract BaseBidOnAddresses is ERC1155WithMappedAddressesAndTotals, IER
         return minFinishTimes[oracleId];
     }
 
+    // FIXME: Should it also depend on marketId?
     function gracePeriodEnd(uint64 oracleId) public view returns (uint) {
         return gracePeriodEnds[oracleId];
     }
