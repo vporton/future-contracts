@@ -1,6 +1,6 @@
 "strict";
 
-const { expectEvent, expectRevert } = require("openzeppelin-test-helpers");
+const { expectRevert } = require("openzeppelin-test-helpers");
 const { toBN } = web3.utils;
 const {
   INITIAL_CUSTOMER_BALANCE,
@@ -51,56 +51,38 @@ contract("BidOnAddresses", function(accounts) {
       "1000000000000000000000",
       []
     );
+
+    ({ logs: this.logs1 } = await this.conditionalTokens.createOracle({
+      from: oracle1
+    }));
+    this.oracleId1 = this.logs1[0].args.oracleId;
+    ({ logs: this.logs2 } = await this.conditionalTokens.createOracle({
+      from: oracle1
+    }));
+    this.oracleId2 = this.logs2[0].args.oracleId;
   });
 
-  describe("createMarket", function() {
-    // TODO: rename
+  describe("main test", function() {
     context("with valid parameters", function() {
-      beforeEach(async function() {
-        ({ logs: this.logs1 } = await this.conditionalTokens.createMarket());
-        this.marketId1 = this.logs1[0].args.marketId;
-        ({ logs: this.logs2 } = await this.conditionalTokens.createMarket());
-        this.marketId2 = this.logs2[0].args.marketId;
-        ({ logs: this.logs3 } = await this.conditionalTokens.createOracle());
-        this.oracleId1 = this.logs3[0].args.oracleId;
-        ({ logs: this.logs4 } = await this.conditionalTokens.createOracle());
-        this.oracleId2 = this.logs4[0].args.oracleId;
-      });
-
-      it("should emit a MarketCreated event", function() {
-        this.marketId1.should.be.bignumber.equal("0");
-        this.marketId2.should.be.bignumber.equal("1");
-        expectEvent.inLogs(this.logs1, "MarketCreated", {
-          creator: oracle1,
-          marketId: this.marketId1
-        });
-        expectEvent.inLogs(this.logs2, "MarketCreated", {
-          creator: oracle1,
-          marketId: this.marketId2
-        });
-        // TODO: Check "OracleCreated"
-      });
-
       it("should leave payout denominator unset", async function() {
         (
-          await this.conditionalTokens.payoutDenominator(this.marketId1)
+          await this.conditionalTokens.payoutDenominator(this.oracleId1)
         ).should.be.bignumber.equal("0");
         (
-          await this.conditionalTokens.payoutDenominator(this.marketId2)
+          await this.conditionalTokens.payoutDenominator(this.oracleId2)
         ).should.be.bignumber.equal("0");
       });
 
-      it("should not be able to register the same customer more than once for the same marketId", async function() {
-        await this.conditionalTokens.registerCustomer(this.marketId1, [], {
+      it("should not be able to register the same customer more than once for the same oracleId", async function() {
+        await this.conditionalTokens.registerCustomer(this.oracleId1, [], {
           from: customer1
         });
         await expectRevert(
-          this.conditionalTokens.registerCustomer(this.marketId1, [], {
+          this.conditionalTokens.registerCustomer(this.oracleId1, [], {
             from: customer1
           }),
           "customer already registered"
         );
-        // TODO: Check that can register the same customer for different marketIds.
       });
 
       it("checking the math", async function() {
@@ -115,11 +97,9 @@ contract("BidOnAddresses", function(accounts) {
             numerators: [{ numerator: toBN("33") }, { numerator: toBN("90") }]
           }
         ];
-        const marketIds = [this.marketId1, this.marketId2];
-        // TODO: Simplify customers array. // TODO: Should be grouped by marketIds.
+        // TODO: Simplify customers array.
         const products = [
           {
-            marketId: this.marketId1,
             oracleId: 0,
             donors: [
               { account: donor1, amount: toBN("10000000000") },
@@ -132,7 +112,6 @@ contract("BidOnAddresses", function(accounts) {
             customers: [{ account: 0 }, { account: 1 }]
           },
           {
-            marketId: this.marketId1,
             oracleId: 1,
             donors: [
               { account: donor1, amount: toBN("20000000000") },
@@ -141,32 +120,6 @@ contract("BidOnAddresses", function(accounts) {
             bequestors: [
               { account: bequestor1, amount: toBN("30000000000") },
               { account: bequestor2, amount: toBN("4000000000000") }
-            ],
-            customers: [{ account: 0 }, { account: 1 }]
-          },
-          {
-            marketId: this.marketId2,
-            oracleId: 0,
-            donors: [
-              { account: donor1, amount: toBN("50000000000") },
-              { account: donor2, amount: toBN("5000000000000") }
-            ],
-            bequestors: [
-              { account: bequestor1, amount: toBN("60000000000") },
-              { account: bequestor2, amount: toBN("6000000000000") }
-            ],
-            customers: [{ account: 0 }, { account: 1 }]
-          },
-          {
-            marketId: this.marketId2,
-            oracleId: 1,
-            donors: [
-              { account: donor1, amount: toBN("70000000000") },
-              { account: donor2, amount: toBN("7000000000000") }
-            ],
-            bequestors: [
-              { account: bequestor1, amount: toBN("80000000000") },
-              { account: bequestor2, amount: toBN("9000000000000") }
             ],
             customers: [{ account: 0 }, { account: 1 }]
           }
@@ -183,7 +136,6 @@ contract("BidOnAddresses", function(accounts) {
             await this.conditionalTokens.donate(
               this.collateralContract.address,
               this.collateralTokenId,
-              product.marketId,
               oracleIdInfo.oracleId,
               donor.amount,
               donor.account,
@@ -202,7 +154,6 @@ contract("BidOnAddresses", function(accounts) {
             await this.conditionalTokens.bequestCollateral(
               this.collateralContract.address,
               this.collateralTokenId,
-              product.marketId,
               oracleIdInfo.oracleId,
               bequestor.amount,
               bequestor.account,
@@ -217,7 +168,7 @@ contract("BidOnAddresses", function(accounts) {
               await this.conditionalTokens.safeTransferFrom(
                 customers[0],
                 customers[i],
-                conditionalTokenId(product.marketId, customers[0]),
+                conditionalTokenId(product.oracleId, customers[0]),
                 amount,
                 [],
                 { from: customers[0] }
@@ -232,7 +183,8 @@ contract("BidOnAddresses", function(accounts) {
             await this.conditionalTokens.reportNumerator(
               oracleIdInfo.oracleId,
               customers[i],
-              oracleIdInfo.numerators[i].numerator
+              oracleIdInfo.numerators[i].numerator,
+              { from: oracle1 }
             );
           }
           await this.conditionalTokens.finishOracle(oracleIdInfo.oracleId);
@@ -264,7 +216,6 @@ contract("BidOnAddresses", function(accounts) {
             const initialCollateralBalance = await this.conditionalTokens.collateralOwing(
               this.collateralContract.address,
               this.collateralTokenId,
-              product.marketId,
               oracleIdInfo.oracleId,
               account,
               account
@@ -276,7 +227,7 @@ contract("BidOnAddresses", function(accounts) {
                   .mul(
                     await this.conditionalTokens.balanceOf(
                       account,
-                      conditionalTokenId(product.marketId, account)
+                      conditionalTokenId(product.oracleId, account)
                     )
                   )
                   .div(denominator)
@@ -293,7 +244,6 @@ contract("BidOnAddresses", function(accounts) {
             await this.conditionalTokens.withdrawCollateral(
               this.collateralContract.address,
               this.collateralTokenId,
-              product.marketId,
               oracleIdInfo.oracleId,
               account,
               [],
@@ -312,7 +262,6 @@ contract("BidOnAddresses", function(accounts) {
             await this.conditionalTokens.withdrawCollateral(
               this.collateralContract.address,
               this.collateralTokenId,
-              product.marketId,
               oracleIdInfo.oracleId,
               account,
               [],
@@ -322,11 +271,12 @@ contract("BidOnAddresses", function(accounts) {
         }
 
         for (let customer of customers) {
-          for (let marketId of marketIds) {
-            await this.conditionalTokens.registerCustomer(marketId, [], {
-              from: customer
-            });
-          }
+          await this.conditionalTokens.registerCustomer(this.oracleId1, [], {
+            from: customer
+          });
+          await this.conditionalTokens.registerCustomer(this.oracleId2, [], {
+            from: customer
+          });
         }
 
         // Can be written shorter:

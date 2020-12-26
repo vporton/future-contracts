@@ -26,8 +26,6 @@ abstract contract BaseBidOnAddresses is ERC1155WithMappedAddressesAndTotals, IER
 
     enum TokenKind { TOKEN_CONDITIONAL, TOKEN_DONATED, TOKEN_BEQUESTED }
 
-    event MarketCreated(address creator, uint64 marketId);
-
     event OracleCreated(address oracleOwner, uint64 oracleId);
 
     event OracleOwnerChanged(address oracleOwner, uint64 oracleId);
@@ -85,7 +83,6 @@ abstract contract BaseBidOnAddresses is ERC1155WithMappedAddressesAndTotals, IER
         address user,
         IERC1155 collateralContractAddress,
         uint256 collateralTokenId,
-        uint64 indexed marketId,
         uint64 indexed oracleId,
         address condition,
         uint payout
@@ -94,7 +91,6 @@ abstract contract BaseBidOnAddresses is ERC1155WithMappedAddressesAndTotals, IER
     event CollateralWithdrawn(
         IERC1155 contractAdrress,
         uint256 collateralTokenId,
-        uint64 marketId,
         uint64 oracleId,
         address user,
         uint256 amount
@@ -110,9 +106,9 @@ abstract contract BaseBidOnAddresses is ERC1155WithMappedAddressesAndTotals, IER
     mapping(uint64 => uint) private gracePeriodEnds;
     // Whether an oracle finished its work.
     mapping(uint64 => bool) private oracleFinishedMap;
-    // Mapping (marketId => (customer => numerator)) for payout numerators.
+    // Mapping (oracleId => (customer => numerator)) for payout numerators.
     mapping(uint64 => mapping(address => uint256)) private payoutNumeratorsMap;
-    // Mapping (marketId => denominator) for payout denominators.
+    // Mapping (oracleId => denominator) for payout denominators.
     mapping(uint64 => uint) private payoutDenominatorMap;
     // The user lost the right to transfer conditional tokens: (user => (conditionalToken => bool)).
     mapping(address => mapping(uint256 => bool)) private userUsedRedeemMap;
@@ -126,13 +122,6 @@ abstract contract BaseBidOnAddresses is ERC1155WithMappedAddressesAndTotals, IER
             BaseBidOnAddresses(0).onERC1155Received.selector ^
             BaseBidOnAddresses(0).onERC1155BatchReceived.selector
         );
-    }
-
-    /// Create a new conditional marketId
-    function createMarket() external returns (uint64) {
-        uint64 marketId = maxId++;
-        emit MarketCreated(msg.sender, marketId);
-        return marketId;
     }
 
     /// Create a new oracle
@@ -169,14 +158,13 @@ abstract contract BaseBidOnAddresses is ERC1155WithMappedAddressesAndTotals, IER
     function donate(
         IERC1155 collateralContractAddress,
         uint256 collateralTokenId,
-        uint64 marketId,
         uint64 oracleId,
         uint256 amount,
         address from,
         address to,
         bytes calldata data) external
     {
-        uint donatedCollateralTokenId = _collateralDonatedTokenId(collateralContractAddress, collateralTokenId, marketId, oracleId);
+        uint donatedCollateralTokenId = _collateralDonatedTokenId(collateralContractAddress, collateralTokenId, oracleId);
         _mint(to, donatedCollateralTokenId, amount, data);
         emit DonateCollateral(collateralContractAddress, collateralTokenId, from, amount, to, data);
         collateralContractAddress.safeTransferFrom(from, address(this), collateralTokenId, amount, data); // last against reentrancy attack
@@ -189,13 +177,12 @@ abstract contract BaseBidOnAddresses is ERC1155WithMappedAddressesAndTotals, IER
     function bequestCollateral(
         IERC1155 collateralContractAddress,
         uint256 collateralTokenId,
-        uint64 marketId,
         uint64 oracleId,
         uint256 amount,
         address to,
         bytes calldata data) external
     {
-        uint bequestedCollateralTokenId = _collateralBequestedTokenId(collateralContractAddress, collateralTokenId, marketId, oracleId);
+        uint bequestedCollateralTokenId = _collateralBequestedTokenId(collateralContractAddress, collateralTokenId, oracleId);
         _mint(to, bequestedCollateralTokenId, amount, data);
         emit BequestCollateral(collateralContractAddress, collateralTokenId, msg.sender, amount, to, data);
         collateralContractAddress.safeTransferFrom(msg.sender, address(this), collateralTokenId, amount, data); // last against reentrancy attack
@@ -204,13 +191,12 @@ abstract contract BaseBidOnAddresses is ERC1155WithMappedAddressesAndTotals, IER
     function takeBequestBack(
         IERC1155 collateralContractAddress,
         uint256 collateralTokenId,
-        uint64 marketId,
         uint64 oracleId,
         uint256 amount,
         address to,
         bytes calldata data) external _canTakeBequest(msg.sender)
     {
-        uint bequestedCollateralTokenId = _collateralBequestedTokenId(collateralContractAddress, collateralTokenId, marketId, oracleId);
+        uint bequestedCollateralTokenId = _collateralBequestedTokenId(collateralContractAddress, collateralTokenId, oracleId);
         collateralContractAddress.safeTransferFrom(address(this), to, bequestedCollateralTokenId, amount, data);
         emit TakeBackCollateral(collateralContractAddress, collateralTokenId, msg.sender, amount, to);
     }
@@ -219,17 +205,16 @@ abstract contract BaseBidOnAddresses is ERC1155WithMappedAddressesAndTotals, IER
     function convertBequestedToDonated(
         IERC1155 collateralContractAddress,
         uint256 collateralTokenId,
-        uint64 marketId,
         uint64 oracleId,
         uint256 amount,
         address to,
         bytes calldata data) external
     {
         // Subtract from bequested:
-        uint bequestedCollateralTokenId = _collateralBequestedTokenId(collateralContractAddress, collateralTokenId, marketId, oracleId);
+        uint bequestedCollateralTokenId = _collateralBequestedTokenId(collateralContractAddress, collateralTokenId, oracleId);
         _burn(msg.sender, bequestedCollateralTokenId, amount);
         // Add to donated:
-        uint donatedCollateralTokenId = _collateralDonatedTokenId(collateralContractAddress, collateralTokenId, marketId, oracleId);
+        uint donatedCollateralTokenId = _collateralDonatedTokenId(collateralContractAddress, collateralTokenId, oracleId);
         _mint(to, donatedCollateralTokenId, amount, data);
         emit ConvertBequestedToDonated(collateralContractAddress, collateralTokenId, msg.sender, amount, to, data);
     }
@@ -267,42 +252,42 @@ abstract contract BaseBidOnAddresses is ERC1155WithMappedAddressesAndTotals, IER
         return ABDKMath64x64.divu(numerator, denominator);
     }
 
-    function collateralOwingBase(IERC1155 collateralContractAddress, uint256 collateralTokenId, uint64 marketId, uint64 oracleId, address condition, address user)
+    function collateralOwingBase(IERC1155 collateralContractAddress, uint256 collateralTokenId, uint64 oracleId, address condition, address user)
         private view returns (uint donatedCollateralTokenId, uint bequestedCollateralTokenId, uint256 donated, uint256 bequested)
     {
-        uint256 conditionalToken = _conditionalTokenId(marketId, condition);
+        uint256 conditionalToken = _conditionalTokenId(oracleId, condition);
         uint256 conditionalBalance = balanceOf(user, conditionalToken);
         uint256 totalConditionalBalance = totalBalanceOf(conditionalToken);
-        donatedCollateralTokenId = _collateralDonatedTokenId(collateralContractAddress, collateralTokenId, marketId, oracleId);
+        donatedCollateralTokenId = _collateralDonatedTokenId(collateralContractAddress, collateralTokenId, oracleId);
         uint256 donatedCollateralTotalBalance = totalBalanceOf(donatedCollateralTokenId);
-        bequestedCollateralTokenId = _collateralBequestedTokenId(collateralContractAddress, collateralTokenId, marketId, oracleId);
+        bequestedCollateralTokenId = _collateralBequestedTokenId(collateralContractAddress, collateralTokenId, oracleId);
         uint256 bequestedCollateralTotalBalance = totalBalanceOf(bequestedCollateralTokenId);
         // Rounded to below for no out-of-funds:
-        int128 marketIdShare = ABDKMath64x64.divu(conditionalBalance, totalConditionalBalance);
+        int128 oracleShare = ABDKMath64x64.divu(conditionalBalance, totalConditionalBalance);
         int128 rewardShare = _calcRewardShare(oracleId, condition);
         uint256 _newDividendsDonated = donatedCollateralTotalBalance - lastCollateralBalanceMap[donatedCollateralTokenId][user];
         uint256 _newDividendsBequested = bequestedCollateralTotalBalance - lastCollateralBalanceMap[bequestedCollateralTokenId][user];
-        int128 multiplier = marketIdShare.mul(rewardShare);
+        int128 multiplier = oracleShare.mul(rewardShare);
         donated = multiplier.mulu(_newDividendsDonated);
         bequested = multiplier.mulu(_newDividendsBequested);
     }
  
-    function collateralOwing(IERC1155 collateralContractAddress, uint256 collateralTokenId, uint64 marketId, uint64 oracleId, address condition, address user) external view returns(uint256) {
-        (,, uint256 donated, uint256 bequested) = collateralOwingBase(collateralContractAddress, collateralTokenId, marketId, oracleId, condition, user);
+    function collateralOwing(IERC1155 collateralContractAddress, uint256 collateralTokenId, uint64 oracleId, address condition, address user) external view returns(uint256) {
+        (,, uint256 donated, uint256 bequested) = collateralOwingBase(collateralContractAddress, collateralTokenId, oracleId, condition, user);
         return donated + bequested;
     }
 
     /// Transfer to `msg.sender` the collateral ERC-20 token (we can't transfer to somebody other, because anybody can transfer).
-    /// accordingly to the score of `condition` in the marketId by the oracle.
+    /// accordingly to the score of `condition` by the oracle.
     /// After this function is called, it becomes impossible to transfer the corresponding conditional token of `msg.sender`
     /// (to prevent its repeated withdraw).
-    function withdrawCollateral(IERC1155 collateralContractAddress, uint256 collateralTokenId, uint64 marketId, uint64 oracleId, address condition, bytes calldata data) external {
+    function withdrawCollateral(IERC1155 collateralContractAddress, uint256 collateralTokenId, uint64 oracleId, address condition, bytes calldata data) external {
         require(isOracleFinished(oracleId), "too early"); // to prevent the denominator or the numerators change meantime
-        uint256 conditionalTokenId = _conditionalTokenId(marketId, condition);
+        uint256 conditionalTokenId = _conditionalTokenId(oracleId, condition);
         userUsedRedeemMap[msg.sender][conditionalTokenId] = true;
         // _burn(msg.sender, conditionalTokenId, conditionalBalance); // Burning it would break using the same token for multiple markets.
         (uint donatedCollateralTokenId, uint bequestedCollateralTokenId, uint256 _owingDonated, uint256 _owingBequested) =
-            collateralOwingBase(collateralContractAddress, collateralTokenId, marketId, oracleId, condition, msg.sender);
+            collateralOwingBase(collateralContractAddress, collateralTokenId, oracleId, condition, msg.sender);
 
         // Against rounding errors. Not necessary because of rounding down.
         // if(_owing > balanceOf(address(this), collateralTokenId)) _owing = balanceOf(address(this), collateralTokenId);
@@ -374,12 +359,12 @@ abstract contract BaseBidOnAddresses is ERC1155WithMappedAddressesAndTotals, IER
         return oracleFinishedMap[oracleId] && block.timestamp >= minFinishTimes[oracleId];
     }
 
-    function payoutNumerator(uint64 marketId, address condition) public view returns (uint256) {
-        return payoutNumeratorsMap[marketId][condition];
+    function payoutNumerator(uint64 oracleId, address condition) public view returns (uint256) {
+        return payoutNumeratorsMap[oracleId][condition];
     }
 
-    function payoutDenominator(uint64 marketId) public view returns (uint256) {
-        return payoutDenominatorMap[marketId];
+    function payoutDenominator(uint64 oracleId) public view returns (uint256) {
+        return payoutDenominatorMap[oracleId];
     }
 
     function isConditionalLocked(address condition, uint256 conditionalTokenId) public view returns (bool) {
@@ -390,7 +375,6 @@ abstract contract BaseBidOnAddresses is ERC1155WithMappedAddressesAndTotals, IER
         return minFinishTimes[oracleId];
     }
 
-    // FIXME: Should it also depend on marketId?
     function gracePeriodEnd(uint64 oracleId) public view returns (uint) {
         return gracePeriodEnds[oracleId];
     }
@@ -403,16 +387,16 @@ abstract contract BaseBidOnAddresses is ERC1155WithMappedAddressesAndTotals, IER
 
     // Internal //
 
-    function _conditionalTokenId(uint64 marketId, address condition) internal pure returns (uint256) {
-        return uint256(keccak256(abi.encodePacked(uint8(TokenKind.TOKEN_CONDITIONAL), marketId, condition)));
+    function _conditionalTokenId(uint64 oracleId, address condition) internal pure returns (uint256) {
+        return uint256(keccak256(abi.encodePacked(uint8(TokenKind.TOKEN_CONDITIONAL), oracleId, condition)));
     }
 
-    function _collateralDonatedTokenId(IERC1155 collateralContractAddress, uint256 collateralTokenId, uint64 marketId, uint64 oracleId) internal pure returns (uint256) {
-        return uint256(keccak256(abi.encodePacked(uint8(TokenKind.TOKEN_DONATED), collateralContractAddress, collateralTokenId, marketId, oracleId)));
+    function _collateralDonatedTokenId(IERC1155 collateralContractAddress, uint256 collateralTokenId, uint64 oracleId) internal pure returns (uint256) {
+        return uint256(keccak256(abi.encodePacked(uint8(TokenKind.TOKEN_DONATED), collateralContractAddress, collateralTokenId, oracleId)));
     }
 
-    function _collateralBequestedTokenId(IERC1155 collateralContractAddress, uint256 collateralTokenId, uint64 marketId, uint64 oracleId) internal pure returns (uint256) {
-        return uint256(keccak256(abi.encodePacked(uint8(TokenKind.TOKEN_BEQUESTED), collateralContractAddress, collateralTokenId, marketId, oracleId)));
+    function _collateralBequestedTokenId(IERC1155 collateralContractAddress, uint256 collateralTokenId, uint64 oracleId) internal pure returns (uint256) {
+        return uint256(keccak256(abi.encodePacked(uint8(TokenKind.TOKEN_BEQUESTED), collateralContractAddress, collateralTokenId, oracleId)));
     }
 
     function _checkTransferAllowed(uint256 id, address from) internal view {
@@ -476,7 +460,6 @@ abstract contract BaseBidOnAddresses is ERC1155WithMappedAddressesAndTotals, IER
         _balances[id][originalTo] = value.add(_balances[id][originalTo]);
     }
 
-    // FIXME: I messed `oracleId` and `marketId`.
     function _updateNumerator(uint64 oracleId, uint256 numerator, address condition) private {
         payoutDenominatorMap[oracleId] = payoutDenominatorMap[oracleId].add(numerator).sub(payoutNumeratorsMap[oracleId][condition]);
         payoutNumeratorsMap[oracleId][condition] = numerator;
