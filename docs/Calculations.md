@@ -2,7 +2,7 @@
 
 Let `C` be an amount of some collateral on our contract, and `M` be the size of a market (that is the sum of all tokens of this market).
 
-So, a user with `m` conditional with s score would receive `C*m*s/M` collateral after the oracle finishes.
+So, a user with `m` conditional with `s` score would receive `C*m*s/M` collateral after the oracle finishes.
 
 The amount of collateral a user can withdraw is determined by the formula `(C-C')*m*s/M` where `C'` is the amount of the collateral on our contract at the moment of previous withdrawal of the user (or zero if there was no previous withdrawal).
 
