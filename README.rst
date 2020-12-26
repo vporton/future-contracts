@@ -1,8 +1,9 @@
-Conditional Tokens Contracts
-============================
+Bid For Future Contracts
+========================
 
-Smart contracts for TODO.
+Smart contracts for Ethereum accounts bid on future financing (essentially, transfer money from the future).
 
+See also https://reward.portonvictor.org
 
 License
 -------

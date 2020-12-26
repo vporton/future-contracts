@@ -1,7 +1,7 @@
 {
   "name": "@vporton/future-contracts",
   "version": "0.0.1",
-  "description": "",
+  "description": "Ethereum accounts bid on future financing (essentially, transfer money from the future) - smart contracts",
   "scripts": {
     "lint": "eslint .",
     "develop": "truffle develop",
