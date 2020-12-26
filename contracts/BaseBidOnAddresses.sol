@@ -113,11 +113,13 @@ abstract contract BaseBidOnAddresses is ERC1155WithMappedAddressesAndTotals, IER
     // The user lost the right to transfer conditional tokens: (user => (conditionalToken => bool)).
     mapping(address => mapping(uint256 => bool)) private userUsedRedeemMap;
     // Mapping (token => (user => amount)) used to calculate withdrawal of collateral amounts.
-    mapping(uint256 => mapping(address => uint256)) private lastCollateralBalanceMap; // TODO: Would getter be useful?
+    mapping(uint256 => mapping(address => uint256)) private lastCollateralBalanceFirstRoundMap; // TODO: Would getter be useful?
+    // Mapping (token => (user => amount)) used to calculate withdrawal of collateral amounts.
+    mapping(uint256 => mapping(address => uint256)) private lastCollateralBalanceSecondRoundMap; // TODO: Would getter be useful?
     /// Times of bequest of all funds from address (zero is no bequest).
     mapping(address => uint) public bequestTimes; // FIXME: Should the getter use orig address?
-    /// User withdrew in first round (see `docs/Calculations.md`).
-    mapping(address => uint256) public userWithdrewInFirstRound;
+    /// Mapping (oracleId => user withdrew in first round) (see `docs/Calculations.md`).
+    mapping(uint64 => uint256) public usersWithdrewInFirstRound;
 
     constructor(string memory uri_) ERC1155WithMappedAddressesAndTotals(uri_) {
         _registerInterface(
@@ -140,10 +142,14 @@ abstract contract BaseBidOnAddresses is ERC1155WithMappedAddressesAndTotals, IER
         emit OracleOwnerChanged(newOracleOwner, oracleId);
     }
 
-    // FIXME: Also for gracePeriodEnds.
+    /// You should call updateGracePeriodEnds() before calling this first time!
     function updateMinFinishTime(uint64 oracleId, uint time) public _isOracle(oracleId) {
-        require(time >= minFinishTimes[oracleId], "Can't break trust of bequestors.");
+        require(time == 0 || time >= minFinishTimes[oracleId], "Can't break trust of bequestors.");
         minFinishTimes[oracleId] = time;
+    }
+
+    function updateGracePeriodEnds(uint64 oracleId, uint time) public _isOracle(oracleId) {
+        gracePeriodEnds[oracleId] = time;
     }
 
     /// Bequest either by calling this function and also approving transfers by this contract
@@ -254,29 +260,55 @@ abstract contract BaseBidOnAddresses is ERC1155WithMappedAddressesAndTotals, IER
         return ABDKMath64x64.divu(numerator, denominator);
     }
 
-    function collateralOwingBase(IERC1155 collateralContractAddress, uint256 collateralTokenId, uint64 oracleId, address condition, address user)
+    function collateralOwingBase(
+        IERC1155 collateralContractAddress,
+        uint256 collateralTokenId,
+        uint64 oracleId,
+        address condition,
+        address user,
+        bool inFirstRound
+    )
         private view returns (uint donatedCollateralTokenId, uint bequestedCollateralTokenId, uint256 donated, uint256 bequested)
     {
         uint256 conditionalToken = _conditionalTokenId(oracleId, condition);
         uint256 conditionalBalance = balanceOf(user, conditionalToken);
-        uint256 totalConditionalBalance = totalBalanceOf(conditionalToken);
+        uint256 totalConditionalBalance =
+            inFirstRound ? totalBalanceOf(conditionalToken) : usersWithdrewInFirstRound[oracleId];
         donatedCollateralTokenId = _collateralDonatedTokenId(collateralContractAddress, collateralTokenId, oracleId);
-        uint256 donatedCollateralTotalBalance = totalBalanceOf(donatedCollateralTokenId);
         bequestedCollateralTokenId = _collateralBequestedTokenId(collateralContractAddress, collateralTokenId, oracleId);
-        uint256 bequestedCollateralTotalBalance = totalBalanceOf(bequestedCollateralTokenId);
         // Rounded to below for no out-of-funds:
-        int128 oracleShare = ABDKMath64x64.divu(conditionalBalance, totalConditionalBalance); // FIXME: seems superfluous!
+        int128 oracleShare = ABDKMath64x64.divu(conditionalBalance, totalConditionalBalance);
         int128 rewardShare = _calcRewardShare(oracleId, condition);
-        uint256 _newDividendsDonated = donatedCollateralTotalBalance - lastCollateralBalanceMap[donatedCollateralTokenId][user];
-        uint256 _newDividendsBequested = bequestedCollateralTotalBalance - lastCollateralBalanceMap[bequestedCollateralTokenId][user];
+        uint256 _newDividendsDonated =
+            totalBalanceOf(donatedCollateralTokenId) -
+            (inFirstRound
+                ? lastCollateralBalanceFirstRoundMap[donatedCollateralTokenId][user] 
+                : lastCollateralBalanceSecondRoundMap[donatedCollateralTokenId][user]);
+        uint256 _newDividendsBequested =
+            totalBalanceOf(bequestedCollateralTokenId) -
+            (inFirstRound
+                ? lastCollateralBalanceFirstRoundMap[bequestedCollateralTokenId][user]
+                : lastCollateralBalanceSecondRoundMap[bequestedCollateralTokenId][user]);
         int128 multiplier = oracleShare.mul(rewardShare);
         donated = multiplier.mulu(_newDividendsDonated);
         bequested = multiplier.mulu(_newDividendsBequested);
     }
  
-    function collateralOwing(IERC1155 collateralContractAddress, uint256 collateralTokenId, uint64 oracleId, address condition, address user) external view returns(uint256) {
-        (,, uint256 donated, uint256 bequested) = collateralOwingBase(collateralContractAddress, collateralTokenId, oracleId, condition, user);
+    function collateralOwing(
+        IERC1155 collateralContractAddress,
+        uint256 collateralTokenId,
+        uint64 oracleId,
+        address condition,
+        address user
+    ) external view returns(uint256) {
+        bool inFirstRound = _inFirstRound(oracleId);
+        (,, uint256 donated, uint256 bequested) =
+            collateralOwingBase(collateralContractAddress, collateralTokenId, oracleId, condition, user, inFirstRound);
         return donated + bequested;
+    }
+
+    function _inFirstRound(uint64 oracleId) internal view returns (bool) {
+        return block.timestamp < gracePeriodEnds[oracleId];
     }
 
     /// Transfer to `msg.sender` the collateral ERC-20 token (we can't transfer to somebody other, because anybody can transfer).
@@ -285,23 +317,36 @@ abstract contract BaseBidOnAddresses is ERC1155WithMappedAddressesAndTotals, IER
     /// (to prevent its repeated withdraw).
     function withdrawCollateral(IERC1155 collateralContractAddress, uint256 collateralTokenId, uint64 oracleId, address condition, bytes calldata data) external {
         require(isOracleFinished(oracleId), "too early"); // to prevent the denominator or the numerators change meantime
+        bool inFirstRound = _inFirstRound(oracleId); // FIXME: What if `gracePeriodEnds[...] == 0`?
         uint256 conditionalTokenId = _conditionalTokenId(oracleId, condition);
         userUsedRedeemMap[msg.sender][conditionalTokenId] = true; // FIXME: Use original address here and in other places?
         // _burn(msg.sender, conditionalTokenId, conditionalBalance); // Burning it would break using the same token for multiple markets.
         (uint donatedCollateralTokenId, uint bequestedCollateralTokenId, uint256 _owingDonated, uint256 _owingBequested) =
-            collateralOwingBase(collateralContractAddress, collateralTokenId, oracleId, condition, msg.sender);
+            collateralOwingBase(collateralContractAddress, collateralTokenId, oracleId, condition, msg.sender, inFirstRound);
 
         // Against rounding errors. Not necessary because of rounding down.
         // if(_owing > balanceOf(address(this), collateralTokenId)) _owing = balanceOf(address(this), collateralTokenId);
 
-        if(_owingDonated != 0) {
-            lastCollateralBalanceMap[donatedCollateralTokenId][msg.sender] = totalBalanceOf(donatedCollateralTokenId);
+        if (_owingDonated != 0) {
+            uint256 newTotal = totalBalanceOf(donatedCollateralTokenId);
+            if (inFirstRound) {
+                lastCollateralBalanceFirstRoundMap[donatedCollateralTokenId][msg.sender] = newTotal;
+            } else {
+                lastCollateralBalanceSecondRoundMap[donatedCollateralTokenId][msg.sender] = newTotal;
+            }
         }
-        if(_owingBequested != 0) {
-            lastCollateralBalanceMap[bequestedCollateralTokenId][msg.sender] = totalBalanceOf(bequestedCollateralTokenId);
+        if (_owingBequested != 0) {
+            uint256 newTotal = totalBalanceOf(bequestedCollateralTokenId);
+            if (inFirstRound) {
+                lastCollateralBalanceFirstRoundMap[bequestedCollateralTokenId][msg.sender] = newTotal;
+            } else {
+                lastCollateralBalanceSecondRoundMap[bequestedCollateralTokenId][msg.sender] = newTotal;
+            }
         }
         uint256 _amount = _owingDonated + _owingBequested;
-        userWithdrewInFirstRound[msg.sender] += _amount;
+        if (!inFirstRound) {
+            usersWithdrewInFirstRound[oracleId] += _amount;
+        }
         // Last to prevent reentrancy attack:
         collateralContractAddress.safeTransferFrom(address(this), msg.sender, collateralTokenId, _amount, data);
     }
