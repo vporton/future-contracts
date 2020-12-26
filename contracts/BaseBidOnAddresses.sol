@@ -18,6 +18,8 @@ import { IERC1155 } from "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 /// - a combination of TOKEN_SUMMARY and collateral address (bequested + bequested collateral tokens)
 ///
 /// In functions of this contact `condition` is always a customer's original address.
+///
+/// FIXME: Does it make any sense to have multiple markets per oracle?
 abstract contract BaseBidOnAddresses is ERC1155WithMappedAddressesAndTotals, IERC1155TokenReceiver {
     using ABDKMath64x64 for int128;
     using SafeMath for uint256;
