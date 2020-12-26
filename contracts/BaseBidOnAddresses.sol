@@ -476,6 +476,7 @@ abstract contract BaseBidOnAddresses is ERC1155WithMappedAddressesAndTotals, IER
         _balances[id][originalTo] = value.add(_balances[id][originalTo]);
     }
 
+    // FIXME: I messed `oracleId` and `marketId`.
     function _updateNumerator(uint64 oracleId, uint256 numerator, address condition) private {
         payoutDenominatorMap[oracleId] = payoutDenominatorMap[oracleId].add(numerator).sub(payoutNumeratorsMap[oracleId][condition]);
         payoutNumeratorsMap[oracleId][condition] = numerator;
