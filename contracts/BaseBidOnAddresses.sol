@@ -252,10 +252,15 @@ abstract contract BaseBidOnAddresses is ERC1155WithMappedAddressesAndTotals, IER
         emit OracleFinished(msg.sender);
     }
 
-    function _calcRewardShare(uint64 oracleId, address condition) private view returns (int128){
+    function _calcRewardShare(uint64 oracleId, address condition) internal view returns (int128) {
         uint256 numerator = payoutNumeratorsMap[oracleId][condition];
         uint256 denominator = payoutDenominatorMap[oracleId];
         return ABDKMath64x64.divu(numerator, denominator);
+    }
+
+    function _calcMultiplier(uint64 oracleId, address condition, int128 oracleShare) internal virtual view returns (int128) {
+        int128 rewardShare = _calcRewardShare(oracleId, condition);
+        return oracleShare.mul(rewardShare);
     }
 
     function collateralOwingBase(
@@ -276,7 +281,6 @@ abstract contract BaseBidOnAddresses is ERC1155WithMappedAddressesAndTotals, IER
         bequestedCollateralTokenId = _collateralBequestedTokenId(collateralContractAddress, collateralTokenId, oracleId);
         // Rounded to below for no out-of-funds:
         int128 oracleShare = ABDKMath64x64.divu(conditionalBalance, totalConditionalBalance);
-        int128 rewardShare = _calcRewardShare(oracleId, condition);
         uint256 _newDividendsDonated =
             totalBalanceOf(donatedCollateralTokenId) -
             (inFirstRound
@@ -287,7 +291,7 @@ abstract contract BaseBidOnAddresses is ERC1155WithMappedAddressesAndTotals, IER
             (inFirstRound
                 ? lastCollateralBalanceFirstRoundMap[bequestedCollateralTokenId][user]
                 : lastCollateralBalanceSecondRoundMap[bequestedCollateralTokenId][user]);
-        int128 multiplier = oracleShare.mul(rewardShare);
+        int128 multiplier = _calcMultiplier(oracleId, condition, oracleShare);
         donated = multiplier.mulu(_newDividendsDonated);
         bequested = multiplier.mulu(_newDividendsBequested);
     }
