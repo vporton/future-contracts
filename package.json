@@ -30,8 +30,9 @@
   "author": "Victor Porton (https://portonvictor.org)",
   "license": "LGPL-3.0",
   "dependencies": {
+    "@openzeppelin/contracts": "^3.3.0",
     "abdk-libraries-solidity": "^2.4.0",
-    "openzeppelin-solidity": "2.3.0"
+    "restorable-funds": "git+ssh://git@github.com/vporton/restorable-funds"
   },
   "devDependencies": {
     "@codechecks/client": "^0.1.9",
