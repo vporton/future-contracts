@@ -265,15 +265,15 @@ abstract contract BaseBidOnAddresses is ERC1155WithMappedAddressesAndTotals, IER
     function collateralOwingBase(IERC1155 collateralContractAddress, uint256 collateralTokenId, uint64 marketId, uint64 oracleId, address condition, address user)
         private view returns (uint donatedCollateralTokenId, uint bequestedCollateralTokenId, uint256 donated, uint256 bequested)
     {
-        uint256 conditonalToken = _conditionalTokenId(marketId, condition);
-        uint256 conditonalBalance = balanceOf(user, conditonalToken);
-        uint256 totalConditonalBalance = totalBalanceOf(conditonalToken);
+        uint256 conditionalToken = _conditionalTokenId(marketId, condition);
+        uint256 conditionalBalance = balanceOf(user, conditionalToken);
+        uint256 totalConditionalBalance = totalBalanceOf(conditionalToken);
         donatedCollateralTokenId = _collateralDonatedTokenId(collateralContractAddress, collateralTokenId, marketId, oracleId);
         uint256 donatedCollateralTotalBalance = totalBalanceOf(donatedCollateralTokenId);
         bequestedCollateralTokenId = _collateralBequestedTokenId(collateralContractAddress, collateralTokenId, marketId, oracleId);
         uint256 bequestedCollateralTotalBalance = totalBalanceOf(bequestedCollateralTokenId);
         // Rounded to below for no out-of-funds:
-        int128 marketIdShare = ABDKMath64x64.divu(conditonalBalance, totalConditonalBalance);
+        int128 marketIdShare = ABDKMath64x64.divu(conditionalBalance, totalConditionalBalance);
         int128 rewardShare = _calcRewardShare(oracleId, condition);
         uint256 _newDividendsDonated = donatedCollateralTotalBalance - lastCollateralBalanceMap[donatedCollateralTokenId][user];
         uint256 _newDividendsBequested = bequestedCollateralTotalBalance - lastCollateralBalanceMap[bequestedCollateralTokenId][user];
@@ -377,7 +377,7 @@ abstract contract BaseBidOnAddresses is ERC1155WithMappedAddressesAndTotals, IER
         return payoutDenominatorMap[marketId];
     }
 
-    function isConditonalLocked(address condition, uint256 conditionalTokenId) public view returns (bool) {
+    function isConditionalLocked(address condition, uint256 conditionalTokenId) public view returns (bool) {
         return userUsedRedeemMap[condition][conditionalTokenId];
     }
 
