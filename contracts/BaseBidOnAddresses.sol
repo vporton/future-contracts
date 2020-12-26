@@ -104,7 +104,7 @@ abstract contract BaseBidOnAddresses is ERC1155WithMappedAddressesAndTotals, IER
     mapping(uint64 => address) private oracleOwnersMap;
     // Mapping (oracleId => time) the least allowed time of oracles to finish.
     mapping(uint64 => uint) private minFinishTimes;
-    /// Mapping (oracleId => time) the max time for first withdrawal.
+    // Mapping (oracleId => time) the max time for first withdrawal.
     mapping(uint64 => uint) private gracePeriodEnds;
     // Whether an oracle finished its work.
     mapping(uint64 => bool) private oracleFinishedMap;
