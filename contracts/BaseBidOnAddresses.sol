@@ -18,8 +18,6 @@ import { IERC1155 } from "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 /// - a combination of TOKEN_SUMMARY and collateral address (bequested + bequested collateral tokens)
 ///
 /// In functions of this contact `condition` is always a customer's original address.
-///
-/// FIXME: Does it make any sense to have multiple markets per oracle?
 abstract contract BaseBidOnAddresses is ERC1155WithMappedAddressesAndTotals, IERC1155TokenReceiver {
     using ABDKMath64x64 for int128;
     using SafeMath for uint256;
@@ -117,7 +115,7 @@ abstract contract BaseBidOnAddresses is ERC1155WithMappedAddressesAndTotals, IER
     // Mapping (token => (user => amount)) used to calculate withdrawal of collateral amounts.
     mapping(uint256 => mapping(address => uint256)) private lastCollateralBalanceSecondRoundMap; // TODO: Would getter be useful?
     /// Times of bequest of all funds from address (zero is no bequest).
-    mapping(address => uint) public bequestTimes; // FIXME: Should the getter use orig address?
+    mapping(address => uint) public bequestTimes;
     /// Mapping (oracleId => user withdrew in first round) (see `docs/Calculations.md`).
     mapping(uint64 => uint256) public usersWithdrewInFirstRound;
 
@@ -317,9 +315,9 @@ abstract contract BaseBidOnAddresses is ERC1155WithMappedAddressesAndTotals, IER
     /// (to prevent its repeated withdraw).
     function withdrawCollateral(IERC1155 collateralContractAddress, uint256 collateralTokenId, uint64 oracleId, address condition, bytes calldata data) external {
         require(isOracleFinished(oracleId), "too early"); // to prevent the denominator or the numerators change meantime
-        bool inFirstRound = _inFirstRound(oracleId); // FIXME: What if `gracePeriodEnds[...] == 0`?
+        bool inFirstRound = _inFirstRound(oracleId);
         uint256 conditionalTokenId = _conditionalTokenId(oracleId, condition);
-        userUsedRedeemMap[msg.sender][conditionalTokenId] = true; // FIXME: Use original address here and in other places?
+        userUsedRedeemMap[msg.sender][conditionalTokenId] = true;
         // _burn(msg.sender, conditionalTokenId, conditionalBalance); // Burning it would break using the same token for multiple markets.
         (uint donatedCollateralTokenId, uint bequestedCollateralTokenId, uint256 _owingDonated, uint256 _owingBequested) =
             collateralOwingBase(collateralContractAddress, collateralTokenId, oracleId, condition, msg.sender, inFirstRound);
