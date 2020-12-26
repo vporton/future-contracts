@@ -343,7 +343,7 @@ abstract contract BaseBidOnAddresses is ERC1155WithMappedAddressesAndTotals, IER
         }
         uint256 _amount = _owingDonated + _owingBequested;
         if (!inFirstRound) {
-            usersWithdrewInFirstRound[oracleId] += _amount;
+            usersWithdrewInFirstRound[oracleId] = usersWithdrewInFirstRound[oracleId].add(_amount);
         }
         // Last to prevent reentrancy attack:
         collateralContractAddress.safeTransferFrom(address(this), msg.sender, collateralTokenId, _amount, data);
