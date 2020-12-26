@@ -142,7 +142,7 @@ abstract contract BaseBidOnAddresses is ERC1155WithMappedAddressesAndTotals, IER
         emit OracleOwnerChanged(newOracleOwner, oracleId);
     }
 
-    /// You should call updateGracePeriodEnds() before calling this first time!
+    /// Don't forget to call `updateGracePeriodEnds()` before calling this!
     function updateMinFinishTime(uint64 oracleId, uint time) public _isOracle(oracleId) {
         require(time >= minFinishTimes[oracleId], "Can't break trust of bequestors.");
         minFinishTimes[oracleId] = time;
