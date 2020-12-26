@@ -1,6 +1,6 @@
 ## Calculations
 
-Let `C` be an amount of some collateral on our contract, and `M` be the size of a market (that is the sum of all tokens of this market).
+Let `C` be an amount of some collateral on our contract, and `M` be the size of a market (that is the sum of all conditional tokens of this market).
 
 So, a user with `m` conditional with `s` score would receive `C*s*m/M` collateral after the oracle finishes.
 
