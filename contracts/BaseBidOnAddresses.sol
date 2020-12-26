@@ -115,7 +115,9 @@ abstract contract BaseBidOnAddresses is ERC1155WithMappedAddressesAndTotals, IER
     // Mapping (token => (user => amount)) used to calculate withdrawal of collateral amounts.
     mapping(uint256 => mapping(address => uint256)) private lastCollateralBalanceMap; // TODO: Would getter be useful?
     /// Times of bequest of all funds from address (zero is no bequest).
-    mapping(address => uint) public bequestTimes;
+    mapping(address => uint) public bequestTimes; // FIXME: Should the getter use orig address?
+    /// User withdrew in first round (see `docs/Calculations.md`).
+    mapping(address => uint256) public userWithdrewInFirstRound;
 
     constructor(string memory uri_) ERC1155WithMappedAddressesAndTotals(uri_) {
         _registerInterface(
@@ -284,7 +286,7 @@ abstract contract BaseBidOnAddresses is ERC1155WithMappedAddressesAndTotals, IER
     function withdrawCollateral(IERC1155 collateralContractAddress, uint256 collateralTokenId, uint64 oracleId, address condition, bytes calldata data) external {
         require(isOracleFinished(oracleId), "too early"); // to prevent the denominator or the numerators change meantime
         uint256 conditionalTokenId = _conditionalTokenId(oracleId, condition);
-        userUsedRedeemMap[msg.sender][conditionalTokenId] = true;
+        userUsedRedeemMap[msg.sender][conditionalTokenId] = true; // FIXME: Use original address here and in other places?
         // _burn(msg.sender, conditionalTokenId, conditionalBalance); // Burning it would break using the same token for multiple markets.
         (uint donatedCollateralTokenId, uint bequestedCollateralTokenId, uint256 _owingDonated, uint256 _owingBequested) =
             collateralOwingBase(collateralContractAddress, collateralTokenId, oracleId, condition, msg.sender);
@@ -298,8 +300,10 @@ abstract contract BaseBidOnAddresses is ERC1155WithMappedAddressesAndTotals, IER
         if(_owingBequested != 0) {
             lastCollateralBalanceMap[bequestedCollateralTokenId][msg.sender] = totalBalanceOf(bequestedCollateralTokenId);
         }
+        uint256 _amount = _owingDonated + _owingBequested;
+        userWithdrewInFirstRound[msg.sender] += _amount;
         // Last to prevent reentrancy attack:
-        collateralContractAddress.safeTransferFrom(address(this), msg.sender, collateralTokenId, _owingDonated + _owingBequested, data);
+        collateralContractAddress.safeTransferFrom(address(this), msg.sender, collateralTokenId, _amount, data);
     }
 
     /// Disallow transfers of conditional tokens after redeem to prevent "gathering" them before redeeming each oracle.
