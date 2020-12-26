@@ -60,6 +60,17 @@ contract("BidOnAddresses", function(accounts) {
       from: oracle1
     }));
     this.oracleId2 = this.logs2[0].args.oracleId;
+
+    const farFuture = toBN(2).pow(toBN(64));
+    await this.conditionalTokens.updateGracePeriodEnds(
+      this.oracleId1,
+      farFuture
+    );
+    await this.conditionalTokens.updateGracePeriodEnds(
+      this.oracleId2,
+      farFuture
+    );
+    // TODO: Test withdrawals after grace period.
   });
 
   describe("main test", function() {
