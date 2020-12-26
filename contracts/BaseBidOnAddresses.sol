@@ -144,7 +144,7 @@ abstract contract BaseBidOnAddresses is ERC1155WithMappedAddressesAndTotals, IER
 
     /// You should call updateGracePeriodEnds() before calling this first time!
     function updateMinFinishTime(uint64 oracleId, uint time) public _isOracle(oracleId) {
-        require(time == 0 || time >= minFinishTimes[oracleId], "Can't break trust of bequestors.");
+        require(time >= minFinishTimes[oracleId], "Can't break trust of bequestors.");
         minFinishTimes[oracleId] = time;
     }
 
