@@ -252,7 +252,7 @@ abstract contract BaseBidOnAddresses is ERC1155WithMappedAddressesAndTotals, IER
         emit OracleFinished(msg.sender);
     }
 
-    function _calcRewardShare(uint64 oracleId, address condition) internal view returns (int128) {
+    function _calcRewardShare(uint64 oracleId, address condition) internal virtual view returns (int128) {
         uint256 numerator = payoutNumeratorsMap[oracleId][condition];
         uint256 denominator = payoutDenominatorMap[oracleId];
         return ABDKMath64x64.divu(numerator, denominator);
