@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: LGPL-3.0-or-later
 pragma solidity ^0.7.1;
-import "@openzeppelin/contracts/math/SafeMath.sol";
+import { SafeMath } from "@openzeppelin/contracts/math/SafeMath.sol";
 import { ABDKMath64x64 } from "abdk-libraries-solidity/ABDKMath64x64.sol";
 import { ERC1155WithMappedAddressesAndTotals } from "./ERC1155/ERC1155WithMappedAddressesAndTotals.sol";
 import { IERC1155TokenReceiver } from "./ERC1155/IERC1155TokenReceiver.sol";
@@ -63,18 +63,6 @@ abstract contract BaseLock is ERC1155WithMappedAddressesAndTotals, IERC1155Token
         bytes data
     );
 
-    event ReportedNumerator(
-        uint64 indexed oracleId,
-        address customer,
-        uint256 numerator
-    );
-
-    event ReportedNumeratorsBatch(
-        uint64 indexed oracleId,
-        address[] addresses,
-        uint256[] numerators
-    );
-
     event OracleFinished(address indexed oracleOwner);
 
     event RedeemCalculated(
@@ -98,16 +86,8 @@ abstract contract BaseLock is ERC1155WithMappedAddressesAndTotals, IERC1155Token
 
     // Mapping from oracleId to oracle owner.
     mapping(uint64 => address) private oracleOwnersMap;
-    // Mapping (oracleId => time) the least allowed time of oracles to finish.
-    mapping(uint64 => uint) private minFinishTimes;
     // Mapping (oracleId => time) the max time for first withdrawal.
     mapping(uint64 => uint) private gracePeriodEnds;
-    // Whether an oracle finished its work.
-    mapping(uint64 => bool) private oracleFinishedMap;
-    // Mapping (oracleId => (customer => numerator)) for payout numerators.
-    mapping(uint64 => mapping(address => uint256)) private payoutNumeratorsMap;
-    // Mapping (oracleId => denominator) for payout denominators.
-    mapping(uint64 => uint) private payoutDenominatorMap;
     // The user lost the right to transfer conditional tokens: (user => (conditionalToken => bool)).
     mapping(address => mapping(uint256 => bool)) private userUsedRedeemMap;
     // Mapping (token => (user => amount)) used to calculate withdrawal of collateral amounts.
@@ -138,12 +118,6 @@ abstract contract BaseLock is ERC1155WithMappedAddressesAndTotals, IERC1155Token
     function changeOracleOwner(address newOracleOwner, uint64 oracleId) public _isOracle(oracleId) {
         oracleOwnersMap[oracleId] = newOracleOwner;
         emit OracleOwnerChanged(newOracleOwner, oracleId);
-    }
-
-    /// Don't forget to call `updateGracePeriodEnds()` before calling this!
-    function updateMinFinishTime(uint64 oracleId, uint time) public _isOracle(oracleId) {
-        require(time >= minFinishTimes[oracleId], "Can't break trust of bequestors.");
-        minFinishTimes[oracleId] = time;
     }
 
     function updateGracePeriodEnds(uint64 oracleId, uint time) public _isOracle(oracleId) {
@@ -223,44 +197,6 @@ abstract contract BaseLock is ERC1155WithMappedAddressesAndTotals, IERC1155Token
         uint donatedCollateralTokenId = _collateralDonatedTokenId(collateralContractAddress, collateralTokenId, oracleId);
         _mint(to, donatedCollateralTokenId, amount, data);
         emit ConvertBequestedToDonated(collateralContractAddress, collateralTokenId, msg.sender, amount, to, data);
-    }
-
-    /// @dev Called by the oracle owner for reporting results of conditions.
-    function reportNumerator(uint64 oracleId, address condition, uint256 numerator) external
-        _isOracle(oracleId)
-    {
-        _updateNumerator(oracleId, numerator, condition);
-        emit ReportedNumerator(oracleId, condition, numerator);
-    }
-
-    /// @dev Called by the oracle owner for reporting results of conditions.
-    function reportNumeratorsBatch(uint64 oracleId, address[] calldata addresses, uint256[] calldata numerators) external
-        _isOracle(oracleId)
-    {
-        require(addresses.length == numerators.length, "Length mismatch.");
-        for (uint i = 0; i < addresses.length; ++i) {
-            _updateNumerator(oracleId, numerators[i], addresses[i]);
-        }
-        emit ReportedNumeratorsBatch(oracleId, addresses, numerators);
-    }
-
-    /// Need to be called after all numerators were reported.
-    function finishOracle(uint64 oracleId) external
-        _isOracle(oracleId)
-    {
-        oracleFinishedMap[oracleId] = true;
-        emit OracleFinished(msg.sender);
-    }
-
-    function _calcRewardShare(uint64 oracleId, address condition) internal virtual view returns (int128) {
-        uint256 numerator = payoutNumeratorsMap[oracleId][condition];
-        uint256 denominator = payoutDenominatorMap[oracleId];
-        return ABDKMath64x64.divu(numerator, denominator);
-    }
-
-    function _calcMultiplier(uint64 oracleId, address condition, int128 oracleShare) internal virtual view returns (int128) {
-        int128 rewardShare = _calcRewardShare(oracleId, condition);
-        return oracleShare.mul(rewardShare);
     }
 
     function collateralOwingBase(
@@ -406,24 +342,12 @@ abstract contract BaseLock is ERC1155WithMappedAddressesAndTotals, IERC1155Token
         return oracleOwnersMap[oracleId];
     }
 
-    function isOracleFinished(uint64 oracleId) public view returns (bool) {
-        return oracleFinishedMap[oracleId] && block.timestamp >= minFinishTimes[oracleId];
-    }
-
-    function payoutNumerator(uint64 oracleId, address condition) public view returns (uint256) {
-        return payoutNumeratorsMap[oracleId][condition];
-    }
-
-    function payoutDenominator(uint64 oracleId) public view returns (uint256) {
-        return payoutDenominatorMap[oracleId];
+    function isOracleFinished(uint64 /*oracleId*/) public virtual view returns (bool) {
+        return true;
     }
 
     function isConditionalLocked(address condition, uint256 conditionalTokenId) public view returns (bool) {
         return userUsedRedeemMap[condition][conditionalTokenId];
-    }
-
-    function minFinishTime(uint64 oracleId) public view returns (uint) {
-        return minFinishTimes[oracleId];
     }
 
     function gracePeriodEnd(uint64 oracleId) public view returns (uint) {
@@ -434,6 +358,13 @@ abstract contract BaseLock is ERC1155WithMappedAddressesAndTotals, IERC1155Token
 
     function _mintToCustomer(uint256 conditionalTokenId, uint256 amount, bytes calldata data) internal virtual {
         _mint(msg.sender, conditionalTokenId, amount, data);
+    }
+
+    function _calcRewardShare(uint64 oracleId, address condition) internal virtual view returns (int128);
+
+    function _calcMultiplier(uint64 oracleId, address condition, int128 oracleShare) internal virtual view returns (int128) {
+        int128 rewardShare = _calcRewardShare(oracleId, condition);
+        return oracleShare.mul(rewardShare);
     }
 
     // Internal //
@@ -509,11 +440,6 @@ abstract contract BaseLock is ERC1155WithMappedAddressesAndTotals, IERC1155Token
         _balances[id][originalFrom] = _balances[id][originalFrom].sub(value);
         address originalTo = originalAddress(to);
         _balances[id][originalTo] = value.add(_balances[id][originalTo]);
-    }
-
-    function _updateNumerator(uint64 oracleId, uint256 numerator, address condition) private {
-        payoutDenominatorMap[oracleId] = payoutDenominatorMap[oracleId].add(numerator).sub(payoutNumeratorsMap[oracleId][condition]);
-        payoutNumeratorsMap[oracleId][condition] = numerator;
     }
 
     modifier _isOracle(uint64 oracleId) {
