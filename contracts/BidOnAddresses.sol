@@ -22,9 +22,6 @@ import "./BaseBidOnAddresses.sol";
 /// - After some "grace period" after an oracle finished distribute all remaining collateral to
 /// them who bought it in the grace period.
 contract BidOnAddresses is BaseBidOnAddresses {
-    using ABDKMath64x64 for int128;
-    using SafeMath for uint256;
-
     uint constant INITIAL_CUSTOMER_BALANCE = 1000 * 10**18; // an arbitrarily choosen value
 
     event CustomerRegistered(
