@@ -263,7 +263,7 @@ abstract contract BaseBidOnAddresses is ERC1155WithMappedAddressesAndTotals, IER
         bequestedCollateralTokenId = _collateralBequestedTokenId(collateralContractAddress, collateralTokenId, oracleId);
         uint256 bequestedCollateralTotalBalance = totalBalanceOf(bequestedCollateralTokenId);
         // Rounded to below for no out-of-funds:
-        int128 oracleShare = ABDKMath64x64.divu(conditionalBalance, totalConditionalBalance);
+        int128 oracleShare = ABDKMath64x64.divu(conditionalBalance, totalConditionalBalance); // FIXME: seems superfluous!
         int128 rewardShare = _calcRewardShare(oracleId, condition);
         uint256 _newDividendsDonated = donatedCollateralTotalBalance - lastCollateralBalanceMap[donatedCollateralTokenId][user];
         uint256 _newDividendsBequested = bequestedCollateralTotalBalance - lastCollateralBalanceMap[bequestedCollateralTokenId][user];
