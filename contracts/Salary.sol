@@ -2,6 +2,7 @@
 pragma solidity ^0.7.1;
 import "./BaseBidOnAddresses.sol";
 
+/// TODO: Allow the DAO to addjust registration date to pay salary retrospectively?
 contract Salary is BaseBidOnAddresses {
     event CustomerRegistered(
         address customer,
