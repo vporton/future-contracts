@@ -232,6 +232,11 @@ abstract contract BaseBaseLock is ERC1155WithMappedAddressesAndTotals, IERC1155T
     /// accordingly to the score of `condition` by the oracle.
     /// After this function is called, it becomes impossible to transfer the corresponding conditional token of `msg.sender`
     /// (to prevent its repeated withdraw).
+    ///
+    /// Notes:
+    /// - It is made impossible to withdraw somebody's other collateral, as otherwise we can't mark non-active accounts.
+    ///
+    /// FIXME: Use _original_ Ethereum address where appropriate. (The same bug in other places?)
     function withdrawCollateral(IERC1155 collateralContractAddress, uint256 collateralTokenId, uint64 oracleId, address condition, bytes calldata data) external {
         require(isOracleFinished(oracleId), "too early"); // to prevent the denominator or the numerators change meantime
         bool inFirstRound = _inFirstRound(oracleId);
