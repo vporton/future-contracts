@@ -17,7 +17,7 @@ contract Salary is BaseBidOnAddresses {
         bytes data
     );
 
-    // Mapping from original address to last salary block time.
+    /// Mapping from original address to last salary block time.
     mapping(address => uint) public lastSalaryDates;
 
     constructor(string memory uri_) BaseBidOnAddresses(uri_) { }
