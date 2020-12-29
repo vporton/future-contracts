@@ -17,6 +17,8 @@ contract Salary is BaseBidOnAddresses {
         bytes data
     );
 
+    /// Mapping from original address to registration time.
+    mapping(address => uint) public registrationDates;
     /// Mapping from original address to last salary block time.
     mapping(address => uint) public lastSalaryDates;
 
@@ -26,7 +28,8 @@ contract Salary is BaseBidOnAddresses {
     /// Can be called both before or after the oracle finish. However registering after the finish is useless.
     function registerCustomer(uint64 oracleId, bytes calldata data) external {
         address orig = originalAddress(msg.sender); // FIXME: Do we need `originalAddress()` here?
-        require(lastSalaryDates[orig] == 0, "You are already registered.");
+        require(registrationDates[orig] == 0, "You are already registered.");
+        registrationDates[orig] = block.timestamp;
         lastSalaryDates[orig] = block.timestamp;
         emit CustomerRegistered(msg.sender, oracleId, data);
     }
