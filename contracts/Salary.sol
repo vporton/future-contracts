@@ -20,8 +20,7 @@ contract Salary is BaseBidOnAddresses {
     // Mapping from original address to last salary block time.
     mapping(address => uint) public lastSalaryDates;
 
-    constructor(string memory uri_) BaseBidOnAddresses(uri_) {
-    }
+    constructor(string memory uri_) BaseBidOnAddresses(uri_) { }
 
     /// Anyone can register himself.
     /// Can be called both before or after the oracle finish. However registering after the finish is useless.
