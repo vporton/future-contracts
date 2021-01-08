@@ -10,7 +10,8 @@ contract SalaryWithDAO is BaseRestorableSalary {
 
     DAOInterface public daoPlugin;
 
-    int128 public daoShare = int128(0).div(1); // zero by default
+    // DAO share will be zero to prevent theft by voters and because it can be done instead by future voting.
+    // int128 public daoShare = int128(0).div(1); // zero by default
 
     constructor(DAOInterface _daoPlugin, string memory uri_) BaseRestorableSalary(uri_) {
         daoPlugin = _daoPlugin;
@@ -18,12 +19,6 @@ contract SalaryWithDAO is BaseRestorableSalary {
 
     function setDAO(DAOInterface _daoPlugin) public onlyDAO {
         daoPlugin = _daoPlugin;
-    }
-
-    /// Set the multiplier of tokens given to the DAO
-    /// @param share is an 64x64 fraction. We don't check if it is above zero, because `.mulu()` will just fail in this case.
-    function setDaoShare(int128 share) public onlyDAO {
-        daoShare = share;
     }
 
     /// Set the token URI.
@@ -34,9 +29,6 @@ contract SalaryWithDAO is BaseRestorableSalary {
     function _mintToCustomer(uint256 conditionalTokenId, uint256 amount, bytes calldata data) internal virtual override {
         daoPlugin.checkPersonDead(msg.sender);
         super._mintToCustomer(conditionalTokenId, amount, data);
-        if (daoShare != int128(0).div(1)) { // Save gas.
-            _mint(address(daoPlugin), conditionalTokenId, daoShare.mulu(amount), data);
-        }
     }
 
     function checkAllowedRestoreAccount(address oldAccount_, address newAccount_) public virtual override {
