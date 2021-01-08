@@ -16,11 +16,6 @@ import "./BaseBidOnAddresses.sol";
 /// In functions of this contact `condition` is always a customer's original address.
 ///
 /// We receive funds in ERC-1155, see also https://github.com/vporton/wrap-tokens
-///
-/// FIXME: I messed total supply of conditionals with their circulating supply.
-/// So a big part of donations would be lost. Proposed fixes:
-/// - After some "grace period" after an oracle finished distribute all remaining collateral to
-/// them who bought it in the grace period.
 contract BidOnAddresses is BaseBidOnAddresses {
     uint constant INITIAL_CUSTOMER_BALANCE = 1000 * 10**18; // an arbitrarily choosen value
 
