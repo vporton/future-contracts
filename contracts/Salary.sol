@@ -49,7 +49,7 @@ contract Salary is BaseBidOnAddresses {
         uint lastSalaryDate = lastSalaryDates[orig];
         require(lastSalaryDate != 0, "You are not registered.");
         uint256 conditionalTokenId = _conditionalTokenId(oracleId, originalAddress(msg.sender));
-        // FIXME: One token per second produces huge numbers inconvenient for humans. Reduce.
+        // FIXME: One token per second produces huge numbers inconvenient for humans. Reduce (how much?)
         uint256 amount = (lastSalaryDate - block.timestamp) * 10**18; // one token per second
         _mintToCustomer(conditionalTokenId, amount, data);
         lastSalaryDates[orig] = block.timestamp;
