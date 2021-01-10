@@ -369,15 +369,7 @@ abstract contract BaseBaseLock is ERC1155WithMappedAddressesAndTotals, IERC1155T
         require(!userUsedRedeemMap[originalAddress(from)][id], "You can't trade conditional tokens after redeem.");
     }
 
-    function _baseSafeTransferFrom(
-        address from,
-        address to,
-        uint256 id,
-        uint256 value,
-        bytes memory data
-    )
-        private
-    {
+    function _baseSafeTransferFrom(address from, address to, uint256 id, uint256 value, bytes memory data) private {
         require(to != address(0), "ERC1155: target address must be non-zero");
         require(
             from == msg.sender || _operatorApprovals[from][msg.sender] == true,
