@@ -31,8 +31,7 @@
   "license": "LGPL-3.0",
   "dependencies": {
     "@openzeppelin/contracts": "^3.3.0",
-    "abdk-libraries-solidity": "^2.4.0",
-    "restorable-funds": "git+ssh://git@github.com/vporton/restorable-funds"
+    "abdk-libraries-solidity": "^2.4.0"
   },
   "devDependencies": {
     "@codechecks/client": "^0.1.9",

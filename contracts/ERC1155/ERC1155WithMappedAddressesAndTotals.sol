@@ -1,15 +1,78 @@
 // SPDX-License-Identifier: LGPL-3.0-or-later
 pragma solidity ^0.7.1;
 import "@openzeppelin/contracts/math/SafeMath.sol";
-import { ERC1155WithMappedAddresses } from "restorable-funds/contracts/ERC1155WithMappedAddresses.sol";
+import { ERC1155 } from "./ERC1155.sol";
 
-abstract contract ERC1155WithMappedAddressesAndTotals is ERC1155WithMappedAddresses {
+abstract contract ERC1155WithMappedAddressesAndTotals is ERC1155 {
     using SafeMath for uint256;
+
+    /// mapping from old to new account addresses
+    mapping(address => address) public originalAddresses; // mapping from old to new account addresses
 
     // Mapping (token => total).
     mapping(uint256 => uint256) private totalBalances;
 
-    constructor (string memory uri_) ERC1155WithMappedAddresses(uri_) { }
+    constructor (string memory uri_) ERC1155(uri_) { }
+
+    /// Don't forget to override also _upgradeAccounts().
+    function originalAddress(address account) public virtual view returns (address) {
+        return account;
+    }
+
+    // Internal functions //
+
+    function _upgradeAccounts(address[] memory accounts, address[] memory newAccounts) internal virtual view {
+    }
+
+    // Overrides //
+
+    function balanceOf(address account, uint256 id) public view override returns (uint256) {
+        return super.balanceOf(originalAddress(account), id);
+    }
+
+    function balanceOfBatch(address[] memory accounts, uint256[] memory ids)
+        public view override returns (uint256[] memory)
+    {
+        address[] memory newAccounts = new address[](accounts.length);
+        _upgradeAccounts(accounts, newAccounts);
+        return super.balanceOfBatch(newAccounts, ids);
+    }
+
+    function setApprovalForAll(address operator, bool approved) public virtual override {
+        return super.setApprovalForAll(originalAddress(operator), approved);
+    }
+
+    function isApprovedForAll(address account, address operator) public view override returns (bool) {
+        return super.isApprovedForAll(originalAddress(account), operator);
+    }
+
+    function safeTransferFrom(address from, address to, uint256 id, uint256 amount, bytes memory data)
+        public virtual override
+    {
+        return super.safeTransferFrom(originalAddress(from), originalAddress(to), id, amount, data);
+    }
+
+    function safeBatchTransferFrom(
+        address from,
+        address to,
+        uint256[] memory ids,
+        uint256[] memory amounts,
+        bytes memory data
+    )
+        public virtual override
+    {
+        return super.safeBatchTransferFrom(originalAddress(from), originalAddress(to), ids, amounts, data);
+    }
+    
+    // Need also update totals - commented out
+    // function _mintBatch(address to, uint256[] memory ids, uint256[] memory amounts, bytes memory data) internal virtual override {
+    //     return super._mintBatch(originalAddress(to), ids, amounts, data);
+    // }
+
+    // Need also update totals - commented out
+    // function _burnBatch(address account, uint256[] memory ids, uint256[] memory amounts) internal virtual override {
+    //     return super._burnBatch(originalAddress(account), ids, amounts);
+    // }
 
     function totalBalanceOf(uint256 id) public view returns (uint256) {
         return totalBalances[id];
