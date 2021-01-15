@@ -7,27 +7,35 @@ import { BaseLock } from "./BaseLock.sol";
 /// @title Bidding on Ethereum addresses
 /// @author Victor Porton
 /// @notice Not audited, not enough tested.
-/// This allows anyone claim 1000 conditional tokens in order for him to transfer money from the future.
+/// This allows anyone claim conditional tokens in order for him to transfer money from the future.
 /// See `docs/future-money.rst`.
 ///
-/// We have three kinds of ERC-1155 token ID
+/// We have two kinds of ERC-1155 token IDs:
 /// - a combination of market ID, collateral address, and customer address (conditional tokens)
-/// - a combination of TOKEN_DONATED and collateral address (donated collateral tokens)
+/// - a combination of a collateral contract address and collateral token ID (a counter of donated amount of collateral tokens)
 ///
 /// In functions of this contact `condition` is always a customer's original address.
 abstract contract BaseBidOnAddresses is BaseLock {
     using ABDKMath64x64 for int128;
     using SafeMath for uint256;
 
+    /// A condition score was stored in the chain by an oracle.
+    /// @param oracleId The oracle ID.
+    /// @param conditional The conditional (customer addresses).
+    /// @param numerator The relative score provided by the oracle.
     event ReportedNumerator(
         uint64 indexed oracleId,
-        address customer,
+        address conditional,
         uint256 numerator
     );
 
+    /// Some condition scores were stored in the chain by an oracle.
+    /// @param oracleId The oracle ID.
+    /// @param conditionals The conditionals (customer addresses).
+    /// @param numerators The relative scores provided by the oracle.
     event ReportedNumeratorsBatch(
         uint64 indexed oracleId,
-        address[] addresses,
+        address[] conditional,
         uint256[] numerators
     );
 
@@ -40,8 +48,11 @@ abstract contract BaseBidOnAddresses is BaseLock {
     // Mapping (oracleId => denominator) for payout denominators.
     mapping(uint64 => uint) private payoutDenominatorMap;
 
+    /// Constructor.
+    /// @param uri_ Our ERC-1155 tokens description URI.
     constructor(string memory uri_) BaseLock(uri_) { }
 
+    /// Oracle updates it ??
     /// Don't forget to call `updateGracePeriodEnds()` before calling this!
     function updateMinFinishTime(uint64 oracleId, uint time) public _isOracle(oracleId) {
         // require(time >= minFinishTimes[oracleId], "Can't break trust of bequestors."); // bequest through an arbitrary contract instead
