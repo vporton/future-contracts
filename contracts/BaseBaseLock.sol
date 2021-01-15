@@ -42,15 +42,6 @@ abstract contract BaseBaseLock is ERC1155WithMappedAddressesAndTotals, IERC1155T
     /// @param oracleId The oracle ID.
     event OracleFinished(uint64 indexed oracleId);
 
-    event RedeemCalculated(
-        address user,
-        IERC1155 collateralContractAddress,
-        uint256 collateralTokenId,
-        uint64 indexed oracleId,
-        address condition,
-        uint payout
-    );
-
     event CollateralWithdrawn(
         IERC1155 contractAdrress,
         uint256 collateralTokenId,
