@@ -26,13 +26,11 @@ contract SalaryWithDAO is BaseRestorableSalary {
     /// A user that has a salary can't call this method, because it would make him "deathless" for calculating salary.
     /// So refusing may be recommended only for traders, not for salary receivers.
     ///
-    /// Be exteremely careful calling this method: If you refuse and lose your key, your salary is lost!
+    /// Be exteremely careful calling this method: If you refuse and lose your key, your funds are lost!
     ///
-    /// FIXME: A user may call it under influence of a fisher. How to prevent this possibility?
-    /// Maybe better remove "DAO refusal" functionality and just trust the DAO?
-    /// However the risk is not so big as one may think: The user would lose past salary but has
-    /// the possibility to register anew and update the oracle's databases to pay to a new account.
-    /// To make this entirely impossible, we can use two separate ERC-1155 contracts: for salaries and for traders.
+    /// DAO control refusal cannot be done by a salary receipient, so it can be done only by a "trader".
+    /// Traders are expected to be crypto-responsive persons, so incidentally calling this method is not
+    /// to be counted a fishing vulnerability.
     function refuseDAOControl(bool _refuse) public {
         address orig = originalAddress(msg.sender);
         require(registrationDates[orig] == 0, "Cannot resign account receiving a salary.");
