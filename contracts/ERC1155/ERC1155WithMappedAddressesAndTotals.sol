@@ -35,16 +35,19 @@ abstract contract ERC1155WithMappedAddressesAndTotals is ERC1155 {
 
     // Internal functions //
 
-    /// The function that upgrades (like `originalAddress()`) an array of accounts
+    /// The function that upgrades (like `originalAddress()`) an array of accounts in-place.
+    /// @param accounts Array of account addresses to be replaced with corresponding original addresses in-place.
     function _upgradeAccounts(address[] memory accounts) internal virtual view {
     }
 
     // Overrides //
 
+    /// An ERC-1155 function.
     function balanceOf(address account, uint256 id) public view override returns (uint256) {
         return super.balanceOf(originalAddress(account), id);
     }
 
+    /// An ERC-1155 function.
     function balanceOfBatch(address[] memory accounts, uint256[] memory ids)
         public view override returns (uint256[] memory)
     {
@@ -52,20 +55,24 @@ abstract contract ERC1155WithMappedAddressesAndTotals is ERC1155 {
         return super.balanceOfBatch(accounts, ids);
     }
 
+    /// An ERC-1155 function.
     function setApprovalForAll(address operator, bool approved) public virtual override {
         return super.setApprovalForAll(originalAddress(operator), approved);
     }
 
+    /// An ERC-1155 function.
     function isApprovedForAll(address account, address operator) public view override returns (bool) {
         return super.isApprovedForAll(originalAddress(account), operator);
     }
 
+    /// An ERC-1155 function.
     function safeTransferFrom(address from, address to, uint256 id, uint256 amount, bytes memory data)
         public virtual override
     {
         return super.safeTransferFrom(originalAddress(from), originalAddress(to), id, amount, data);
     }
 
+    /// An ERC-1155 function.
     function safeBatchTransferFrom(
         address from,
         address to,
@@ -88,10 +95,18 @@ abstract contract ERC1155WithMappedAddressesAndTotals is ERC1155 {
     //     return super._burnBatch(originalAddress(account), ids, amounts);
     // }
 
+    /// Total supply of a token.
+    /// @param id Token ID.
+    /// @return Total supply.
     function totalBalanceOf(uint256 id) public view returns (uint256) {
         return totalBalances[id];
     }
 
+    /// Mint a token.
+    /// @param to Whom to mint to.
+    /// @param id Token ID.
+    /// @param value Amount to mint.
+    /// @param data Additional data.
     function _mint(address to, uint256 id, uint256 value, bytes memory data) internal override {
         require(to != address(0), "ERC1155: mint to the zero address");
 
@@ -101,6 +116,11 @@ abstract contract ERC1155WithMappedAddressesAndTotals is ERC1155 {
         _doSafeTransferAcceptanceCheck(msg.sender, address(0), to, id, value, data);
     }
 
+    /// Mint zero or more tokens.
+    /// @param to Whom to mint to.
+    /// @param ids Token IDs.
+    /// @param values Amounts to mint.
+    /// @param data Additional data.
     function _batchMint(address to, uint256[] memory ids, uint256[] memory values, bytes memory data) internal {
         require(to != address(0), "ERC1155: batch mint to the zero address");
         require(ids.length == values.length, "ERC1155: IDs and values must have same lengths");
@@ -114,11 +134,19 @@ abstract contract ERC1155WithMappedAddressesAndTotals is ERC1155 {
         _doSafeBatchTransferAcceptanceCheck(msg.sender, address(0), to, ids, values, data);
     }
 
+    /// Burn a token.
+    /// @param owner Whose tokens to burn.
+    /// @param id Token ID.
+    /// @param value Amount to mint.
     function _burn(address owner, uint256 id, uint256 value) internal override {
         _doBurn(owner, id, value);
         emit TransferSingle(msg.sender, owner, address(0), id, value);
     }
 
+    /// Burn zero or more tokens.
+    /// @param owner Whose tokens to burn.
+    /// @param ids Token IDs.
+    /// @param values Amounts to mint.
     function _batchBurn(address owner, uint256[] memory ids, uint256[] memory values) internal {
         require(ids.length == values.length, "ERC1155: IDs and values must have same lengths");
 
