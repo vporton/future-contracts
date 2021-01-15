@@ -10,8 +10,7 @@ import { BaseBaseLock } from "./BaseBaseLock.sol";
 ///
 /// We have three kinds of ERC-1155 token ID
 /// - a combination of market ID, collateral address, and customer address (conditional tokens)
-/// - a combination of TOKEN_STAKED and collateral address (bequested collateral tokens)
-/// - a combination of TOKEN_SUMMARY and collateral address (bequested + bequested collateral tokens)
+/// - a combination of TOKEN_DONATED and collateral address (donated collateral tokens)
 ///
 /// In functions of this contact `condition` is always a customer's original address.
 abstract contract BaseLock is BaseBaseLock {

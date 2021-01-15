@@ -6,27 +6,17 @@ import { ERC1155WithMappedAddressesAndTotals } from "./ERC1155/ERC1155WithMapped
 import { IERC1155TokenReceiver } from "./ERC1155/IERC1155TokenReceiver.sol";
 import { IERC1155 } from "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 
-// FIXME: Reduce gas usage by making bequesting tokens only by smart wallets. (We can make a wrapper with limits.)
 abstract contract BaseBaseLock is ERC1155WithMappedAddressesAndTotals, IERC1155TokenReceiver {
     using ABDKMath64x64 for int128;
     using SafeMath for uint256;
 
     event OracleCreated(address oracleOwner, uint64 oracleId);
 
-    enum TokenKind { TOKEN_CONDITIONAL, TOKEN_DONATED, TOKEN_BEQUESTED }
+    enum TokenKind { TOKEN_CONDITIONAL, TOKEN_DONATED }
 
     event OracleOwnerChanged(address oracleOwner, uint64 oracleId);
 
     event DonateCollateral(
-        IERC1155 collateralContractAddress,
-        uint256 collateralTokenId,
-        address sender,
-        uint256 amount,
-        address to,
-        bytes data
-    );
-
-    event BequestCollateral(
         IERC1155 collateralContractAddress,
         uint256 collateralTokenId,
         address sender,
@@ -41,15 +31,6 @@ abstract contract BaseBaseLock is ERC1155WithMappedAddressesAndTotals, IERC1155T
         address sender,
         uint256 amount,
         address to
-    );
-
-    event ConvertBequestedToDonated(
-        IERC1155 collateralContractAddress,
-        uint256 collateralTokenId,
-        address sender,
-        uint256 amount,
-        address to,
-        bytes data
     );
 
     event OracleFinished(address indexed oracleOwner);
@@ -83,8 +64,6 @@ abstract contract BaseBaseLock is ERC1155WithMappedAddressesAndTotals, IERC1155T
     mapping(uint256 => mapping(address => uint256)) private lastCollateralBalanceFirstRoundMap; // TODO: Would getter be useful?
     // Mapping (token => (user => amount)) used to calculate withdrawal of collateral amounts.
     mapping(uint256 => mapping(address => uint256)) private lastCollateralBalanceSecondRoundMap; // TODO: Would getter be useful?
-    /// Times of bequest of all funds from address (zero is no bequest).
-    mapping(address => uint) public bequestTimes;
     /// Mapping (oracleId => user withdrew in first round) (see `docs/Calculations.md`).
     mapping(uint64 => uint256) public usersWithdrewInFirstRound;
 
@@ -104,17 +83,8 @@ abstract contract BaseBaseLock is ERC1155WithMappedAddressesAndTotals, IERC1155T
         gracePeriodEnds[oracleId] = time;
     }
 
-    /// Bequest either by calling this function and also approving transfers by this contract
-    /// or by `bequestCollateral()`.
-    /// Zero means disallowed.
-    function setBequestTime(uint _time) public {
-        bequestTimes[msg.sender] = _time;
-    }
-
     /// Donate funds in a ERC1155 token.
     /// First need to approve the contract to spend the token.
-    /// Not recommended to donate after any oracle has finished, because funds may be (partially) lost.
-    /// Bequestor's funds after the bequest time can be donated by anyone.
     function donate(
         IERC1155 collateralContractAddress,
         uint256 collateralTokenId,
@@ -130,55 +100,6 @@ abstract contract BaseBaseLock is ERC1155WithMappedAddressesAndTotals, IERC1155T
         collateralContractAddress.safeTransferFrom(from, address(this), collateralTokenId, amount, data); // last against reentrancy attack
     }
 
-    /// Bequest funds in a ERC1155 token.
-    /// First need to approve the contract to spend the token.
-    /// The bequest is lost if either: the prediction period ends or the bequestor loses his private key (e.g. dies).
-    /// Not recommended to bequest after the oracle has finished, because funds may be (partially) lost (you could not unbequest).
-    function bequestCollateral(
-        IERC1155 collateralContractAddress,
-        uint256 collateralTokenId,
-        uint64 oracleId,
-        uint256 amount,
-        address to,
-        bytes calldata data) external
-    {
-        uint bequestedCollateralTokenId = _collateralBequestedTokenId(collateralContractAddress, collateralTokenId, oracleId);
-        _mint(to, bequestedCollateralTokenId, amount, data);
-        emit BequestCollateral(collateralContractAddress, collateralTokenId, msg.sender, amount, to, data);
-        collateralContractAddress.safeTransferFrom(msg.sender, address(this), collateralTokenId, amount, data); // last against reentrancy attack
-    }
-
-    function takeBequestBack(
-        IERC1155 collateralContractAddress,
-        uint256 collateralTokenId,
-        uint64 oracleId,
-        uint256 amount,
-        address to,
-        bytes calldata data) external _canTakeBequest(msg.sender)
-    {
-        uint bequestedCollateralTokenId = _collateralBequestedTokenId(collateralContractAddress, collateralTokenId, oracleId);
-        collateralContractAddress.safeTransferFrom(address(this), to, bequestedCollateralTokenId, amount, data);
-        emit TakeBackCollateral(collateralContractAddress, collateralTokenId, msg.sender, amount, to);
-    }
-
-    /// Donate funds from your bequest.
-    function convertBequestedToDonated(
-        IERC1155 collateralContractAddress,
-        uint256 collateralTokenId,
-        uint64 oracleId,
-        uint256 amount,
-        address to,
-        bytes calldata data) external
-    {
-        // Subtract from bequested:
-        uint bequestedCollateralTokenId = _collateralBequestedTokenId(collateralContractAddress, collateralTokenId, oracleId);
-        _burn(msg.sender, bequestedCollateralTokenId, amount);
-        // Add to donated:
-        uint donatedCollateralTokenId = _collateralDonatedTokenId(collateralContractAddress, collateralTokenId, oracleId);
-        _mint(to, donatedCollateralTokenId, amount, data);
-        emit ConvertBequestedToDonated(collateralContractAddress, collateralTokenId, msg.sender, amount, to, data);
-    }
-
     function collateralOwingBase(
         IERC1155 collateralContractAddress,
         uint256 collateralTokenId,
@@ -187,14 +108,13 @@ abstract contract BaseBaseLock is ERC1155WithMappedAddressesAndTotals, IERC1155T
         address user,
         bool inFirstRound
     )
-        private view returns (uint donatedCollateralTokenId, uint bequestedCollateralTokenId, uint256 donated, uint256 bequested)
+        private view returns (uint donatedCollateralTokenId, uint256 donated)
     {
         uint256 conditionalToken = _conditionalTokenId(oracleId, condition);
         uint256 conditionalBalance = balanceOf(user, conditionalToken);
         uint256 totalConditionalBalance =
             inFirstRound ? totalBalanceOf(conditionalToken) : usersWithdrewInFirstRound[oracleId];
         donatedCollateralTokenId = _collateralDonatedTokenId(collateralContractAddress, collateralTokenId, oracleId);
-        bequestedCollateralTokenId = _collateralBequestedTokenId(collateralContractAddress, collateralTokenId, oracleId);
         // Rounded to below for no out-of-funds:
         int128 oracleShare = ABDKMath64x64.divu(conditionalBalance, totalConditionalBalance);
         uint256 _newDividendsDonated =
@@ -202,14 +122,8 @@ abstract contract BaseBaseLock is ERC1155WithMappedAddressesAndTotals, IERC1155T
             (inFirstRound
                 ? lastCollateralBalanceFirstRoundMap[donatedCollateralTokenId][user] 
                 : lastCollateralBalanceSecondRoundMap[donatedCollateralTokenId][user]);
-        uint256 _newDividendsBequested =
-            totalBalanceOf(bequestedCollateralTokenId) -
-            (inFirstRound
-                ? lastCollateralBalanceFirstRoundMap[bequestedCollateralTokenId][user]
-                : lastCollateralBalanceSecondRoundMap[bequestedCollateralTokenId][user]);
         int128 multiplier = _calcMultiplier(oracleId, condition, oracleShare);
         donated = multiplier.mulu(_newDividendsDonated);
-        bequested = multiplier.mulu(_newDividendsBequested);
     }
  
     function collateralOwing(
@@ -220,9 +134,9 @@ abstract contract BaseBaseLock is ERC1155WithMappedAddressesAndTotals, IERC1155T
         address user
     ) external view returns(uint256) {
         bool inFirstRound = _inFirstRound(oracleId);
-        (,, uint256 donated, uint256 bequested) =
+        (, uint256 donated) =
             collateralOwingBase(collateralContractAddress, collateralTokenId, oracleId, condition, user, inFirstRound);
-        return donated + bequested;
+        return donated;
     }
 
     function _inFirstRound(uint64 oracleId) internal view returns (bool) {
@@ -245,7 +159,7 @@ abstract contract BaseBaseLock is ERC1155WithMappedAddressesAndTotals, IERC1155T
         uint256 conditionalTokenId = _conditionalTokenId(oracleId, condition);
         userUsedRedeemMap[msg.sender][conditionalTokenId] = true;
         // _burn(msg.sender, conditionalTokenId, conditionalBalance); // Burning it would break using the same token for multiple markets.
-        (uint donatedCollateralTokenId, uint bequestedCollateralTokenId, uint256 _owingDonated, uint256 _owingBequested) =
+        (uint donatedCollateralTokenId, uint256 _owingDonated) =
             collateralOwingBase(collateralContractAddress, collateralTokenId, oracleId, condition, msg.sender, inFirstRound);
 
         // Against rounding errors. Not necessary because of rounding down.
@@ -259,20 +173,11 @@ abstract contract BaseBaseLock is ERC1155WithMappedAddressesAndTotals, IERC1155T
                 lastCollateralBalanceSecondRoundMap[donatedCollateralTokenId][msg.sender] = newTotal;
             }
         }
-        if (_owingBequested != 0) {
-            uint256 newTotal = totalBalanceOf(bequestedCollateralTokenId);
-            if (inFirstRound) {
-                lastCollateralBalanceFirstRoundMap[bequestedCollateralTokenId][msg.sender] = newTotal;
-            } else {
-                lastCollateralBalanceSecondRoundMap[bequestedCollateralTokenId][msg.sender] = newTotal;
-            }
-        }
-        uint256 _amount = _owingDonated + _owingBequested;
         if (!inFirstRound) {
-            usersWithdrewInFirstRound[oracleId] = usersWithdrewInFirstRound[oracleId].add(_amount);
+            usersWithdrewInFirstRound[oracleId] = usersWithdrewInFirstRound[oracleId].add(_owingDonated);
         }
         // Last to prevent reentrancy attack:
-        collateralContractAddress.safeTransferFrom(address(this), msg.sender, collateralTokenId, _amount, data);
+        collateralContractAddress.safeTransferFrom(address(this), msg.sender, collateralTokenId, _owingDonated, data);
     }
 
     /// Disallow transfers of conditional tokens after redeem to prevent "gathering" them before redeeming each oracle.
@@ -316,14 +221,6 @@ abstract contract BaseBaseLock is ERC1155WithMappedAddressesAndTotals, IERC1155T
 
     // Getters //
 
-    function summaryCollateral(address user, uint256 donatedCollateralTokenId, uint256 bequestedCollateralTokenId) public view returns (uint256) {
-        return balanceOf(user, donatedCollateralTokenId) + balanceOf(user, bequestedCollateralTokenId);
-    }
-
-    function summaryCollateralTotal(uint256 donatedCollateralTokenId, uint256 bequestedCollateralTokenId) public view returns (uint256) {
-        return totalBalanceOf(donatedCollateralTokenId) + totalBalanceOf(bequestedCollateralTokenId);
-    }
-
     function oracleOwner(uint64 oracleId) public view returns (address) {
         return oracleOwnersMap[oracleId];
     }
@@ -361,10 +258,6 @@ abstract contract BaseBaseLock is ERC1155WithMappedAddressesAndTotals, IERC1155T
 
     function _collateralDonatedTokenId(IERC1155 collateralContractAddress, uint256 collateralTokenId, uint64 oracleId) internal pure returns (uint256) {
         return uint256(keccak256(abi.encodePacked(uint8(TokenKind.TOKEN_DONATED), collateralContractAddress, collateralTokenId, oracleId)));
-    }
-
-    function _collateralBequestedTokenId(IERC1155 collateralContractAddress, uint256 collateralTokenId, uint64 oracleId) internal pure returns (uint256) {
-        return uint256(keccak256(abi.encodePacked(uint8(TokenKind.TOKEN_BEQUESTED), collateralContractAddress, collateralTokenId, oracleId)));
     }
 
     function _checkTransferAllowed(uint256 id, address from) internal view {
@@ -430,12 +323,6 @@ abstract contract BaseBaseLock is ERC1155WithMappedAddressesAndTotals, IERC1155T
 
     modifier _isOracle(uint64 oracleId) {
         require(oracleOwnersMap[oracleId] == msg.sender, "Not the oracle owner.");
-        _;
-    }
-
-    modifier _canTakeBequest(address from) {
-        require(from == msg.sender || (block.timestamp < bequestTimes[from]),
-                "Putting funds not approved.");
         _;
     }
 }
