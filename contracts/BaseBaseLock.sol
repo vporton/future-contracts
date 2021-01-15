@@ -70,7 +70,7 @@ abstract contract BaseBaseLock is ERC1155WithMappedAddressesAndTotals, IERC1155T
         uint256 amount
     );
     
-    uint64 private maxId;
+    uint64 internal maxId; // TODO: Make public?
 
     // Mapping from oracleId to oracle owner.
     mapping(uint64 => address) private oracleOwnersMap;
