@@ -8,7 +8,7 @@ import { ERC1155 } from "./ERC1155.sol";
 ///
 /// BUG: This contract and dependent ones (TODO: enumerate here) may not emit events it should by ERC-1155 specification
 /// when called with `_upgradeAccounts()`. No reasonable way to fix it.
-/// It can be worked around by creatign a locker contract.
+/// It can be worked around by creatign a locker contract. // TODO: The bug seems not to exist in `BaseRestorableSalary`.
 abstract contract ERC1155WithMappedAddressesAndTotals is ERC1155 {
     using SafeMath for uint256;
 
