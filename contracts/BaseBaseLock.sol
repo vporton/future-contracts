@@ -10,12 +10,25 @@ abstract contract BaseBaseLock is ERC1155WithMappedAddressesAndTotals, IERC1155T
     using ABDKMath64x64 for int128;
     using SafeMath for uint256;
 
-    event OracleCreated(address oracleOwner, uint64 oracleId);
-
+    // Condditional tokens vs collaterals.
     enum TokenKind { TOKEN_CONDITIONAL, TOKEN_DONATED }
 
+    /// Emitted when an oracle is created.
+    /// @param oracleId The ID of the created oracle.
+    event OracleCreated(uint64 oracleId);
+
+    /// Emitted when an oracle owner is set.
+    /// @param oracleOwner Who created an oracle
+    /// @param oracleId The ID of the oracle.
     event OracleOwnerChanged(address oracleOwner, uint64 oracleId);
 
+    /// Emitted when a collateral is donated.
+    /// @param collateralContractAddress The ERC-1155 contract of the donated token.
+    /// @param collateralTokenId The ERC-1155 ID of the donated token.
+    /// @param sender Who donated.
+    /// @param amount The amount donated.
+    /// @param to Whose account the donation is assigned to.
+    /// @param data Additional transaction data.
     event DonateCollateral(
         IERC1155 collateralContractAddress,
         uint256 collateralTokenId,
@@ -23,14 +36,6 @@ abstract contract BaseBaseLock is ERC1155WithMappedAddressesAndTotals, IERC1155T
         uint256 amount,
         address to,
         bytes data
-    );
-
-    event TakeBackCollateral(
-        IERC1155 collateralContractAddress,
-        uint256 collateralTokenId,
-        address sender,
-        uint256 amount,
-        address to
     );
 
     event OracleFinished(address indexed oracleOwner);
@@ -316,7 +321,7 @@ abstract contract BaseBaseLock is ERC1155WithMappedAddressesAndTotals, IERC1155T
     function _createOracle() internal returns (uint64) {
         uint64 oracleId = maxId++;
         oracleOwnersMap[oracleId] = msg.sender;
-        emit OracleCreated(msg.sender, oracleId);
+        emit OracleCreated(oracleId);
         emit OracleOwnerChanged(msg.sender, oracleId);
         return oracleId;
     }
