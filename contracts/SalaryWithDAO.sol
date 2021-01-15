@@ -30,6 +30,9 @@ contract SalaryWithDAO is BaseRestorableSalary {
     ///
     /// FIXME: A user may call it under influence of a fisher. How to prevent this possibility?
     /// Maybe better remove "DAO refusal" functionality and just trust the DAO?
+    /// However the risk is not so big as one may think: The user would lose past salary but has
+    /// the possibility to register anew and update the oracle's databases to pay to a new account.
+    /// To make this entirely impossible, we can use two separate ERC-1155 contracts: for salaries and for traders.
     function refuseDAOControl(bool _refuse) public {
         address orig = originalAddress(msg.sender);
         require(registrationDates[orig] == 0, "Cannot resign account receiving a salary.");
