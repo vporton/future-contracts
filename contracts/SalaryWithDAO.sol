@@ -60,6 +60,15 @@ contract SalaryWithDAO is BaseRestorableSalary {
         }
     }
 
+    // Overrides ///
+
+    function registerCustomer(uint64 oracleId, bytes calldata data) virtual override public {
+        address orig = originalAddress(msg.sender); // FIXME: Do we need `originalAddress()` here?
+        // Salary with refusal of DAO control makes no sense: DAO should be able to declare a salary recipient dead:
+        usersThatRefuseDAOControl[orig] = false;
+        super.registerCustomer(oracleId, data);
+    }
+
     modifier onlyDAO() {
         require(msg.sender == address(daoPlugin), "Only DAO can do.");
         _;
