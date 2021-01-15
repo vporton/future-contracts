@@ -25,6 +25,7 @@ abstract contract BaseRestorableSalary is Salary {
         emit AccountRestored(oldAccount_, newAccount_);
     }
 
+    // FIXME: This method wrongly duplicates `ERC1155WithMappedAddressesAndTotals` functionality.
     function restoreFunds(address oldAccount_, address newAccount_, uint256 token_) public
         checkRestoreOperator(newAccount_)
         checkMovedOwner(oldAccount_, newAccount_)
