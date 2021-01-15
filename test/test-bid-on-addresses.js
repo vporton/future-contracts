@@ -11,15 +11,7 @@ const BidOnAddresses = artifacts.require("BidOnAddresses");
 const ERC1155Mintable = artifacts.require("ERC1155Mock");
 
 contract("BidOnAddresses", function(accounts) {
-  const [
-    oracle1,
-    customer1,
-    customer2,
-    donor1,
-    donor2,
-    bequestor1,
-    bequestor2
-  ] = accounts;
+  const [oracle1, customer1, customer2, donor1, donor2] = accounts;
 
   beforeEach("initiate token contracts", async function() {
     this.conditionalTokens = await BidOnAddresses.new("https://example.com/2");
@@ -35,18 +27,6 @@ contract("BidOnAddresses", function(accounts) {
     );
     this.collateralContract.mint(
       donor2,
-      this.collateralTokenId,
-      "1000000000000000000000",
-      []
-    );
-    this.collateralContract.mint(
-      bequestor1,
-      this.collateralTokenId,
-      "1000000000000000000000",
-      []
-    );
-    this.collateralContract.mint(
-      bequestor2,
       this.collateralTokenId,
       "1000000000000000000000",
       []
@@ -116,10 +96,6 @@ contract("BidOnAddresses", function(accounts) {
               { account: donor1, amount: toBN("10000000000") },
               { account: donor2, amount: toBN("1000000000000") }
             ],
-            bequestors: [
-              { account: bequestor1, amount: toBN("20000000000") },
-              { account: bequestor2, amount: toBN("2000000000000") }
-            ],
             customers: [{ account: 0 }, { account: 1 }]
           },
           {
@@ -127,10 +103,6 @@ contract("BidOnAddresses", function(accounts) {
             donors: [
               { account: donor1, amount: toBN("20000000000") },
               { account: donor2, amount: toBN("2000000000000") }
-            ],
-            bequestors: [
-              { account: bequestor1, amount: toBN("30000000000") },
-              { account: bequestor2, amount: toBN("4000000000000") }
             ],
             customers: [{ account: 0 }, { account: 1 }]
           }
@@ -153,23 +125,6 @@ contract("BidOnAddresses", function(accounts) {
               donor.account,
               [],
               { from: donor.account }
-            );
-          }
-          for (let bequestor of product.bequestors) {
-            await this.collateralContract.setApprovalForAll(
-              this.conditionalTokens.address,
-              true,
-              { from: bequestor.account }
-            );
-            const oracleIdInfo = oracleIdsInfo[product.oracleId];
-            await this.conditionalTokens.bequestCollateral(
-              this.collateralContract.address,
-              this.collateralTokenId,
-              oracleIdInfo.oracleId,
-              bequestor.amount,
-              bequestor.account,
-              [],
-              { from: bequestor.account }
             );
           }
 
@@ -208,9 +163,6 @@ contract("BidOnAddresses", function(accounts) {
           let totalCollateral = toBN("0");
           for (let donor of product.donors) {
             totalCollateral = totalCollateral.add(donor.amount);
-          }
-          for (let bequestor of product.bequestors) {
-            totalCollateral = totalCollateral.add(bequestor.amount);
           }
           let denominator = toBN("0");
           for (let n of oracleIdInfo.numerators) {
