@@ -41,6 +41,8 @@ contract Salary is BaseBidOnAddresses {
         require(registrationDates[orig] == 0, "You are already registered.");
         registrationDates[orig] = block.timestamp;
         lastSalaryDates[orig] = block.timestamp;
+        // Salary with refusal of DAO control makes no sense: DAO should be able to declare a salary recipient dead:
+        usersThatRefuseDAOControl[orig] = false;
         emit CustomerRegistered(msg.sender, oracleId, data);
     }
 
