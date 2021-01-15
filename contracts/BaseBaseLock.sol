@@ -42,8 +42,14 @@ abstract contract BaseBaseLock is ERC1155WithMappedAddressesAndTotals, IERC1155T
     /// @param oracleId The oracle ID.
     event OracleFinished(uint64 indexed oracleId);
 
+    /// Emitted when collateral is withdrawn.
+    /// @param oracleId The ERC-1155 contract of the collateral token.
+    /// @param collateralTokenId The ERC-1155 token ID of the collateral.
+    /// @param oracleId The oracle ID for which withdrawal is done.
+    /// @param user Who has withdrawn.
+    /// @param amount The amount withdrawn.
     event CollateralWithdrawn(
-        IERC1155 contractAdrress,
+        IERC1155 contractAddress,
         uint256 collateralTokenId,
         uint64 oracleId,
         address user,
@@ -176,6 +182,13 @@ abstract contract BaseBaseLock is ERC1155WithMappedAddressesAndTotals, IERC1155T
         }
         // Last to prevent reentrancy attack:
         collateralContractAddress.safeTransferFrom(address(this), msg.sender, collateralTokenId, _owingDonated, data);
+        emit CollateralWithdrawn(
+            collateralContractAddress,
+            collateralTokenId,
+            oracleId,
+            msg.sender,
+            _owingDonated
+        );
     }
 
     /// Disallow transfers of conditional tokens after redeem to prevent "gathering" them before redeeming each oracle.
