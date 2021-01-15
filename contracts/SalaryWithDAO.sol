@@ -34,10 +34,10 @@ contract SalaryWithDAO is BaseRestorableSalary {
     /// FIXME: A vulnerablity: The DAO may be able to frontrun "restoring" (move away to a non-existing address)
     /// all newly created accounts (e.g. ones calling `refuseDAOControl()`), so not accepting new traders.
     /// Is there any way to prevent this?
-    function refuseDAOControl(bool refuse) public {
+    function refuseDAOControl(bool _refuse) public {
         address orig = originalAddress(msg.sender);
         require(registrationDates[orig] == 0, "Cannot resign account receiving a salary.");
-        usersThatRefuseDAOControl[orig] = refuse;
+        usersThatRefuseDAOControl[orig] = _refuse;
     }
 
     function setDAO(DAOInterface _daoPlugin) public onlyDAO {
