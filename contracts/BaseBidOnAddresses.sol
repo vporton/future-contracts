@@ -85,7 +85,7 @@ abstract contract BaseBidOnAddresses is BaseLock {
         _isOracle(oracleId)
     {
         oracleFinishedMap[oracleId] = true;
-        emit OracleFinished(msg.sender);
+        emit OracleFinished(oracleId);
     }
 
     function isOracleFinished(uint64 oracleId) public view override returns (bool) {

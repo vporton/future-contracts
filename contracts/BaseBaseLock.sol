@@ -38,7 +38,9 @@ abstract contract BaseBaseLock is ERC1155WithMappedAddressesAndTotals, IERC1155T
         bytes data
     );
 
-    event OracleFinished(address indexed oracleOwner);
+    /// Emitted when an oracle is marked as having finished its work.
+    /// @param oracleId The oracle ID.
+    event OracleFinished(uint64 indexed oracleId);
 
     event RedeemCalculated(
         address user,
