@@ -7,8 +7,9 @@ import { ERC1155 } from "./ERC1155.sol";
 /// To each address it corresponds an _original address_.
 /// FIXME: `_upgradeAccounts()` may not emit events it should by ERC-1155 specification.
 /// FIXME: Should we give to traders the option to go out of control of DAO in account restoration?
-///        It must also make impossible to register for minting conditionals.
+///        It must also make impossible to register for minting conditionals (otherwise he can have "deathless" salary).
 ///        Calling a method withdrawing from DAO control can be fished.
+///        Also a method to return under DAO control?
 abstract contract ERC1155WithMappedAddressesAndTotals is ERC1155 {
     using SafeMath for uint256;
 
