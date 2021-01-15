@@ -29,6 +29,11 @@ contract SalaryWithDAO is BaseRestorableSalary {
     /// Be exteremely careful calling this method: If you refuse and lose your key, your salary is lost!
     ///
     /// FIXME: A user may call it under influence of a fisher. How to prevent this possibility?
+    /// Maybe better remove "DAO refusal" functionality and just trust the DAO?
+    ///
+    /// FIXME: A vulnerablity: The DAO may be able to frontrun "restoring" (move away to a non-existing address)
+    /// all newly created accounts (e.g. ones calling `refuseDAOControl()`), so not accepting new traders.
+    /// Is there any way to prevent this?
     function refuseDAOControl(bool refuse) public {
         address orig = originalAddress(msg.sender);
         require(registrationDates[orig] == 0, "Cannot resign account receiving a salary.");
