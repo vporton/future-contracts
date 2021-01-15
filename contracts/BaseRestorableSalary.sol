@@ -3,6 +3,7 @@ pragma solidity ^0.7.1;
 import "./Salary.sol";
 
 abstract contract BaseRestorableSalary is Salary {
+    // FIXME: seems to duplicate `originalAddrresses`
     mapping(address => address) public newToOldAccount; // mapping from old to new account addresses
 
     constructor (string memory uri_) Salary(uri_) { }
