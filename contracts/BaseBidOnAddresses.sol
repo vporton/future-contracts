@@ -35,12 +35,10 @@ abstract contract BaseBidOnAddresses is BaseLock {
     /// @param numerators The relative scores provided by the oracle.
     event ReportedNumeratorsBatch(
         uint64 indexed oracleId,
-        address[] conditional,
+        address[] conditionals,
         uint256[] numerators
     );
 
-    // Mapping (oracleId => time) the least allowed time of oracles to finish.
-    mapping(uint64 => uint) private minFinishTimes;
     // Whether an oracle finished its work.
     mapping(uint64 => bool) private oracleFinishedMap;
     // Mapping (oracleId => (customer => numerator)) for payout numerators.
@@ -51,18 +49,6 @@ abstract contract BaseBidOnAddresses is BaseLock {
     /// Constructor.
     /// @param uri_ Our ERC-1155 tokens description URI.
     constructor(string memory uri_) BaseLock(uri_) { }
-
-    /// Oracle updates it ??
-    /// Don't forget to call `updateGracePeriodEnds()` before calling this!
-    function updateMinFinishTime(uint64 oracleId, uint time) public _isOracle(oracleId) {
-        // require(time >= minFinishTimes[oracleId], "Can't break trust of bequestors."); // bequest through an arbitrary contract instead
-        // TODO: Need to require here that the oracle is not yet finished?
-        minFinishTimes[oracleId] = time;
-    }
-
-    function minFinishTime(uint64 oracleId) public view returns (uint) {
-        return minFinishTimes[oracleId];
-    }
 
     function payoutNumerator(uint64 oracleId, address condition) public view returns (uint256) {
         return payoutNumeratorsMap[oracleId][condition];
@@ -100,7 +86,7 @@ abstract contract BaseBidOnAddresses is BaseLock {
     }
 
     function isOracleFinished(uint64 oracleId) public view override returns (bool) {
-        return oracleFinishedMap[oracleId] && block.timestamp >= minFinishTimes[oracleId];
+        return oracleFinishedMap[oracleId];
     }
 
     function _updateNumerator(uint64 oracleId, uint256 numerator, address condition) private {
