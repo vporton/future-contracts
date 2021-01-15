@@ -11,11 +11,28 @@ contract SalaryWithDAO is BaseRestorableSalary {
 
     DAOInterface public daoPlugin;
 
+    /// When set to true, your account can't be moved to new address (by the DAO).
+    mapping (address => bool) public usersThatRefuseDAOControl;
+
     // DAO share will be zero to prevent theft by voters and because it can be done instead by future voting.
     // int128 public daoShare = int128(0).div(1); // zero by default
 
     constructor(DAOInterface _daoPlugin, string memory uri_) BaseRestorableSalary(uri_) {
         daoPlugin = _daoPlugin;
+    }
+
+    /// A user can refuse DAO control. Then his account cannot be restored by DAO.
+    ///
+    /// A user that has a salary can't call this method, because it would make him "deathless" for calculating salary.
+    /// So refusing may be recommended only for traders, not for salary receivers.
+    ///
+    /// Be exteremely careful calling this method: If you refuse and lose your key, your salary is lost!
+    ///
+    /// FIXME: A user may call it under influence of a fisher. How to prevent this possibility?
+    function refuseDAOControl(bool refuse) public {
+        address orig = originalAddress(msg.sender);
+        require(registrationDates[orig] == 0, "Cannot resign account receiving a salary.");
+        usersThatRefuseDAOControl[orig] = refuse;
     }
 
     function setDAO(DAOInterface _daoPlugin) public onlyDAO {
@@ -33,7 +50,9 @@ contract SalaryWithDAO is BaseRestorableSalary {
     }
 
     function checkAllowedRestoreAccount(address oldAccount_, address newAccount_) public virtual override {
-        daoPlugin.checkAllowedRestoreAccount(oldAccount_, newAccount_);
+        if (!usersThatRefuseDAOControl[oldAccount_]) {
+            daoPlugin.checkAllowedRestoreAccount(oldAccount_, newAccount_);
+        }
     }
 
     modifier onlyDAO() {
