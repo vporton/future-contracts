@@ -50,15 +50,27 @@ abstract contract BaseBidOnAddresses is BaseLock {
     /// @param uri_ Our ERC-1155 tokens description URI.
     constructor(string memory uri_) BaseLock(uri_) { }
 
+    /// Retrieve the last stored payout numerator (relative score of a condition).
+    /// @param oracleId The oracle ID.
+    /// @param condition The condition (the original receiver of a conditional token).
+    /// The result can't change if the oracle has finished.
     function payoutNumerator(uint64 oracleId, address condition) public view returns (uint256) {
         return payoutNumeratorsMap[oracleId][condition];
     }
 
+    /// Retrieve the last stored payout denominator (the sum of all numerators of the oracle).
+    /// @param oracleId The oracle ID.
+    /// The result can't change if the oracle has finished.
     function payoutDenominator(uint64 oracleId) public view returns (uint256) {
         return payoutDenominatorMap[oracleId];
     }
 
-    /// @dev Called by the oracle owner for reporting results of conditions.
+    /// Called by the oracle owner for reporting results of conditions.
+    /// @param oracleId The oracle ID.
+    /// @param condition The condition (the original receiver of a conditional token).
+    /// @param numerator The relative score of the condition.
+    ///
+    /// FIXME: Should we make oracle unable to change it after it has finished?
     function reportNumerator(uint64 oracleId, address condition, uint256 numerator) external
         _isOracle(oracleId)
     {
@@ -66,18 +78,26 @@ abstract contract BaseBidOnAddresses is BaseLock {
         emit ReportedNumerator(oracleId, condition, numerator);
     }
 
-    /// @dev Called by the oracle owner for reporting results of conditions.
-    function reportNumeratorsBatch(uint64 oracleId, address[] calldata addresses, uint256[] calldata numerators) external
+    /// Called by the oracle owner for reporting results of several conditions.
+    /// @param oracleId The oracle ID.
+    /// @param conditions The conditions (the original receiver of a conditional token).
+    /// @param numerators The relative scores of the condition.
+    ///
+    /// FIXME: Should we make oracle unable to change it after it has finished?
+    function reportNumeratorsBatch(uint64 oracleId, address[] calldata conditions, uint256[] calldata numerators) external
         _isOracle(oracleId)
     {
-        require(addresses.length == numerators.length, "Length mismatch.");
-        for (uint i = 0; i < addresses.length; ++i) {
-            _updateNumerator(oracleId, numerators[i], addresses[i]);
+        require(conditions.length == numerators.length, "Length mismatch.");
+        for (uint i = 0; i < conditions.length; ++i) {
+            _updateNumerator(oracleId, numerators[i], conditions[i]);
         }
-        emit ReportedNumeratorsBatch(oracleId, addresses, numerators);
+        emit ReportedNumeratorsBatch(oracleId, conditions, numerators);
     }
 
     /// Need to be called after all numerators were reported.
+    /// @param oracleId The oracle ID.
+    ///
+    /// You should set grace period end time before calling this method.
     function finishOracle(uint64 oracleId) external
         _isOracle(oracleId)
     {
@@ -85,6 +105,9 @@ abstract contract BaseBidOnAddresses is BaseLock {
         emit OracleFinished(oracleId);
     }
 
+    /// Check if an oracle has finished.
+    /// @param oracleId The oracle ID.
+    /// @return `true` if it has finished.
     function isOracleFinished(uint64 oracleId) public view override returns (bool) {
         return oracleFinishedMap[oracleId];
     }
