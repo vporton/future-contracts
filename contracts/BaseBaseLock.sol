@@ -89,7 +89,8 @@ abstract contract BaseBaseLock is ERC1155WithMappedAddressesAndTotals, IERC1155T
         emit OracleOwnerChanged(newOracleOwner, oracleId);
     }
 
-    /// @title Set the end time of the grace period.
+    /// Set the end time of the grace period.
+    ///
     /// The first withdrawal can be done during the grace period.
     /// The second withdrawal can be done after the end of the grace period and only if the first withdrawal was done.
     ///
@@ -98,7 +99,8 @@ abstract contract BaseBaseLock is ERC1155WithMappedAddressesAndTotals, IERC1155T
         gracePeriodEnds[oracleId] = time;
     }
 
-    /// @title Donate funds in a ERC1155 token.
+    /// Donate funds in a ERC1155 token.
+    ///
     /// First, the collateral token need to be approved to be spent by this contract from the address `from`.
     /// @param collateralContractAddress The collateral ERC-1155 contract address.
     /// @param collateralTokenId The collateral ERC-1155 token ID.
@@ -171,7 +173,8 @@ abstract contract BaseBaseLock is ERC1155WithMappedAddressesAndTotals, IERC1155T
         return block.timestamp < gracePeriodEnds[oracleId];
     }
 
-    /// @title Transfer to `msg.sender` the collateral ERC-1155 token.
+    /// Transfer to `msg.sender` the collateral ERC-1155 token.
+    ///
     /// The amount transfered is proportional to the score of `condition` by the oracle.
     /// @param collateralContractAddress The ERC-1155 collateral token contract.
     /// @param collateralTokenId The ERC-1155 collateral token ID.
@@ -221,7 +224,8 @@ abstract contract BaseBaseLock is ERC1155WithMappedAddressesAndTotals, IERC1155T
         );
     }
 
-    /// @title A ERC-1155 function.
+    /// A ERC-1155 function.
+    ///
     /// We disallow transfers of conditional tokens after redeem to prevent "gathering" them before redeeming each oracle.
     function safeTransferFrom(
         address from,
@@ -236,7 +240,8 @@ abstract contract BaseBaseLock is ERC1155WithMappedAddressesAndTotals, IERC1155T
         _baseSafeTransferFrom(from, to, id, value, data);
     }
 
-    /// @title A ERC-1155 function.
+    /// A ERC-1155 function.
+    ///
     /// We disallow transfers of conditional tokens after redeem to prevent "gathering" them before redeeming each oracle.
     function safeBatchTransferFrom(
         address from,
@@ -253,13 +258,15 @@ abstract contract BaseBaseLock is ERC1155WithMappedAddressesAndTotals, IERC1155T
         _baseSafeBatchTransferFrom(from, to, ids, values, data);
     }
 
-    /// @title A ERC-1155 function.
+    /// A ERC-1155 function.
+    ///
     /// Don't send funds to us directy (they will be lost!), use the smart contract API.
     function onERC1155Received(address, address, uint256, uint256, bytes calldata) public pure override returns(bytes4) {
         return this.onERC1155Received.selector; // to accept transfers
     }
 
-    /// @title A ERC-1155 function.
+    /// A ERC-1155 function.
+    ///
     /// Always reject batch transfers.
     function onERC1155BatchReceived(address, address, uint256[] calldata, uint256[] calldata, bytes calldata) public pure override returns(bytes4) {
         return bytes4(0); // We should never receive batch transfers.
@@ -274,12 +281,14 @@ abstract contract BaseBaseLock is ERC1155WithMappedAddressesAndTotals, IERC1155T
     }
 
     /// Is the oracle marked as having finished its work?
-    /// @param oracleId The oracle ID.
+    ///
+    /// `oracleId` is the oracle ID.
     function isOracleFinished(uint64 /*oracleId*/) public virtual view returns (bool) {
         return true;
     }
 
-    /// @title Are transfers of a conditinal token locked?
+    /// Are transfers of a conditinal token locked?
+    ///
     /// This is used to prevent its repeated withdrawal.
     /// @param user Querying if locked for this user.
     /// @param condition The condition (the original receiver of a conditional token).
