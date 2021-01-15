@@ -5,7 +5,9 @@ import { ERC1155 } from "./ERC1155.sol";
 
 /// @title A base contract for an ERC-1155 contract with the abilitity to change user's addresses and with calculation of totals.
 /// To each address it corresponds an _original address_.
-/// FIXME: `_upgradeAccounts()` may not emit events it should by ERC-1155 specification.
+///
+/// BUG: This contract and dependent ones (TODO: enumerate here) may not emit events it should by ERC-1155 specification
+/// when called with `_upgradeAccounts()`. No reasonable way to fix it.
 abstract contract ERC1155WithMappedAddressesAndTotals is ERC1155 {
     using SafeMath for uint256;
 
