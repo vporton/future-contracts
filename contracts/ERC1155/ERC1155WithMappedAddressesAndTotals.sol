@@ -18,7 +18,7 @@ abstract contract ERC1155WithMappedAddressesAndTotals is ERC1155 {
     // Mapping (token => total).
     mapping(uint256 => uint256) private totalBalances;
 
-    /// Construct a token with given description URI.
+    /// Construct a token contract with given description URI.
     /// @param uri_ Description URI.
     constructor (string memory uri_) ERC1155(uri_) { }
 

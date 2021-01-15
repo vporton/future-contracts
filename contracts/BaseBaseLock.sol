@@ -55,7 +55,8 @@ abstract contract BaseBaseLock is ERC1155WithMappedAddressesAndTotals, IERC1155T
         address user,
         uint256 amount
     );
-    
+
+    // Next ID of the oracle.
     uint64 internal maxId; // TODO: Make public?
 
     // Mapping from oracleId to oracle owner.
@@ -68,9 +69,11 @@ abstract contract BaseBaseLock is ERC1155WithMappedAddressesAndTotals, IERC1155T
     mapping(uint256 => mapping(address => uint256)) private lastCollateralBalanceFirstRoundMap; // TODO: Would getter be useful?
     // Mapping (token => (user => amount)) used to calculate withdrawal of collateral amounts.
     mapping(uint256 => mapping(address => uint256)) private lastCollateralBalanceSecondRoundMap; // TODO: Would getter be useful?
-    /// Mapping (oracleId => user withdrew in first round) (see `docs/Calculations.md`).
+    /// Mapping (oracleId => amount user withdrew in first round) (see `docs/Calculations.md`).
     mapping(uint64 => uint256) public usersWithdrewInFirstRound;
 
+    /// Constructor.
+    /// @param uri_ Our ERC-1155 tokens description URI.
     constructor(string memory uri_) ERC1155WithMappedAddressesAndTotals(uri_) {
         _registerInterface(
             BaseBaseLock(0).onERC1155Received.selector ^
@@ -78,17 +81,32 @@ abstract contract BaseBaseLock is ERC1155WithMappedAddressesAndTotals, IERC1155T
         );
     }
 
+    /// Modify the owner of an oracle.
+    /// @param newOracleOwner New owner.
+    /// @param oracleId The oracle whose owner to change.
     function changeOracleOwner(address newOracleOwner, uint64 oracleId) public _isOracle(oracleId) {
         oracleOwnersMap[oracleId] = newOracleOwner;
         emit OracleOwnerChanged(newOracleOwner, oracleId);
     }
 
+    /// @title Set the end time of the grace period.
+    /// The first withdrawal can be done during the grace period.
+    /// The second withdrawal can be done after the end of the grace period and only if the first withdrawal was done.
+    ///
+    /// The intention of the grace period is to check which of users are active ("alive").
     function updateGracePeriodEnds(uint64 oracleId, uint time) public _isOracle(oracleId) {
         gracePeriodEnds[oracleId] = time;
     }
 
-    /// Donate funds in a ERC1155 token.
-    /// First need to approve the contract to spend the token.
+    /// @title Donate funds in a ERC1155 token.
+    /// First, the collateral token need to be approved to be spent by this contract from the address `from`.
+    /// @param collateralContractAddress The collateral ERC-1155 contract address.
+    /// @param collateralTokenId The collateral ERC-1155 token ID.
+    /// @param oracleId The oracle ID to whose ecosystem to donate to.
+    /// @param amount The amount to donate.
+    /// @param from From whom to take the donation.
+    /// @param to On whose account the donation amount is assigned.
+    /// @param data Additional transaction data.
     function donate(
         IERC1155 collateralContractAddress,
         uint256 collateralTokenId,
@@ -129,7 +147,13 @@ abstract contract BaseBaseLock is ERC1155WithMappedAddressesAndTotals, IERC1155T
         int128 multiplier = _calcMultiplier(oracleId, condition, oracleShare);
         donated = multiplier.mulu(_newDividendsDonated);
     }
- 
+
+    /// Calculate how much collateral is owed to a user.
+    /// @param collateralContractAddress The ERC-1155 collateral token contract.
+    /// @param collateralTokenId The ERC-1155 collateral token ID.
+    /// @param oracleId From which oracle's "account" to withdraw.
+    /// @param condition The condition (the original receiver of a conditional token).
+    /// @param user The user to which we may owe.
     function collateralOwing(
         IERC1155 collateralContractAddress,
         uint256 collateralTokenId,
@@ -147,16 +171,22 @@ abstract contract BaseBaseLock is ERC1155WithMappedAddressesAndTotals, IERC1155T
         return block.timestamp < gracePeriodEnds[oracleId];
     }
 
-    /// Transfer to `msg.sender` the collateral ERC-20 token (we can't transfer to somebody other, because anybody can transfer).
-    /// accordingly to the score of `condition` by the oracle.
-    /// After this function is called, it becomes impossible to transfer the corresponding conditional token of `msg.sender`
-    /// (to prevent its repeated withdraw).
+    /// @title Transfer to `msg.sender` the collateral ERC-1155 token.
+    /// The amount transfered is proportional to the score of `condition` by the oracle.
+    /// @param collateralContractAddress The ERC-1155 collateral token contract.
+    /// @param collateralTokenId The ERC-1155 collateral token ID.
+    /// @param oracleId From which oracle's "account" to withdraw.
+    /// @param condition The condition (the original receiver of a conditional token).
+    /// @param data Additional data.
     ///
     /// Notes:
     /// - It is made impossible to withdraw somebody's other collateral, as otherwise we can't mark non-active accounts.
     /// - It uses _original_ user's address. It is assumed that this operation is done only by professional traders,
     ///   not "regular" users, and they are able to secure their account without account restoration.
-    ///   (If we would use restorable account, then we need or don't need `originalAddress()`?)
+    ///   (TODO: Or do we need to support mapped addresses?)
+    /// - We can't transfer to somebody other than `msg.sender` because anybody can transfer (needed for multi-level transfers).
+    /// - After this function is called, it becomes impossible to transfer the corresponding conditional token of `msg.sender`
+    ///   (to prevent its repeated withdrawal).
     function withdrawCollateral(IERC1155 collateralContractAddress, uint256 collateralTokenId, uint64 oracleId, address condition, bytes calldata data) external {
         require(isOracleFinished(oracleId), "too early"); // to prevent the denominator or the numerators change meantime
         bool inFirstRound = _inFirstRound(oracleId);
@@ -191,7 +221,8 @@ abstract contract BaseBaseLock is ERC1155WithMappedAddressesAndTotals, IERC1155T
         );
     }
 
-    /// Disallow transfers of conditional tokens after redeem to prevent "gathering" them before redeeming each oracle.
+    /// @title A ERC-1155 function.
+    /// We disallow transfers of conditional tokens after redeem to prevent "gathering" them before redeeming each oracle.
     function safeTransferFrom(
         address from,
         address to,
@@ -205,7 +236,8 @@ abstract contract BaseBaseLock is ERC1155WithMappedAddressesAndTotals, IERC1155T
         _baseSafeTransferFrom(from, to, id, value, data);
     }
 
-    /// Disallow transfers of conditional tokens after redeem to prevent "gathering" them before redeeming each oracle.
+    /// @title A ERC-1155 function.
+    /// We disallow transfers of conditional tokens after redeem to prevent "gathering" them before redeeming each oracle.
     function safeBatchTransferFrom(
         address from,
         address to,
@@ -221,29 +253,42 @@ abstract contract BaseBaseLock is ERC1155WithMappedAddressesAndTotals, IERC1155T
         _baseSafeBatchTransferFrom(from, to, ids, values, data);
     }
 
-    /// Don't send funds to us directy (they will be lost!), use smart contract API.
+    /// @title A ERC-1155 function.
+    /// Don't send funds to us directy (they will be lost!), use the smart contract API.
     function onERC1155Received(address, address, uint256, uint256, bytes calldata) public pure override returns(bytes4) {
         return this.onERC1155Received.selector; // to accept transfers
     }
 
+    /// @title A ERC-1155 function.
+    /// Always reject batch transfers.
     function onERC1155BatchReceived(address, address, uint256[] calldata, uint256[] calldata, bytes calldata) public pure override returns(bytes4) {
         return bytes4(0); // We should never receive batch transfers.
     }
 
     // Getters //
 
+    /// Get the oracle owner.
+    /// @param oracleId The oracle ID.
     function oracleOwner(uint64 oracleId) public view returns (address) {
         return oracleOwnersMap[oracleId];
     }
 
+    /// Is the oracle marked as having finished its work?
+    /// @param oracleId The oracle ID.
     function isOracleFinished(uint64 /*oracleId*/) public virtual view returns (bool) {
         return true;
     }
 
-    function isConditionalLocked(address condition, uint256 conditionalTokenId) public view returns (bool) {
-        return userUsedRedeemMap[condition][conditionalTokenId];
+    /// @title Are transfers of a conditinal token locked?
+    /// This is used to prevent its repeated withdrawal.
+    /// @param user Querying if locked for this user.
+    /// @param condition The condition (the original receiver of a conditional token).
+    function isConditionalLocked(address user, uint256 condition) public view returns (bool) {
+        return userUsedRedeemMap[user][condition];
     }
 
+    /// Retrive the end of the grace period.
+    /// @param oracleId For which oracle.
     function gracePeriodEnd(uint64 oracleId) public view returns (uint) {
         return gracePeriodEnds[oracleId];
     }
@@ -254,6 +299,9 @@ abstract contract BaseBaseLock is ERC1155WithMappedAddressesAndTotals, IERC1155T
         _mint(msg.sender, conditionalTokenId, amount, data);
     }
 
+    /// Calculate the share of a conditon in an oracle's market.
+    /// @param oracleId The oracle ID.
+    /// @return Uses `ABDKMath64x64` number ID.
     function _calcRewardShare(uint64 oracleId, address condition) internal virtual view returns (int128);
 
     function _calcMultiplier(uint64 oracleId, address condition, int128 oracleShare) internal virtual view returns (int128) {
@@ -263,10 +311,17 @@ abstract contract BaseBaseLock is ERC1155WithMappedAddressesAndTotals, IERC1155T
 
     // Internal //
 
+    /// Generate the ERC-1155 ID for a conditional token.
+    /// @param oracleId The oracle ID.
+    /// @param condition The condition (the original receiver of a conditional token).
     function _conditionalTokenId(uint64 oracleId, address condition) internal pure returns (uint256) {
         return uint256(keccak256(abi.encodePacked(uint8(TokenKind.TOKEN_CONDITIONAL), oracleId, condition)));
     }
 
+    /// Generate the ERC-1155 token ID that counts amount of donations for a ERC-1155 collateral token.
+    /// @param collateralContractAddress The ERC-1155 contract of the collateral token.
+    /// @param collateralTokenId The ERC-1155 ID of the collateral token.
+    /// @param oracleId The oracle ID.
     function _collateralDonatedTokenId(IERC1155 collateralContractAddress, uint256 collateralTokenId, uint64 oracleId) internal pure returns (uint256) {
         return uint256(keccak256(abi.encodePacked(uint8(TokenKind.TOKEN_DONATED), collateralContractAddress, collateralTokenId, oracleId)));
     }
