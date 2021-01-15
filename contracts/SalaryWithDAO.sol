@@ -30,7 +30,8 @@ contract SalaryWithDAO is BaseRestorableSalary {
     ///
     /// DAO control refusal cannot be done by a salary receipient, so it can be done only by a "trader".
     /// Traders are expected to be crypto-responsive persons, so incidentally calling this method is not
-    /// to be counted a fishing vulnerability.
+    /// to be counted a fishing vulnerability. Thus a funny thing: all people (or rather all Ethereum accounts)
+    /// are split into two classes: salary recipients and traders. Traders are free, salaries are under society control.
     function refuseDAOControl(bool _refuse) public {
         address orig = originalAddress(msg.sender);
         require(registrationDates[orig] == 0, "Cannot resign account receiving a salary.");
