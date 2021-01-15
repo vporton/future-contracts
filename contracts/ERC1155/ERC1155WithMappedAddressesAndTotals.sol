@@ -8,25 +8,35 @@ import { ERC1155 } from "./ERC1155.sol";
 ///
 /// BUG: This contract and dependent ones (TODO: enumerate here) may not emit events it should by ERC-1155 specification
 /// when called with `_upgradeAccounts()`. No reasonable way to fix it.
+/// It can be worked around by creatign a locker contract.
 abstract contract ERC1155WithMappedAddressesAndTotals is ERC1155 {
     using SafeMath for uint256;
 
     /// mapping from old to new account addresses
-    mapping(address => address) public originalAddresses; // mapping from old to new account addresses
+    mapping(address => address) public originalAddresses;
 
     // Mapping (token => total).
     mapping(uint256 => uint256) private totalBalances;
 
+    /// Construct a token with given description URI.
+    /// @param uri_ Description URI.
     constructor (string memory uri_) ERC1155(uri_) { }
 
-    /// Don't forget to override also _upgradeAccounts().
+    /// Virtual function to return the original wallet address for a given current wallet address.
+    ///
+    /// When overriding this function, don't forget to override also `_upgradeAccounts()`.
+    ///
+    /// @param account The current wallet address.
+    ///
+    /// The default implementation returns `account`.
     function originalAddress(address account) public virtual view returns (address) {
         return account;
     }
 
     // Internal functions //
 
-    function _upgradeAccounts(address[] memory accounts, address[] memory newAccounts) internal virtual view {
+    /// The function that upgrades (like `originalAddress()`) an array of accounts
+    function _upgradeAccounts(address[] memory accounts) internal virtual view {
     }
 
     // Overrides //
@@ -38,9 +48,8 @@ abstract contract ERC1155WithMappedAddressesAndTotals is ERC1155 {
     function balanceOfBatch(address[] memory accounts, uint256[] memory ids)
         public view override returns (uint256[] memory)
     {
-        address[] memory newAccounts = new address[](accounts.length);
-        _upgradeAccounts(accounts, newAccounts);
-        return super.balanceOfBatch(newAccounts, ids);
+        _upgradeAccounts(accounts);
+        return super.balanceOfBatch(accounts, ids);
     }
 
     function setApprovalForAll(address operator, bool approved) public virtual override {

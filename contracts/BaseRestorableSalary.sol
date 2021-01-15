@@ -62,10 +62,10 @@ abstract contract BaseRestorableSalary is Salary {
 
     // Internal functions //
 
-    function _upgradeAccounts(address[] memory accounts, address[] memory newAccounts) view virtual override internal {
+    function _upgradeAccounts(address[] memory accounts) view virtual override internal {
         // assert(accounts.length == newAccounts.length);
         for (uint i = 0; i < accounts.length; ++i) {
-            newAccounts[i] = originalAddress(accounts[i]);
+            accounts[i] = originalAddress(accounts[i]);
         }
     }
 
