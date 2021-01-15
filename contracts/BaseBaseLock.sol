@@ -235,6 +235,9 @@ abstract contract BaseBaseLock is ERC1155WithMappedAddressesAndTotals, IERC1155T
     ///
     /// Notes:
     /// - It is made impossible to withdraw somebody's other collateral, as otherwise we can't mark non-active accounts.
+    /// - It uses _original_ user's address. It is assumed that this operation is done only by professional traders,
+    ///   not "regular" users, and they are able to secure their account without account restoration.
+    ///   (If we would use restorable account, then we need or FIXME don't need?)
     function withdrawCollateral(IERC1155 collateralContractAddress, uint256 collateralTokenId, uint64 oracleId, address condition, bytes calldata data) external {
         require(isOracleFinished(oracleId), "too early"); // to prevent the denominator or the numerators change meantime
         bool inFirstRound = _inFirstRound(oracleId);
