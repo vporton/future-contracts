@@ -69,6 +69,8 @@ contract SalaryWithDAO is BaseRestorableSalary {
         super.registerCustomer(oracleId, data);
     }
 
+    // Modifiers //
+
     modifier onlyDAO() {
         require(msg.sender == address(daoPlugin), "Only DAO can do.");
         _;
