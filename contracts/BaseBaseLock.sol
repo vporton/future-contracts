@@ -455,10 +455,8 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     /// The same can be done by transferring to yourself 0 tokens, but this method uses less gas.
     /// FIXME: The following are not the same:
     ///        - condition
-    ///        - conditional token number
     ///        - conditional token ID
-    /// TODO: We can eliminate "conditional token number" concept by making conditional token ID
-    ///       a cryptographic hash of the previous conditional token ID.
+    /// TODO: We can eliminate "conditional ID" concept by making it equal to conditional token ID.
     /// TODO: What should it return?
     function _recreateCondition(uint64 _condition) internal {
         /*uint64 newCondition =*/ _createCondition();
