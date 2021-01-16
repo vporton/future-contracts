@@ -23,9 +23,6 @@ contract BidOnAddresses is BaseBidOnAddresses {
         bytes data
     );
 
-    // All conditional tokens.
-    mapping(uint256 => bool) private conditionalTokensMap;
-
     constructor(string memory uri_) BaseBidOnAddresses(uri_) {
         _registerInterface(
             BidOnAddresses(0).onERC1155Received.selector ^
@@ -42,7 +39,6 @@ contract BidOnAddresses is BaseBidOnAddresses {
     function registerCustomer(uint64 oracleId, bytes calldata data) external {
         require(oracleId <= maxId, "Oracle doesn't exist."); // FIXME: Using maxId both for oracles and conditions is an error (here an in other places?)
         uint64 _conditionId = _createCondition();
-        conditionalTokensMap[_conditionId] = true; // FIXME: Remove this map field. Use the principle of myConditional modifier instead
         _mintToCustomer(_conditionId, INITIAL_CUSTOMER_BALANCE, data);
         emit CustomerRegistered(msg.sender, data);
     }
