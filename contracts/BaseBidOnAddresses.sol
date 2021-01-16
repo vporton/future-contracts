@@ -69,10 +69,9 @@ abstract contract BaseBidOnAddresses is BaseLock {
     /// @param oracleId The oracle ID.
     /// @param condition The condition (the original receiver of a conditional token).
     /// @param numerator The relative score of the condition.
-    ///
-    /// FIXME: Should we make oracle unable to change it after it has finished?
     function reportNumerator(uint64 oracleId, uint256 condition, uint256 numerator) external
         _isOracle(oracleId)
+        _oracleNotFinished(oracleId) // otherwise an oracle can break data consistency
     {
         _updateNumerator(oracleId, numerator, condition);
         emit ReportedNumerator(oracleId, condition, numerator);
@@ -82,10 +81,9 @@ abstract contract BaseBidOnAddresses is BaseLock {
     /// @param oracleId The oracle ID.
     /// @param conditions The conditions (the original receiver of a conditional token).
     /// @param numerators The relative scores of the condition.
-    ///
-    /// FIXME: Should we make oracle unable to change it after it has finished?
     function reportNumeratorsBatch(uint64 oracleId, uint64[] calldata conditions, uint256[] calldata numerators) external
         _isOracle(oracleId)
+        _oracleNotFinished(oracleId) // otherwise an oracle can break data consistency
     {
         require(conditions.length == numerators.length, "Length mismatch.");
         for (uint i = 0; i < conditions.length; ++i) {
@@ -123,5 +121,12 @@ abstract contract BaseBidOnAddresses is BaseLock {
         uint256 numerator = payoutNumeratorsMap[oracleId][condition];
         uint256 denominator = payoutDenominatorMap[oracleId];
         return ABDKMath64x64.divu(numerator, denominator);
+    }
+
+    // Modifiers //
+
+    modifier _oracleNotFinished(uint64 oracleId) {
+        require(!isOracleFinished(oracleId), "Oracle is finished.");
+        _;
     }
 }

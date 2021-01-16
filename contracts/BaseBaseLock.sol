@@ -91,11 +91,10 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
         );
     }
 
-    /// FIXME: Do we need to have this function public? We have `registerCustomer()` instead.
-    /// TODO: Use uint64 variables instead?
-    function createCondition() public returns (uint64) {
-        return _createCondition();
-    }
+    /// No need for this function because it would produce a condition with zero tokens.
+    // function createCondition() public returns (uint64) {
+    //     return _createCondition();
+    // }
 
     /// Make a new condition that replaces the old one.
     /// It is useful to remove a trader's incentive to kill the issuer to reduce the circulating supply.
@@ -104,8 +103,7 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     /// TODO: Should we recommend:
     /// - calling this function on each new project milestone?
     /// - calling this function regularly (e.g. every week)?
-    /// FIXME: What to return?
-    function recreateCondition(uint256 condition) public {
+    function recreateCondition(uint256 condition) public returns (uint256) {
         return _recreateCondition(condition);
     }
 
@@ -423,6 +421,8 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     }
 
     /// Start with 1, not 0, to avoid glitch with `conditionalTokens`.
+    ///
+    /// TODO: Use uint64 variables instead?
     function _createCondition() internal returns (uint64) {
         uint64 _conditionId = ++maxId;
         customers[_conditionId] = msg.sender; // TODO: Be able to mint for somebody other?
@@ -451,12 +451,12 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     /// If we would exchange the old and new tokens for the same amounts of collaterals, then it would be
     /// effectively the same token and therefore minting more new token would possibly devalue the old one,
     /// thus triggering the killer's exploit again. So we make old and new completely independent.
-    function _recreateCondition(uint256 _condition) internal myConditional(_condition) {
+    function _recreateCondition(uint256 _condition) internal myConditional(_condition) returns (uint256) {
         uint64 _newCondition = _createCondition();
         // TODO: Store the linked list of conditional tokens for a condition.
         // TODO: misc
         // TODO: Event that related old and new condition for traders. Also relate them on-chain? (liked list? map to the first condition in the list?)
-        /*return newCondition;*/
+        return newCondition;
     }
 
     modifier _isOracle(uint64 oracleId) {
