@@ -108,15 +108,6 @@ abstract contract BaseRestorableSalary is Salary {
         return currentAddresses[conditional];
     }
 
-    // Internal functions //
-
-    function _upgradeAccounts(address[] memory accounts) view virtual internal {
-        // assert(accounts.length == newAccounts.length);
-        for (uint i = 0; i < accounts.length; ++i) {
-            accounts[i] = originalAddress(accounts[i]);
-        }
-    }
-
     // Modifiers //
 
     // TODO: For clarity split this modifier into two ones.
