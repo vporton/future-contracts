@@ -5,7 +5,10 @@ import "./Salary.sol";
 abstract contract BaseRestorableSalary is Salary {
     // INVARIANT: `originalAddress(newToOldAccount[newAccount]) == originalAddress(newAccount)`
     //            if `newToOldAccount[newAccount] != address(0)` for every `newAccount`
-    // INVARIANT: originalAddresses and currentAddresses are mutually inverse. // FIXME: Formulate exactly.
+    // INVARIANT: originalAddresses and currentAddresses are mutually inverse.
+    //            That is:
+    //            - `originalAddresses[currentAddresses[x]] == x` if `currentAddresses[x] != address(0)`
+    //            - `currentAddresses[originalAddresses[x]] == x` if `originalAddresses[x] != address(0)`
 
     /// The very first address an account had.
     mapping(address => address) public originalAddresses;
