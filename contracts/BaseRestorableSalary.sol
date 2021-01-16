@@ -6,13 +6,17 @@ abstract contract BaseRestorableSalary is Salary {
     /// The very first address an account had.
     mapping(address => address) public originalAddresses;
 
-    // Mapping from old to new account addresses.
+    // Mapping from old to new account addresses (created after every change of an address).
     mapping(address => address) public newToOldAccount;
 
+    /// Constructor.
+    /// @param uri_ Our ERC-1155 tokens description URI.
     constructor (string memory uri_) Salary(uri_) { }
 
     /// Below copied from https://github.com/vporton/restorable-funds/blob/f6192fd23cad529b84155d52ae202430cd97db23/contracts/RestorableERC1155.sol
 
+    /// Give the user the "permission" to move funds from `oldAccount_` to `newAccount_`.
+    /// FIXME: Emit an event.
     function permitRestoreAccount(address oldAccount_, address newAccount_) public
         checkRestoreOperator(newAccount_)
     {
