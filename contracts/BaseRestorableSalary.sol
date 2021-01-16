@@ -14,6 +14,7 @@ import "./Salary.sol";
 ///        Possible solution: Create a new salary token after each outgoing transfer.
 ///        Additional benefit of this solution: We can have different rewards at different stages of project,
 ///        what may be benefical for early startups funding.
+///        TODO: There should be an advice to switch to a new token at each milestone of a project.
 abstract contract BaseRestorableSalary is Salary {
     // INVARIANT: `originalAddress(newToOldAccount[newAccount]) == originalAddress(newAccount)`
     //            if `newToOldAccount[newAccount] != address(0)` for every `newAccount`
