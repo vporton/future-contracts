@@ -36,6 +36,7 @@ contract BidOnAddresses is BaseBidOnAddresses {
     /// We check that `oracleId` exists (we don't want "spammers" to register themselves for a million oracles).
     ///
     /// FIXME: Add ability to register somebody other? (Isn't making somebody a billionarie against his will bad?)
+    /// TODO: Make this (and others?) gasless? (What are security considerations?)
     function registerCustomer(uint64 oracleId, bytes calldata data) external {
         require(oracleId <= maxId, "Oracle doesn't exist."); // FIXME: Using maxId both for oracles and conditions is an error (here an in other places?)
         uint64 _conditionId = _createCondition();
