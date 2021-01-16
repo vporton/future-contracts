@@ -46,6 +46,7 @@ contract Salary is BaseBidOnAddresses {
         emit CustomerRegistered(msg.sender, oracleId, data);
     }
 
+    // FIXME: Revert if conditionId isn't the last condition in a chain of conditions.
     function mintSalary(uint64 oracleId, uint64 conditionId, bytes calldata data)
         myConditional(conditionId) external
     {
