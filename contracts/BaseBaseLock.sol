@@ -380,11 +380,6 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
 
         _doTransfer(id, from, to, value);
 
-        if (id != 0) {
-            // FIXME: Call this only when transferred by the conditional minter
-            _recreateCondition(id); // FIXME: Only for the last token in the list.
-        }
-
         emit TransferSingle(msg.sender, from, to, id, value);
 
         _doSafeTransferAcceptanceCheck(msg.sender, from, to, id, value, data);
@@ -411,11 +406,6 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
             uint256 value = values[i];
 
             _doTransfer(id, from, to, value);
-
-            if (id != 0) {
-                // FIXME: Call this only when transferred by the conditional minter
-                _recreateCondition(id); // FIXME: Only for the last token in the list.
-            }
         }
 
         emit TransferBatch(msg.sender, from, to, ids, values);
@@ -426,6 +416,11 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     function _doTransfer(uint256 id, address from, address to, uint256 value) internal {
         _balances[id][from] = _balances[id][from].sub(value);
         _balances[id][to] = value.add(_balances[id][to]);
+
+        if (id != 0) {
+            // FIXME: Call this only when transferred by the conditional minter
+            _recreateCondition(id); // FIXME: Only for the last token in the list.
+        }
     }
 
     function _createOracle() internal returns (uint64) {
