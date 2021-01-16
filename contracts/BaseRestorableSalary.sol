@@ -3,7 +3,7 @@ pragma solidity ^0.7.1;
 import "./Salary.sol";
 
 abstract contract BaseRestorableSalary is Salary {
-    // INVARIANT: `originalAddress(newToOldAccount[newAccount_]) == originalAddress(oldAccount_)`
+    // INVARIANT: `originalAddress(newToOldAccount[x]) == originalAddress(x)`
     // TODO: Check invariant consistency in all cases.
 
     /// The very first address an account had.
