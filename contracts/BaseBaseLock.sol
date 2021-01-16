@@ -108,6 +108,9 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     /// TODO: Should we recommend:
     /// - calling this function on each new project milestone?
     /// - calling this function regularly (e.g. every week)?
+    /// TODO: To sell N tokens need to create new N tokens that we also need to sell :-(
+    ///       However, if we sell the first N tokens quickly, the new N tokens (except of the last one)
+    ///       won't be much valuable and can be ignored.
     function recreateCondition(uint256 condition) public returns (uint256) {
         return _recreateCondition(condition);
     }
