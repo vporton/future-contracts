@@ -453,11 +453,11 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     /// Make a new condition that replaces the old one.
     /// It is useful to remove a trader's incentive to kill the issuer to reduce the circulating supply.
     /// The same can be done by transferring to yourself 0 tokens, but this method uses less gas.
-    /// FIXME: The following are not the same:
+    /// FIXME: The following can be made the same:
     ///        - condition
     ///        - conditional token ID
     /// TODO: Can we make condition ID and conditional token ID the same and publish linked list of conditional tokens offchain?
-    /// TODO: What should it return?
+    /// TODO: What should this function return?
     ///
     /// Anyone can create a ERC-1155 contract that allows to use any of the tokens in the list
     /// by locking any of the tokens in the list as a new "general" token. We should recommend customers not to
