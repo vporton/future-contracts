@@ -5,6 +5,9 @@ import "./Salary.sol";
 /// TODO: We can allow anyone to resign from DAO control. Then he becomes "deathless" (transferring his salary
 ///       to children or other friends) and this seems a trouble.
 ///       But if one dies, the price of his tokens will go down making it a stupid act to pass his private key to friends.
+///       Consequently, it makes sense to prevent fishing attacks on resigning from DAO control
+///       to use two different contracts: One allows account restoration and the other doesn't.
+///       Need to consider with care the case if one mistakenly discloses his private key.
 abstract contract BaseRestorableSalary is Salary {
     // INVARIANT: `originalAddress(newToOldAccount[newAccount]) == originalAddress(newAccount)`
     //            if `newToOldAccount[newAccount] != address(0)` for every `newAccount`
