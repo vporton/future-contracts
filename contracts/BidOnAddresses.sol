@@ -39,7 +39,7 @@ contract BidOnAddresses is BaseBidOnAddresses {
     function registerCustomer(uint64 oracleId, bytes calldata data) external {
         require(oracleId <= maxId, "Oracle doesn't exist."); // FIXME: Using maxId both for oracles and conditions is an error (here an in other places?)
         uint64 _conditionId = _createCondition();
-        _mintToCustomer(_conditionId, INITIAL_CUSTOMER_BALANCE, data);
+        _mintToCustomer(_conditionId, INITIAL_CUSTOMER_BALANCE, data); // TODO: If we register somebody other, mint not to msg.sender
         emit CustomerRegistered(msg.sender, data);
     }
 }
