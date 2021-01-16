@@ -2,9 +2,6 @@
 pragma solidity ^0.7.1;
 import "./Salary.sol";
 
-/// TODO: It makes sense to prevent fishing attacks on resigning from DAO control
-///       to use two different contracts: One allows account restoration and the other doesn't.
-///       Need to consider with care the case if one mistakenly discloses his private key.
 abstract contract BaseRestorableSalary is Salary {
     // INVARIANT: `originalAddress(newToOldAccount[newAccount]) == originalAddress(newAccount)`
     //            if `newToOldAccount[newAccount] != address(0)` for every `newAccount`
