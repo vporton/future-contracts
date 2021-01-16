@@ -49,9 +49,6 @@ contract BidOnAddresses is BaseBidOnAddresses {
     /// - It requires to install MetaMask.
     /// - It bothers the person to sign something, when he could just be hesitant to get what he needs.
     /// - It somehow complicates this contract.
-    ///
-    /// FIXME: Add ability to register somebody other? (Isn't making somebody a billionarie against his will bad?)
-    /// TODO: Make this (and others?) gasless? (What are security considerations?)
     function registerCustomer(address customer, uint64 oracleId, bytes calldata data) external {
         require(oracleId <= maxId, "Oracle doesn't exist."); // FIXME: Using maxId both for oracles and conditions is an error (here an in other places?)
         uint64 _conditionId = _createCondition(); // FIXME: Associate it to `customer` not to `msg.sender`.
