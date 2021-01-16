@@ -3,7 +3,7 @@ pragma solidity ^0.7.1;
 import "./Salary.sol";
 
 abstract contract BaseRestorableSalary is Salary {
-    // TODO: Check invariant consistency of the followin two variables: They should not contradict to each other.
+    // TODO: Check invariant consistency of the following two variables: They should not contradict to each other.
 
     /// The very first address an account had.
     mapping(address => address) public originalAddresses;
