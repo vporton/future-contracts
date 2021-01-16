@@ -3,7 +3,8 @@ pragma solidity ^0.7.1;
 import "./Salary.sol";
 
 abstract contract BaseRestorableSalary is Salary {
-    // INVARIANT: `originalAddress(newToOldAccount[newAccount]) == originalAddress(newAccount)` for every `newAccount`
+    // INVARIANT: `originalAddress(newToOldAccount[newAccount]) == originalAddress(newAccount)`
+    //            if `newToOldAccount[newAccount] != address(0)` for every `newAccount`
     // TODO: Check invariant consistency in all cases.
 
     /// The very first address an account had.
@@ -21,6 +22,7 @@ abstract contract BaseRestorableSalary is Salary {
     /// Give the user the "permission" to move funds from `oldAccount_` to `newAccount_`.
     function permitRestoreAccount(address oldAccount_, address newAccount_) public {
         checkAllowedRestoreAccount(oldAccount_, newAccount_); // only authorized "attorneys" or attorney DAOs
+        // FIXME: Need to check if `newToOldAccount[newAccount_] == address(0)` and/or `originalAddresses[newAccount_] == address(0)`?
         newToOldAccount[newAccount_] = oldAccount_;
         originalAddresses[newAccount_] = originalAddress(oldAccount_);
         // TODO: Check that the above invariant holds.
@@ -29,8 +31,9 @@ abstract contract BaseRestorableSalary is Salary {
 
     function dispermitRestoreAccount(address oldAccount_, address newAccount_) public {
         checkAllowedUnrestoreAccount(oldAccount_, newAccount_); // only authorized "attorneys" or attorney DAOs
+        // FIXME: Need to check if `newToOldAccount[newAccount_] != address(0)` and/or `originalAddresses[newAccount_] != address(0)`?
         newToOldAccount[newAccount_] = address(0);
-        originalAddresses[newAccount_] = originalAddress(oldAccount_); // FIXME
+        originalAddresses[newAccount_] = address(0);
         // TODO: Check that the above invariant holds.
         emit AccountUnrestored(oldAccount_, newAccount_);
     }
