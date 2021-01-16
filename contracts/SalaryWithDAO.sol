@@ -47,9 +47,9 @@ contract SalaryWithDAO is BaseRestorableSalary {
         _setURI(newuri);
     }
 
-    function _mintToCustomer(uint256 conditionalTokenId, uint256 amount, bytes calldata data) internal virtual override {
-        daoPlugin.checkPersonDead(msg.sender);
-        super._mintToCustomer(conditionalTokenId, amount, data);
+    function _mintToCustomer(address customer, uint256 conditionalTokenId, uint256 amount, bytes calldata data) internal virtual override {
+        daoPlugin.checkPersonDead(customer);
+        super._mintToCustomer(customer, conditionalTokenId, amount, data);
     }
 
     function checkAllowedRestoreAccount(address oldAccount_, address newAccount_) public virtual override {

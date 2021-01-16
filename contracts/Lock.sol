@@ -42,7 +42,7 @@ contract Lock is BaseLock {
         public myConditional(conditionalTokenId)
     {
         ERC1155Token storage externalConditional = externalConditionals[oracleId];
-        _mintToCustomer(conditionalTokenId, amount, data);
+        _mintToCustomer(msg.sender, conditionalTokenId, amount, data);
         externalConditional.contractAddress.safeTransferFrom(msg.sender, address(this), externalConditional.tokenId, amount, data); // last against reentrancy attack
     }
 
