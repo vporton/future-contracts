@@ -37,11 +37,13 @@ contract BidOnAddresses is BaseBidOnAddresses {
     /// Can be called both before or after the oracle finish. However registering after the finish is useless.
     ///
     /// We check that `oracleId` exists (we don't want "spammers" to register themselves for a million oracles).
+    ///
+    /// FIXME: Add ability to register somebody other?
     function registerCustomer(uint64 oracleId, bytes calldata data) external {
-        require(oracleId <= maxId, "Oracle doesn't exist.");
-        uint256 conditionalTokenId = _conditionalTokenIdFirst(oracleId, msg.sender);
-        require(!conditionalTokensMap[conditionalTokenId], "customer already registered");
-        conditionalTokensMap[conditionalTokenId] = true;
+        require(oracleId <= maxId, "Oracle doesn't exist."); // FIXME: Using maxId both for oracles and conditions is an error (here an in other places?)
+        uint64 _conditionId = _createCondition();
+        uint256 conditionalTokenId = currentConditionalTokenIDs[_conditionId]; // TODO: Remove this query to save gas.
+        conditionalTokensMap[conditionalTokenId] = true; // TODO: Doesn't this map duplicate other variables?
         _mintToCustomer(conditionalTokenId, INITIAL_CUSTOMER_BALANCE, data);
         emit CustomerRegistered(msg.sender, data);
     }

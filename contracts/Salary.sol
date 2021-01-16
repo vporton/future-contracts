@@ -46,10 +46,12 @@ contract Salary is BaseBidOnAddresses {
         emit CustomerRegistered(msg.sender, oracleId, data);
     }
 
-    function mintSalary(uint64 oracleId, bytes calldata data) external {
+    function mintSalary(uint64 oracleId, uint64 conditionId, bytes calldata data)
+        myConditional(conditionId) external
+    {
         uint lastSalaryDate = lastSalaryDates[msg.sender];
         require(lastSalaryDate != 0, "You are not registered.");
-        uint256 conditionalTokenId = _conditionalTokenIdFirst(oracleId, msg.sender);
+        uint256 conditionalTokenId = currentConditionalTokenIDs[conditionId];
         // FIXME: One token per second produces huge numbers inconvenient for humans. Reduce (how much?)
         uint256 amount = (lastSalaryDate - block.timestamp) * 10**18; // one token per second
         _mintToCustomer(conditionalTokenId, amount, data);

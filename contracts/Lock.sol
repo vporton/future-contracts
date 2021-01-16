@@ -37,8 +37,9 @@ contract Lock is BaseLock {
     }
 
     /// Reverts if called after redeem.
+    /// TODO: Use `conditionalId` instead of `conditionalTokenId`?
     function mintConditional(uint64 oracleId, uint256 conditionalTokenId, uint256 amount, bytes calldata data)
-        public isConditional(oracleId, conditionalTokenId)
+        public myConditional(conditionalTokenId)
     {
         ERC1155Token storage externalConditional = externalConditionals[oracleId];
         _mintToCustomer(conditionalTokenId, amount, data);
@@ -46,31 +47,26 @@ contract Lock is BaseLock {
     }
 
     /// Reverts if called after redeem.
+    /// TODO: Use `conditionalId` instead of `conditionalTokenId`?
     function burnConditional(uint64 oracleId, uint256 conditionalTokenId, address to, uint256 amount, bytes calldata data)
-        public isConditional(oracleId, conditionalTokenId)
+        public myConditional(conditionalTokenId)
     {
         ERC1155Token storage externalConditional = externalConditionals[oracleId];
         _burn(msg.sender, conditionalTokenId, amount);
         externalConditional.contractAddress.safeTransferFrom(address(this), to, externalConditional.tokenId, amount, data); // last against reentrancy attack
     }
 
-    function _calcRewardShare(uint64 /*oracleId*/, address condition)
+    function _calcRewardShare(uint64 /*oracleId*/, uint64 condition)
         internal virtual override view returns (int128)
     {
-        require(condition == address(0), "We support only one condition.");
+        require(condition == 1, "We support only one condition.");
         return int128(1).div(1);
     }
 
     // We have just one token, so the multiplier is one.
-    function _calcMultiplier(uint64 /*oracleId*/, address /*condition*/, int128 oracleShare)
+    function _calcMultiplier(uint64 /*oracleId*/, uint64 /*condition*/, int128 oracleShare)
         internal virtual override view returns (int128)
     {
         return oracleShare;
-    }
-
-    // FIXME: Wrong.
-    modifier isConditional(uint64 oracleId, uint256 conditionalTokenId) {
-        require(_conditionalTokenIdFirst(oracleId, address(0)) == conditionalTokenId);
-        _;
     }
 }
