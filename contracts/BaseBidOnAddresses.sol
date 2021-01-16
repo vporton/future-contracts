@@ -15,6 +15,8 @@ import { BaseLock } from "./BaseLock.sol";
 /// - a combination of a collateral contract address and collateral token ID (a counter of donated amount of collateral tokens)
 ///
 /// In functions of this contact `condition` is always a customer's original address.
+///
+/// TODO: Rename this contract.
 abstract contract BaseBidOnAddresses is BaseLock {
     using ABDKMath64x64 for int128;
     using SafeMath for uint256;
@@ -69,6 +71,9 @@ abstract contract BaseBidOnAddresses is BaseLock {
     /// @param oracleId The oracle ID.
     /// @param condition The condition (the original receiver of a conditional token).
     /// @param numerator The relative score of the condition.
+    /// TODO: Make oracles easily verificable by a hash of all the data?
+    ///       - It may need allowing to set a numerator only once.
+    ///       - It may be not necessary because future technology will allow to aggregate blockchains.
     function reportNumerator(uint64 oracleId, uint256 condition, uint256 numerator) external
         _isOracle(oracleId)
         _oracleNotFinished(oracleId) // otherwise an oracle can break data consistency
