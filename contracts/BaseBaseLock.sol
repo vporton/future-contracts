@@ -458,6 +458,8 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     /// If we would exchange the old and new tokens for the same amounts of collaterals, then it would be
     /// effectively the same token and therefore minting more new token would possibly devalue the old one,
     /// thus triggering the killer's exploit again. So we make old and new completely independent.
+    ///
+    /// FIXME: Allow to recreate only the last token in the list.
     function _recreateCondition(uint256 _condition) internal myConditional(_condition) returns (uint256) {
         uint64 _newCondition = _createCondition(msg.sender);
         // TODO: Store the linked list of conditional tokens for a condition.
