@@ -35,7 +35,7 @@ abstract contract BaseRestorableSalary is Salary {
     }
 
     function restoreFunds(address oldAccount_, address newAccount_, uint256 token_) public
-        checkRestoreOperator(newAccount_)
+        checkRestoreOperator(newAccount_) // FIXME
         checkMovedOwner(oldAccount_, newAccount_)
     {
         uint256 amount = _balances[token_][oldAccount_];
