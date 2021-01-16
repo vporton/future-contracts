@@ -82,6 +82,12 @@ abstract contract BaseRestorableSalary is Salary {
         return newAddress != address(0) ? newAddress : account;
     }
 
+    // Virtual functions //
+
+    function currentAddress(address conditional) internal virtual override returns (address) {
+        return currentAddresses[conditional];
+    }
+
     // Internal functions //
 
     function _upgradeAccounts(address[] memory accounts) view virtual internal {
