@@ -35,12 +35,26 @@ contract BidOnAddresses is BaseBidOnAddresses {
     ///
     /// We check that `oracleId` exists (we don't want "spammers" to register themselves for a million oracles).
     ///
+    /// We allow anyone to register anyone. This is useful for being registered by robots.
+    /// At first it seems to be harmful to make somebody a millionaire unwillingly (he then needs a fortress and bodyguards),
+    /// but: Salary tokens will be worth real money, only if the registered person publishes his works together
+    /// with his Ethereum address. So, he can be made rich against his will only by impersonating him. But if somebody
+    /// impersonates him, then they are able to present him richer than he is anyway, so making him vulnerable to
+    /// kidnappers anyway. So having somebody registered against his will seems not to be a problem at all
+    /// (except that he will see superfluous worthless tokens in Etherscan data of his account.)
+    ///
+    /// An alternative way would be to make registration gasless but requiring a registrant signature.
+    /// This is not very good, probably:
+    /// - It requires to install MetaMask.
+    /// - It bothers the person to sign something, when he could just be hesitant to get what he needs.
+    /// - It somehow complicates this contract.
+    ///
     /// FIXME: Add ability to register somebody other? (Isn't making somebody a billionarie against his will bad?)
     /// TODO: Make this (and others?) gasless? (What are security considerations?)
-    function registerCustomer(uint64 oracleId, bytes calldata data) external {
+    function registerCustomer(address customer, uint64 oracleId, bytes calldata data) external {
         require(oracleId <= maxId, "Oracle doesn't exist."); // FIXME: Using maxId both for oracles and conditions is an error (here an in other places?)
-        uint64 _conditionId = _createCondition();
+        uint64 _conditionId = _createCondition(); // FIXME: Associate it to `customer` not to `msg.sender`.
         _mintToCustomer(_conditionId, INITIAL_CUSTOMER_BALANCE, data); // TODO: If we register somebody other, mint not to msg.sender
-        emit CustomerRegistered(msg.sender, data);
+        emit CustomerRegistered(customer, data); // TODO: Do we need also point here the `msg.sender`?
     }
 }
