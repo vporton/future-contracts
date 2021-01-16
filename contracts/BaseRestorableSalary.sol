@@ -17,6 +17,7 @@ abstract contract BaseRestorableSalary is Salary {
 
     /// Give the user the "permission" to move funds from `oldAccount_` to `newAccount_`.
     /// FIXME: Emit an event.
+    /// FIXME: It should be allowed to DAO, not owner.
     function permitRestoreAccount(address oldAccount_, address newAccount_) public
         checkRestoreOperator(newAccount_)
     {
