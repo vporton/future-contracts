@@ -440,9 +440,6 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     /// Start with 1, not 0, to avoid glitch with `conditionalTokens`.
     function _createCondition() internal returns (uint64) {
         uint64 _conditionId = ++maxId;
-        uint256 _tokenId = _conditionalTokenIdFirst(_conditionId);
-        conditionalTokens[_tokenId] = _conditionId;
-        currentConditionalTokenIDs[_conditionId] = _tokenId;
         customers[_conditionId] = msg.sender; // TODO: Be able to mint for somebody other?
         // TODO
         // emit ConditionCreated(oracleId); // TODO
@@ -467,14 +464,11 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     /// effectively the same token and therefore minting more new token would possibly devalue the old one,
     /// thus triggering the killer's exploit again. So we make old and new completely independent.
     /// TODO: We could create new tokens periodically (e.g. each week) instead of on transferring.
-    function _recreateCondition(uint64 _condition) internal {
-        /*uint64 newCondition =*/ _createCondition();
-        uint256 _tokenId = uint256(keccak256(abi.encodePacked(_condition))); // TODO: No need to depend on the old token ID?
-        conditionalTokens[_tokenId] = _condition;
-        currentConditionalTokenIDs[_condition] = _tokenId;
+    function _recreateCondition(uint64 _condition) internal myCondition(_condition) {
+        uint64 _newCondition = _createCondition();
         // TODO: Store the linked list of conditional tokens for a condition.
         // TODO: misc
-        // TODO: event?
+        // TODO: Event that related old and new condition for traders. Also relate them on-chain? (liked list? map to the first condition in the list?)
         /*return newCondition;*/
     }
 
