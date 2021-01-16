@@ -456,7 +456,7 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     /// FIXME: The following are not the same:
     ///        - condition
     ///        - conditional token ID
-    /// TODO: We can eliminate "conditional ID" concept by making it equal to conditional token ID.
+    /// TODO: Can we make condition ID and conditional token ID the same and publish linked list of conditional tokens offchain?
     /// TODO: What should it return?
     function _recreateCondition(uint64 _condition) internal {
         /*uint64 newCondition =*/ _createCondition();
