@@ -5,6 +5,7 @@ import "./Salary.sol";
 abstract contract BaseRestorableSalary is Salary {
     // INVARIANT: `originalAddress(newToOldAccount[newAccount]) == originalAddress(newAccount)`
     //            if `newToOldAccount[newAccount] != address(0)` for every `newAccount`
+    // INVARIANT: originalAddresses and currentAddresses are mutually inverse. // FIXME: Formulate exactly.
 
     /// The very first address an account had.
     mapping(address => address) public originalAddresses;
@@ -22,6 +23,8 @@ abstract contract BaseRestorableSalary is Salary {
     /// Below copied from https://github.com/vporton/restorable-funds/blob/f6192fd23cad529b84155d52ae202430cd97db23/contracts/RestorableERC1155.sol
 
     /// Give the user the "permission" to move funds from `oldAccount_` to `newAccount_`.
+    ///
+    /// This function is intented to be called by an attorney.
     /// FIXME: Is oldAccount_ an original or current address?
     function permitRestoreAccount(address oldAccount_, address newAccount_) public {
         checkAllowedRestoreAccount(oldAccount_, newAccount_); // only authorized "attorneys" or attorney DAOs
@@ -36,6 +39,7 @@ abstract contract BaseRestorableSalary is Salary {
 
     /// FIXME: Is oldAccount_ an original or current address?
     /// FIXME: Is newAccount_ an original or current address?
+    /// This function is intented to be called by an attorney.
     function dispermitRestoreAccount(address oldAccount_, address newAccount_) public {
         checkAllowedUnrestoreAccount(oldAccount_, newAccount_); // only authorized "attorneys" or attorney DAOs
         // FIXME: Need to check if `newToOldAccount[newAccount_] != address(0)` and/or `originalAddresses[newAccount_] != address(0)`?
@@ -46,6 +50,11 @@ abstract contract BaseRestorableSalary is Salary {
         emit AccountUnrestored(oldAccount_, newAccount_);
     }
 
+    /// Move the entire balance of a token from an old account to a new account of the same user.
+    /// @param oldAccount_ Old account.
+    /// @param newAccount_ New account.
+    /// @param token_ The ERC-1155 token ID.
+    /// This function can be called by the affected user. // TODO: Also allow to be called by an attorney?
     function restoreFunds(address oldAccount_, address newAccount_, uint256 token_) public
         checkMovedOwner(oldAccount_, newAccount_)
     {
@@ -57,6 +66,11 @@ abstract contract BaseRestorableSalary is Salary {
         emit TransferSingle(_msgSender(), oldAccount_, newAccount_, token_, amount);
     }
 
+    /// Move the entire balance of tokens from an old account to a new account of the same user.
+    /// @param oldAccount_ Old account.
+    /// @param newAccount_ New account.
+    /// @param tokens_ The ERC-1155 token IDs.
+    /// This function can be called by the affected user. // TODO: Also allow to be called by an attorney?
     function restoreFundsBatch(address oldAccount_, address newAccount_, uint256[] calldata tokens_) public
         checkMovedOwner(oldAccount_, newAccount_)
     {
@@ -73,10 +87,14 @@ abstract contract BaseRestorableSalary is Salary {
         emit TransferBatch(_msgSender(), oldAccount_, newAccount_, tokens_, amounts);
     }
 
+    /// Check if `msg.sender` is an attorney allowed to restore a user's account.
     function checkAllowedRestoreAccount(address /*oldAccount_*/, address /*newAccount_*/) public virtual;
 
+    /// Check if `msg.sender` is an attorney allowed to unrestore a user's account.
     function checkAllowedUnrestoreAccount(address /*oldAccount_*/, address /*newAccount_*/) public virtual;
 
+    /// Find the original address of a given account.
+    /// @param account The current address.
     function originalAddress(address account) public view virtual returns (address) {
         address newAddress = originalAddresses[account];
         return newAddress != address(0) ? newAddress : account;
@@ -84,6 +102,8 @@ abstract contract BaseRestorableSalary is Salary {
 
     // Virtual functions //
 
+    /// Find the current address for an original address.
+    /// @param conditional The original address.
     function currentAddress(address conditional) internal virtual override returns (address) {
         return currentAddresses[conditional];
     }
