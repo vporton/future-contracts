@@ -40,7 +40,7 @@ contract SalaryWithDAO is BaseRestorableSalary {
     ///       with and without the ability to resign?
     function refuseDAOControl(bool _refuse) public {
         address orig = originalAddress(msg.sender);
-        // FIXME: (not here) registrationDates should be probably per-condition, not per account.
+        // FIXME: (not here) `registrationDates` should be probably per-condition, not per account.
         require(registrationDates[orig] == 0, "Cannot resign account receiving a salary.");
         usersThatRefuseDAOControl[orig] = _refuse;
     }
