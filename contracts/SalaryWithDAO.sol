@@ -34,11 +34,13 @@ contract SalaryWithDAO is BaseRestorableSalary {
     /// to be counted a fishing vulnerability. Thus a funny thing: all people (or rather all Ethereum accounts)
     /// are split into two classes: salary recipients and traders. Traders are free, salaries are under society control.
     ///
-    /// TODO: Because there is no more declaring dead, it is reasonable to allow anyone to resign from control.
+    /// TODO: Because there is no more declaring dead, it is reasonable to allow anyone (now only them who
+    ///       don't have a salary) to resign from control.
     ///       But fishers may trick one to resign mistakenly. So, make two ERC-1155 contracts:
     ///       with and without the ability to resign?
     function refuseDAOControl(bool _refuse) public {
         address orig = originalAddress(msg.sender);
+        // FIXME: (not here) registrationDates should be probably per-condition, not per account.
         require(registrationDates[orig] == 0, "Cannot resign account receiving a salary.");
         usersThatRefuseDAOControl[orig] = _refuse;
     }
