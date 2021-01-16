@@ -24,6 +24,8 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     /// @param oracleId The ID of the created oracle.
     event OracleCreated(uint64 oracleId);
 
+    // TODO: ConditionCreated event with also `oracleId`
+
     /// Emitted when an oracle owner is set.
     /// @param oracleOwner Who created an oracle
     /// @param oracleId The ID of the oracle.
@@ -64,7 +66,8 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     );
 
     // Next ID.
-    uint64 internal maxId; // TODO: Make public?
+    uint64 internal maxOracleId; // TODO: Make public?
+    uint64 internal maxConditionId; // TODO: Make public?
 
     // Mapping from oracleId to oracle owner.
     mapping(uint64 => address) private oracleOwnersMap;
@@ -411,9 +414,8 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
         _balances[id][to] = value.add(_balances[id][to]);
     }
 
-    /// Start with 1, not 0, to avoid glitch with `conditionalTokens`.
     function _createOracle() internal returns (uint64) {
-        uint64 oracleId = ++maxId;
+        uint64 oracleId = ++maxOracleId;
         oracleOwnersMap[oracleId] = msg.sender;
         emit OracleCreated(oracleId);
         emit OracleOwnerChanged(msg.sender, oracleId);
@@ -424,7 +426,7 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     ///
     /// TODO: Use uint64 variables instead?
     function _createCondition(address customer) internal returns (uint64) {
-        uint64 _conditionId = ++maxId;
+        uint64 _conditionId = ++maxConditionId;
         customers[_conditionId] = customer; // TODO: Be able to mint for somebody other?
         // TODO
         // emit ConditionCreated(msg.sender, customer, oracleId); // TODO
