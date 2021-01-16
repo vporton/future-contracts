@@ -16,27 +16,16 @@ abstract contract BaseRestorableSalary is Salary {
     /// Below copied from https://github.com/vporton/restorable-funds/blob/f6192fd23cad529b84155d52ae202430cd97db23/contracts/RestorableERC1155.sol
 
     /// Give the user the "permission" to move funds from `oldAccount_` to `newAccount_`.
-    /// FIXME: Emit an event.
     /// FIXME: It should be allowed to DAO, not owner.
     /// TODO: Ability to remove the permit.
-    function permitRestoreAccount(address oldAccount_, address newAccount_) public
-        checkRestoreOperator(newAccount_)
-    {
-        originalAddresses[newAccount_] = originalAddress(oldAccount_);
-    }
-
-    /// TODO: Ability to remove the restoration?
-    /// TODO: Do we need two stage restoration: first permit then actual restoration?
-    function restoreAccount(address oldAccount_, address newAccount_) public
-        checkMovedOwner(oldAccount_, newAccount_)
-    {
+    function permitRestoreAccount(address oldAccount_, address newAccount_) public {
         checkAllowedRestoreAccount(oldAccount_, newAccount_);
         newToOldAccount[newAccount_] = oldAccount_;
+        originalAddresses[newAccount_] = originalAddress(oldAccount_);
         emit AccountRestored(oldAccount_, newAccount_);
     }
 
     function restoreFunds(address oldAccount_, address newAccount_, uint256 token_) public
-        checkRestoreOperator(newAccount_) // FIXME
         checkMovedOwner(oldAccount_, newAccount_)
     {
         uint256 amount = _balances[token_][oldAccount_];
@@ -48,7 +37,6 @@ abstract contract BaseRestorableSalary is Salary {
     }
 
     function restoreFundsBatch(address oldAccount_, address newAccount_, uint256[] calldata tokens_) public
-        checkRestoreOperator(newAccount_) // FIXME
         checkMovedOwner(oldAccount_, newAccount_)
     {
         uint256[] memory amounts = new uint256[](tokens_.length);
@@ -82,15 +70,13 @@ abstract contract BaseRestorableSalary is Salary {
 
     // Modifiers //
 
-    modifier checkRestoreOperator(address newAccount_) virtual {
-        require(newAccount_ == _msgSender(), "Not account owner.");
-        _;
-    }
-
     modifier checkMovedOwner(address oldAccount_, address newAccount_) virtual {
+        require(newAccount_ == _msgSender(), "Not account owner.");
+
         for (address account = oldAccount_; account != newAccount_; account = newToOldAccount[account]) {
             require(account != address(0), "Not a moved owner");
         }
+
         _;
     }
 
