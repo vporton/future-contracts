@@ -3,7 +3,8 @@ pragma solidity ^0.7.1;
 import "./Salary.sol";
 
 abstract contract BaseRestorableSalary is Salary {
-    // TODO: Check invariant consistency of the following two variables: They should not contradict to each other.
+    // INVARIANT: `originalAddress(newToOldAccount[newAccount_]) == originalAddress(oldAccount_)`
+    // TODO: Check invariant consistency in all cases.
 
     /// The very first address an account had.
     mapping(address => address) public originalAddresses;
@@ -22,6 +23,7 @@ abstract contract BaseRestorableSalary is Salary {
         checkAllowedRestoreAccount(oldAccount_, newAccount_); // only authorized "attorneys" or attorney DAOs
         newToOldAccount[newAccount_] = oldAccount_;
         originalAddresses[newAccount_] = originalAddress(oldAccount_);
+        // TODO: Check that the above invariant holds.
         emit AccountRestored(oldAccount_, newAccount_);
     }
 
@@ -29,6 +31,7 @@ abstract contract BaseRestorableSalary is Salary {
         checkAllowedUnrestoreAccount(oldAccount_, newAccount_); // only authorized "attorneys" or attorney DAOs
         newToOldAccount[newAccount_] = address(0);
         originalAddresses[newAccount_] = originalAddress(oldAccount_); // FIXME
+        // TODO: Check that the above invariant holds.
         emit AccountUnrestored(oldAccount_, newAccount_);
     }
 
