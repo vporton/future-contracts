@@ -462,6 +462,8 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     /// Anyone can create a ERC-1155 contract that allows to use any of the tokens in the list
     /// by locking any of the tokens in the list as a new "general" token. We should recommend customers not to
     /// use this contract, because it creates for them the killer exploit.
+    ///
+    /// TODO: Need to decide if old and new tokens are to be exchanged for the same amounts of collaterals.
     function _recreateCondition(uint64 _condition) internal {
         /*uint64 newCondition =*/ _createCondition();
         uint256 _tokenId = uint256(keccak256(abi.encodePacked(_condition)));
