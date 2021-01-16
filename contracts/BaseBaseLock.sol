@@ -26,7 +26,13 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     /// @param oracleId The ID of the oracle.
     event OracleOwnerChanged(address oracleOwner, uint64 oracleId);
 
-    event ConditionCreated(address indexed sender, address indexed customer);
+    event ConditionCreated(address indexed sender, address indexed customer, uint256 indexed condition);
+
+    event ConditionReCreate(
+        address indexed customer,
+        uint256 indexed oldCondition,
+        uint256 indexed newCondition
+    );
 
     /// Emitted when a collateral is donated.
     /// @param collateralContractAddress The ERC-1155 contract of the donated token.
@@ -436,7 +442,7 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     function _createCondition(address customer) internal returns (uint256) {
         uint64 _conditionId = ++maxConditionId;
         customers[_conditionId] = customer;
-        emit ConditionCreated(msg.sender, customer);
+        emit ConditionCreated(msg.sender, customer, _conditionId);
         return _conditionId;
     }
 
@@ -461,9 +467,8 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     /// FIXME: Allow to recreate only the last token in the list.
     function _recreateCondition(uint256 _condition) internal myConditional(_condition) returns (uint256) {
         uint256 _newCondition = _createCondition(msg.sender);
-        // TODO: Store the linked list of conditional tokens for a condition.
-        // TODO: misc
-        // TODO: Event that related old and new condition for traders. Also relate them on-chain? (liked list? map to the first condition in the list?)
+        // TODO: Also relate old and new on-chain? (liked list? map to the first condition in the list?)
+        emit ConditionReCreate(msg.sender, _condition, _newCondition);
         return _newCondition;
     }
 
