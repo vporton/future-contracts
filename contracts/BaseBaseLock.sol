@@ -16,13 +16,6 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     using ABDKMath64x64 for int128;
     using SafeMath for uint256;
 
-    // TODO: Unused
-    /// Conditional tokens vs collaterals.
-    /// - `TOKEN_CONDITIONAL` is for conditional tokens.
-    /// - `TOKEN_DONATED` is for counting donated collaterals.
-    ///   (WARNING: Token ID of donated collateral differs of token ID of the collateral token.)
-    enum TokenKind { TOKEN_CONDITIONAL, TOKEN_DONATED }
-
     /// Emitted when an oracle is created.
     /// @param oracleId The ID of the created oracle.
     event OracleCreated(uint64 oracleId);
@@ -136,6 +129,8 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     /// Donate funds in a ERC1155 token.
     ///
     /// First, the collateral token need to be approved to be spent by this contract from the address `from`.
+    ///
+    /// It also mints a token (with a different ID), that counts donations in that token.
     /// @param collateralContractAddress The collateral ERC-1155 contract address.
     /// @param collateralTokenId The collateral ERC-1155 token ID.
     /// @param oracleId The oracle ID to whose ecosystem to donate to.
@@ -360,8 +355,9 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     /// @param collateralContractAddress The ERC-1155 contract of the collateral token.
     /// @param collateralTokenId The ERC-1155 ID of the collateral token.
     /// @param oracleId The oracle ID.
+    /// Note: It does not conflict with other tokens kinds, becase the only other one is the uint64 conditional.
     function _collateralDonatedTokenId(IERC1155 collateralContractAddress, uint256 collateralTokenId, uint64 oracleId) internal pure returns (uint256) {
-        return uint256(keccak256(abi.encodePacked(uint8(TokenKind.TOKEN_DONATED), collateralContractAddress, collateralTokenId, oracleId)));
+        return uint256(keccak256(abi.encodePacked(collateralContractAddress, collateralTokenId, oracleId)));
     }
 
     function _checkTransferAllowed(uint256 id, address from) internal view {
