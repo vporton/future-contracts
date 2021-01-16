@@ -16,6 +16,9 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     using SafeMath for uint256;
 
     /// Conditional tokens vs collaterals.
+    /// - `TOKEN_CONDITIONAL` is for conditional tokens.
+    /// - `TOKEN_DONATED` is for counting donated collaterals.
+    ///   (WARNING: Token ID of donated collateral differs of token ID of the collateral token.)
     enum TokenKind { TOKEN_CONDITIONAL, TOKEN_DONATED }
 
     /// Emitted when an oracle is created.
@@ -84,6 +87,20 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
             BaseBaseLock(0).onERC1155Received.selector ^
             BaseBaseLock(0).onERC1155BatchReceived.selector
         );
+    }
+
+    function createCondition() public returns (uint64) {
+        return _createCondition();
+    }
+
+    /// Make a new condition that replaces the old one.
+    /// It is useful to remove a trader's incentive to kill the issuer to reduce the circulating supply.
+    /// The same can be done by transferring to yourself 0 tokens, but this method uses less gas.
+    function recreateCondition(uint64 condition) public returns (uint64) {
+        uint64 newCondition = _createCondition();
+        // TODO: misc
+        // TODO: event?
+        return newCondition;
     }
 
     /// Modify the owner of an oracle.
@@ -401,6 +418,14 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
         emit OracleCreated(oracleId);
         emit OracleOwnerChanged(msg.sender, oracleId);
         return oracleId;
+    }
+
+    function _createCondition() internal returns (uint64) {
+        uint64 conditionId = maxId++;
+        // TODO
+        // emit ConditionCreated(oracleId); // TODO
+        // emit ConditionOwnerChanged(msg.sender, oracleId); // TODO
+        return conditionId;
     }
 
     modifier _isOracle(uint64 oracleId) {
