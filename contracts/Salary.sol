@@ -13,6 +13,9 @@ import "./BaseBidOnAddresses.sol";
 /// So it in some cases (if the registration date is past the contract deployment) this issue is impossible to
 /// mitigate.
 /// But should we decide what to disallow to the global voters?
+///
+/// TODO: Should a salary recipient be able to transfer his salary receipt right to another user?
+///       Should this transfer also update the token? (If it does, it makes no sense. If it doesn't, does it create a gain to kill him?)
 contract Salary is BaseBidOnAddresses {
     event CustomerRegistered(
         address customer,
