@@ -450,8 +450,6 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     /// what may be benefical for early startups funding.
     /// TODO: There should be an advice to switch to a new token at each milestone of a project?
     ///
-    /// TODO: What should this function return?
-    ///
     /// Anyone can create a ERC-1155 contract that allows to use any of the tokens in the list
     /// by locking any of the tokens in the list as a new "general" token. We should recommend customers not to
     /// use such contracts, because it creates for them the killer exploit.
