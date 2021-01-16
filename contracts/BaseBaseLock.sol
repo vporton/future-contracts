@@ -81,6 +81,8 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     mapping(uint64 => uint256) public usersWithdrewInFirstRound;
     /// Mapping (token ID => condition ID) - zero means that the token isn't conditional.
     mapping(uint256 => uint64) public conditionalTokens;
+    /// Mapping (condition ID => account) - salary recipients.
+    mapping(uint64 => address) public customers; // TODO: rename
 
     /// Constructor.
     /// @param uri_ Our ERC-1155 tokens description URI.
@@ -433,6 +435,7 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     function _createCondition() internal returns (uint64) {
         uint64 _conditionId = ++maxId;
         conditionalTokens[_conditionId] = _conditionId;
+        customers[_conditionId] = msg.sender; // TODO: Be able to mint for somebody other?
         // TODO
         // emit ConditionCreated(oracleId); // TODO
         // emit ConditionOwnerChanged(msg.sender, oracleId); // TODO
@@ -442,6 +445,10 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     /// Make a new condition that replaces the old one.
     /// It is useful to remove a trader's incentive to kill the issuer to reduce the circulating supply.
     /// The same can be done by transferring to yourself 0 tokens, but this method uses less gas.
+    /// FIXME: The following are not the same:
+    ///        - condition
+    ///        - conditional token number
+    ///        - conditional token ID
     function _recreateCondition(uint64 /*_condition*/) internal returns (uint64) {
         uint64 newCondition = _createCondition();
         // TODO: misc
