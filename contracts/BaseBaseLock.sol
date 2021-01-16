@@ -351,7 +351,7 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
 
     // Internal //
 
-    /// Generate the ERC-1155 ID for a conditional token.
+    /// Generate the initial ERC-1155 ID for a conditional token.
     /// @param oracleId The oracle ID.
     /// @param condition The condition (the original receiver of a conditional token).
     /// FIXME: Check if this function is correctly used everywhere. (Should use the current token ID instead of the first?)
