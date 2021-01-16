@@ -10,6 +10,7 @@ import "./Salary.sol";
 ///       Consequently, it makes sense to prevent fishing attacks on resigning from DAO control
 ///       to use two different contracts: One allows account restoration and the other doesn't.
 ///       Need to consider with care the case if one mistakenly discloses his private key.
+/// FIXME: An investor may gain if he kills a scientist to reduce the circulating supply of his token to increase the price.
 abstract contract BaseRestorableSalary is Salary {
     // INVARIANT: `originalAddress(newToOldAccount[newAccount]) == originalAddress(newAccount)`
     //            if `newToOldAccount[newAccount] != address(0)` for every `newAccount`
