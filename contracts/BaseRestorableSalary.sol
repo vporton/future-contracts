@@ -9,6 +9,9 @@ abstract contract BaseRestorableSalary is Salary {
     /// The very first address an account had.
     mapping(address => address) public originalAddresses;
 
+    /// original address => current address
+    mapping(address => address) public currentAddresses;
+
     // Mapping from old to new account addresses (created after every change of an address).
     mapping(address => address) public newToOldAccount;
 
@@ -19,19 +22,25 @@ abstract contract BaseRestorableSalary is Salary {
     /// Below copied from https://github.com/vporton/restorable-funds/blob/f6192fd23cad529b84155d52ae202430cd97db23/contracts/RestorableERC1155.sol
 
     /// Give the user the "permission" to move funds from `oldAccount_` to `newAccount_`.
+    /// FIXME: Is oldAccount_ an original or current address?
     function permitRestoreAccount(address oldAccount_, address newAccount_) public {
         checkAllowedRestoreAccount(oldAccount_, newAccount_); // only authorized "attorneys" or attorney DAOs
         // FIXME: Need to check if `newToOldAccount[newAccount_] == address(0)` and/or `originalAddresses[newAccount_] == address(0)`?
         newToOldAccount[newAccount_] = oldAccount_;
-        originalAddresses[newAccount_] = originalAddress(oldAccount_);
+        address orig = originalAddress(oldAccount_);
+        originalAddresses[newAccount_] = orig;
+        currentAddresses[orig] = newAccount_;
         // TODO: Check that the above invariant holds.
         emit AccountRestored(oldAccount_, newAccount_);
     }
 
+    /// FIXME: Is oldAccount_ an original or current address?
+    /// FIXME: Is newAccount_ an original or current address?
     function dispermitRestoreAccount(address oldAccount_, address newAccount_) public {
         checkAllowedUnrestoreAccount(oldAccount_, newAccount_); // only authorized "attorneys" or attorney DAOs
         // FIXME: Need to check if `newToOldAccount[newAccount_] != address(0)` and/or `originalAddresses[newAccount_] != address(0)`?
         newToOldAccount[newAccount_] = address(0);
+        currentAddresses[oldAccount_] = address(0);
         originalAddresses[newAccount_] = address(0);
         // TODO: Check that the above invariant holds.
         emit AccountUnrestored(oldAccount_, newAccount_);
