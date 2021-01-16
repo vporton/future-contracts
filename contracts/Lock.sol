@@ -37,7 +37,6 @@ contract Lock is BaseLock {
     }
 
     /// Reverts if called after redeem.
-    /// TODO: Use `conditionalId` instead of `conditionalTokenId`?
     function mintConditional(uint64 oracleId, uint256 conditionalTokenId, uint256 amount, bytes calldata data)
         public myConditional(conditionalTokenId)
     {
@@ -47,7 +46,6 @@ contract Lock is BaseLock {
     }
 
     /// Reverts if called after redeem.
-    /// TODO: Use `conditionalId` instead of `conditionalTokenId`?
     function burnConditional(uint64 oracleId, uint256 conditionalTokenId, address to, uint256 amount, bytes calldata data)
         public myConditional(conditionalTokenId)
     {
