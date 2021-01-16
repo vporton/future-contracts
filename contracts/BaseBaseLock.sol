@@ -21,12 +21,12 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     /// @param oracleId The ID of the created oracle.
     event OracleCreated(uint64 oracleId);
 
-    // TODO: ConditionCreated event with also `oracleId`
-
     /// Emitted when an oracle owner is set.
     /// @param oracleOwner Who created an oracle
     /// @param oracleId The ID of the oracle.
     event OracleOwnerChanged(address oracleOwner, uint64 oracleId);
+
+    event ConditionCreated(address indexed sender, address indexed customer);
 
     /// Emitted when a collateral is donated.
     /// @param collateralContractAddress The ERC-1155 contract of the donated token.
@@ -436,9 +436,8 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     function _createCondition(address customer) internal returns (uint256) {
         uint64 _conditionId = ++maxConditionId;
         customers[_conditionId] = customer; // TODO: Be able to mint for somebody other?
-        // TODO
-        // emit ConditionCreated(msg.sender, customer, oracleId); // TODO
-        // emit ConditionOwnerChanged(customer, oracleId); // TODO
+        // TODO: need to add anything?
+        emit ConditionCreated(msg.sender, customer);
         return _conditionId;
     }
 
