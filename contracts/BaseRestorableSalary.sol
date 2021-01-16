@@ -69,6 +69,7 @@ abstract contract BaseRestorableSalary is Salary {
 
     // Modifiers //
 
+    // TODO: For clarity split this modifier into two ones.
     modifier checkMovedOwner(address oldAccount_, address newAccount_) virtual {
         require(newAccount_ == _msgSender(), "Not account owner.");
 
