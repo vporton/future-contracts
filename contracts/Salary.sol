@@ -51,7 +51,8 @@ contract Salary is BaseBidOnAddresses {
     {
         uint lastSalaryDate = lastSalaryDates[msg.sender];
         require(lastSalaryDate != 0, "You are not registered.");
-        // FIXME: One token per second produces huge numbers inconvenient for humans. Reduce (how much?)
+        // Note: Even if you withdraw once per 20 years, you will get only 630,720,000 tokens.
+        // This number is probably not to big to be displayed well in UIs.
         uint256 amount = (lastSalaryDate - block.timestamp) * 10**18; // one token per second
         _mintToCustomer(conditionId, amount, data);
         lastSalaryDates[msg.sender] = block.timestamp;
