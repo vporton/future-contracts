@@ -8,7 +8,6 @@ import { IERC1155 } from "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 
 /// A base class to lock collaterals and distribute them proportional to an oracle result.
 ///
-/// TODO: Say we use small numbers not hashes for conditional token IDs.
 /// TODO: Ability to split/join conditionals?
 /// TODO: If we recreate conditional tokens often, then it is no need to allow DAO to declare somebody dead.
 ///       The only way we can do this is to require somebody to pay gas for doing it.
