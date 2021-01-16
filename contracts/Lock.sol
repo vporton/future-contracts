@@ -68,8 +68,9 @@ contract Lock is BaseLock {
         return oracleShare;
     }
 
+    // FIXME: Wrong.
     modifier isConditional(uint64 oracleId, uint256 conditionalTokenId) {
-        require(_conditionalTokenId(oracleId, address(0)) == conditionalTokenId);
+        require(_conditionalTokenIdFirst(oracleId, address(0)) == conditionalTokenId);
         _;
     }
 }

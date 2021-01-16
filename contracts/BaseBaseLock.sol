@@ -161,7 +161,7 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     )
         private view returns (uint donatedCollateralTokenId, uint256 donated)
     {
-        uint256 conditionalToken = _conditionalTokenId(oracleId, condition);
+        uint256 conditionalToken = _conditionalTokenIdFirst(oracleId, condition);
         uint256 conditionalBalance = balanceOf(user, conditionalToken);
         uint256 totalConditionalBalance =
             inFirstRound ? totalBalanceOf(conditionalToken) : usersWithdrewInFirstRound[oracleId];
@@ -220,7 +220,7 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     function withdrawCollateral(IERC1155 collateralContractAddress, uint256 collateralTokenId, uint64 oracleId, address condition, bytes calldata data) external {
         require(isOracleFinished(oracleId), "too early"); // to prevent the denominator or the numerators change meantime
         bool inFirstRound = _inFirstRound(oracleId);
-        uint256 conditionalTokenId = _conditionalTokenId(oracleId, condition);
+        uint256 conditionalTokenId = _conditionalTokenIdFirst(oracleId, condition);
         userUsedRedeemMap[msg.sender][conditionalTokenId] = true;
         // _burn(msg.sender, conditionalTokenId, conditionalBalance); // Burning it would break using the same token for multiple markets.
         (uint donatedCollateralTokenId, uint256 _owingDonated) =
@@ -354,7 +354,8 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     /// Generate the ERC-1155 ID for a conditional token.
     /// @param oracleId The oracle ID.
     /// @param condition The condition (the original receiver of a conditional token).
-    function _conditionalTokenId(uint64 oracleId, address condition) internal pure returns (uint256) {
+    /// FIXME: Check if this function is correctly used everywhere. (Should use the current token ID instead of the first?)
+    function _conditionalTokenIdFirst(uint64 oracleId, address condition) internal pure returns (uint256) {
         return uint256(keccak256(abi.encodePacked(uint8(TokenKind.TOKEN_CONDITIONAL), oracleId, condition)));
     }
 
@@ -434,7 +435,7 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     /// Start with 1, not 0, to avoid glitch with `conditionalTokens`.
     function _createCondition() internal returns (uint64) {
         uint64 _conditionId = ++maxId;
-        conditionalTokens[_conditionId] = _conditionId;
+        conditionalTokens[_conditionId] = _conditionId; // FIXME
         customers[_conditionId] = msg.sender; // TODO: Be able to mint for somebody other?
         // TODO
         // emit ConditionCreated(oracleId); // TODO
@@ -449,6 +450,8 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     ///        - condition
     ///        - conditional token number
     ///        - conditional token ID
+    /// TODO: We can eliminate "conditional token number" concept by making conditional token ID
+    ///       a cryptographic hash of the previous conditional token ID.
     function _recreateCondition(uint64 /*_condition*/) internal returns (uint64) {
         uint64 newCondition = _createCondition();
         // TODO: misc
