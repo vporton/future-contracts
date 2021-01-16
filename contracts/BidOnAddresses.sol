@@ -30,8 +30,9 @@ contract BidOnAddresses is BaseBidOnAddresses {
         );
     }
 
-    /// Anyone can register himself.
-    /// Can be called both before or after the oracle finish. However registering after the finish is useless.
+    /// Anyone can register anyone.
+    ///
+    /// This can be called both before or after the oracle finish. However registering after the finish is useless.
     ///
     /// We check that `oracleId` exists (we don't want "spammers" to register themselves for a million oracles).
     ///
