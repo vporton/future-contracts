@@ -4,8 +4,9 @@ import { ABDKMath64x64 } from "abdk-libraries-solidity/ABDKMath64x64.sol";
 import "./BaseRestorableSalary.sol";
 import "./DAOInterface.sol";
 
-/// We could introduce measures to make impossible to register someone for salary before he is born or is a small child,
-/// but that makes no sense, as we can instead just store (e.g. offchain) the hint that his salary to be zero.
+/// FIXME: Remove the dictatorship ability to declare anyone dead, instead make possible to forcibly recreate his
+///        token. It's useful to punish someone for decreasing his work performance or an evil act.
+///        The same feature effectively prevents to register someone for salary before he is born or is a small child.
 contract SalaryWithDAO is BaseRestorableSalary {
     using ABDKMath64x64 for int128;
 
