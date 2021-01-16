@@ -5,7 +5,6 @@ import "./Salary.sol";
 abstract contract BaseRestorableSalary is Salary {
     // INVARIANT: `originalAddress(newToOldAccount[newAccount]) == originalAddress(newAccount)`
     //            if `newToOldAccount[newAccount] != address(0)` for every `newAccount`
-    // TODO: Check invariant consistency in all cases.
 
     /// The very first address an account had.
     mapping(address => address) public originalAddresses;
