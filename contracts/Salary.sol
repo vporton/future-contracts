@@ -37,22 +37,20 @@ contract Salary is BaseBidOnAddresses {
     /// Anyone can register himself.
     /// Can be called both before or after the oracle finish. However registering after the finish is useless.
     function registerCustomer(uint64 oracleId, bytes calldata data) virtual public {
-        address orig = originalAddress(msg.sender); // FIXME: Do we need `originalAddress()` here?
-        require(registrationDates[orig] == 0, "You are already registered.");
-        registrationDates[orig] = block.timestamp;
-        lastSalaryDates[orig] = block.timestamp;
+        require(registrationDates[msg.sender] == 0, "You are already registered.");
+        registrationDates[msg.sender] = block.timestamp;
+        lastSalaryDates[msg.sender] = block.timestamp;
         emit CustomerRegistered(msg.sender, oracleId, data);
     }
 
     function mintSalary(uint64 oracleId, bytes calldata data) external {
-        address orig = originalAddress(msg.sender);
-        uint lastSalaryDate = lastSalaryDates[orig];
+        uint lastSalaryDate = lastSalaryDates[msg.sender];
         require(lastSalaryDate != 0, "You are not registered.");
-        uint256 conditionalTokenId = _conditionalTokenId(oracleId, originalAddress(msg.sender));
+        uint256 conditionalTokenId = _conditionalTokenId(oracleId, msg.sender);
         // FIXME: One token per second produces huge numbers inconvenient for humans. Reduce (how much?)
         uint256 amount = (lastSalaryDate - block.timestamp) * 10**18; // one token per second
         _mintToCustomer(conditionalTokenId, amount, data);
-        lastSalaryDates[orig] = block.timestamp;
+        lastSalaryDates[msg.sender] = block.timestamp;
         emit SalaryMinted(msg.sender, oracleId, amount, data);
     }
 }

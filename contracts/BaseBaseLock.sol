@@ -2,12 +2,12 @@
 pragma solidity ^0.7.1;
 import { SafeMath } from "@openzeppelin/contracts/math/SafeMath.sol";
 import { ABDKMath64x64 } from "abdk-libraries-solidity/ABDKMath64x64.sol";
-import { ERC1155WithMappedAddressesAndTotals } from "./ERC1155/ERC1155WithMappedAddressesAndTotals.sol";
+import { ERC1155WithTotals } from "./ERC1155/ERC1155WithTotals.sol";
 import { IERC1155TokenReceiver } from "./ERC1155/IERC1155TokenReceiver.sol";
 import { IERC1155 } from "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 
 /// A base class to lock collaterals and distribute them proportional to an oracle result.
-abstract contract BaseBaseLock is ERC1155WithMappedAddressesAndTotals, IERC1155TokenReceiver {
+abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     using ABDKMath64x64 for int128;
     using SafeMath for uint256;
 
@@ -75,7 +75,7 @@ abstract contract BaseBaseLock is ERC1155WithMappedAddressesAndTotals, IERC1155T
 
     /// Constructor.
     /// @param uri_ Our ERC-1155 tokens description URI.
-    constructor(string memory uri_) ERC1155WithMappedAddressesAndTotals(uri_) {
+    constructor(string memory uri_) ERC1155WithTotals(uri_) {
         _registerInterface(
             BaseBaseLock(0).onERC1155Received.selector ^
             BaseBaseLock(0).onERC1155BatchReceived.selector
@@ -337,7 +337,7 @@ abstract contract BaseBaseLock is ERC1155WithMappedAddressesAndTotals, IERC1155T
     }
 
     function _checkTransferAllowed(uint256 id, address from) internal view {
-        require(!userUsedRedeemMap[originalAddress(from)][id], "You can't trade conditional tokens after redeem.");
+        require(!userUsedRedeemMap[from][id], "You can't trade conditional tokens after redeem.");
     }
 
     function _baseSafeTransferFrom(address from, address to, uint256 id, uint256 value, bytes memory data) private {
@@ -383,10 +383,8 @@ abstract contract BaseBaseLock is ERC1155WithMappedAddressesAndTotals, IERC1155T
     }
 
     function _doTransfer(uint256 id, address from, address to, uint256 value) internal {
-        address originalFrom = originalAddress(from);
-        _balances[id][originalFrom] = _balances[id][originalFrom].sub(value);
-        address originalTo = originalAddress(to);
-        _balances[id][originalTo] = value.add(_balances[id][originalTo]);
+        _balances[id][from] = _balances[id][from].sub(value);
+        _balances[id][to] = value.add(_balances[id][to]);
     }
 
     function _createOracle() internal returns (uint64) {

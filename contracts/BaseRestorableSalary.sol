@@ -3,8 +3,11 @@ pragma solidity ^0.7.1;
 import "./Salary.sol";
 
 abstract contract BaseRestorableSalary is Salary {
-    // FIXME: seems to duplicate `originalAddresses`
-    mapping(address => address) public newToOldAccount; // mapping from old to new account addresses
+    /// The very first address an account had.
+    mapping(address => address) public originalAddresses;
+
+    // Mapping from old to new account addresses.
+    mapping(address => address) public newToOldAccount;
 
     constructor (string memory uri_) Salary(uri_) { }
 
@@ -13,8 +16,7 @@ abstract contract BaseRestorableSalary is Salary {
     function permitRestoreAccount(address oldAccount_, address newAccount_) public
         checkRestoreOperator(newAccount_)
     {
-        // If originalAddresses[oldAccount_] == 0, disassociate newAccount_ with another account. That's not a vulnerability.
-        originalAddresses[newAccount_] = originalAddresses[oldAccount_];
+        originalAddresses[newAccount_] = originalAddress(oldAccount_);
     }
 
     function restoreAccount(address oldAccount_, address newAccount_) public
@@ -25,7 +27,6 @@ abstract contract BaseRestorableSalary is Salary {
         emit AccountRestored(oldAccount_, newAccount_);
     }
 
-    // FIXME: This method wrongly duplicates `ERC1155WithMappedAddressesAndTotals` functionality.
     function restoreFunds(address oldAccount_, address newAccount_, uint256 token_) public
         checkRestoreOperator(newAccount_)
         checkMovedOwner(oldAccount_, newAccount_)
@@ -57,14 +58,14 @@ abstract contract BaseRestorableSalary is Salary {
 
     function checkAllowedRestoreAccount(address /*oldAccount_*/, address /*newAccount_*/) public virtual;
 
-    function originalAddress(address account) public view virtual override returns (address) {
+    function originalAddress(address account) public view virtual returns (address) {
         address newAddress = originalAddresses[account];
         return newAddress != address(0) ? newAddress : account;
     }
 
     // Internal functions //
 
-    function _upgradeAccounts(address[] memory accounts) view virtual override internal {
+    function _upgradeAccounts(address[] memory accounts) view virtual internal {
         // assert(accounts.length == newAccounts.length);
         for (uint i = 0; i < accounts.length; ++i) {
             accounts[i] = originalAddress(accounts[i]);

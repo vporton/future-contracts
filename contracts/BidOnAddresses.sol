@@ -39,7 +39,7 @@ contract BidOnAddresses is BaseBidOnAddresses {
     /// We check that `oracleId` exists (we don't want "spammers" to register themselves for a million oracles).
     function registerCustomer(uint64 oracleId, bytes calldata data) external {
         require(oracleId <= maxId, "Oracle doesn't exist.");
-        uint256 conditionalTokenId = _conditionalTokenId(oracleId, originalAddress(msg.sender));
+        uint256 conditionalTokenId = _conditionalTokenId(oracleId, msg.sender);
         require(!conditionalTokensMap[conditionalTokenId], "customer already registered");
         conditionalTokensMap[conditionalTokenId] = true;
         _mintToCustomer(conditionalTokenId, INITIAL_CUSTOMER_BALANCE, data);
