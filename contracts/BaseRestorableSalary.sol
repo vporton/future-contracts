@@ -26,6 +26,7 @@ abstract contract BaseRestorableSalary is Salary {
     }
 
     /// TODO: Ability to remove the restoration?
+    /// TODO: Do we need two stage restoration: first permit then actual restoration?
     function restoreAccount(address oldAccount_, address newAccount_) public
         checkMovedOwner(oldAccount_, newAccount_)
     {
