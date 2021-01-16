@@ -9,8 +9,10 @@ import { IERC1155 } from "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 /// A base class to lock collaterals and distribute them proportional to an oracle result.
 ///
 /// TODO: Ability to split/join conditionals?
-/// TODO: If we recreate conditional tokens often, then it is no need to allow DAO to declare somebody dead.
-///       The only way we can do this is to require somebody to pay gas for doing it.
+///
+/// If we'd recreate conditional tokens often, then it is no need to allow DAO to declare somebody dead.
+/// The only way we can do this is to require somebody to pay gas for doing it, what's impossible, because
+/// the number of conditonals is unbounded.
 abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     using ABDKMath64x64 for int128;
     using SafeMath for uint256;
