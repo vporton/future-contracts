@@ -459,9 +459,9 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     /// TODO: Can we make condition ID and conditional token ID the same and publish linked list of conditional tokens offchain?
     /// TODO: What should it return?
     ///
-    /// We need (in the future) to create a ERC-1155 contract that allows to use any of the tokens in the list
-    /// as one tokens to simplify managing of exchanges (not to replace there tokens everytime). Note that this ERC-1155
-    /// contract will necessarily has the bug that transfers of "base" tokens produces no errors.
+    /// Anyone can create a ERC-1155 contract that allows to use any of the tokens in the list
+    /// by locking any of the tokens in the list as a new "general" token. We should recommend customers not to
+    /// use this contract, because it creates for them the killer exploit.
     function _recreateCondition(uint64 _condition) internal {
         /*uint64 newCondition =*/ _createCondition();
         uint256 _tokenId = uint256(keccak256(abi.encodePacked(_condition)));
