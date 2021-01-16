@@ -459,6 +459,8 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     /// thus triggering the killer's exploit again. So we make old and new completely independent.
     ///
     /// FIXME: Allow to recreate only the last token in the list.
+    ///
+    /// FIXME: This function should be in `Salary` contract instead.
     function _recreateCondition(uint256 _condition) internal myConditional(_condition) returns (uint256) {
         uint256 _newCondition = _createCondition(msg.sender);
         // TODO: Also relate old and new on-chain? (liked list? map to the first condition in the list?)
