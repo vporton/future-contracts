@@ -9,9 +9,7 @@ import { IERC1155 } from "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 /// A base class to lock collaterals and distribute them proportional to an oracle result.
 ///
 /// TODO: Say we use small numbers not hashes for conditional token IDs.
-/// TODO: Don't use account addresses as conditional IDs and add ability to move conditionals to other accounts?
-///       BTW, could this replace the current account restoration mechanism?
-///       Ability to split/join conditionals?
+/// TODO: Ability to split/join conditionals?
 abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     using ABDKMath64x64 for int128;
     using SafeMath for uint256;
@@ -94,6 +92,7 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     }
 
     /// FIXME: Do we need to have this function public? We have `registerCustomer()` instead.
+    /// TODO: Use uint64 variables instead?
     function createCondition() public returns (uint64) {
         return _createCondition();
     }
@@ -106,8 +105,8 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     /// - calling this function on each new project milestone?
     /// - calling this function regularly (e.g. every week)?
     /// FIXME: What to return?
-    function recreateCondition(uint64 _condition) public {
-        return _recreateCondition(_condition);
+    function recreateCondition(uint256 condition) public {
+        return _recreateCondition(condition);
     }
 
     /// Modify the owner of an oracle.
@@ -157,16 +156,15 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
         IERC1155 collateralContractAddress,
         uint256 collateralTokenId,
         uint64 oracleId,
-        uint64 condition,
+        uint256 condition,
         address user,
         bool inFirstRound
     )
         private view returns (uint donatedCollateralTokenId, uint256 donated)
     {
-        uint256 conditionalToken = currentConditionalTokenIDs[condition];
-        uint256 conditionalBalance = balanceOf(user, conditionalToken);
+        uint256 conditionalBalance = balanceOf(user, condition);
         uint256 totalConditionalBalance =
-            inFirstRound ? totalBalanceOf(conditionalToken) : usersWithdrewInFirstRound[oracleId];
+            inFirstRound ? totalBalanceOf(condition) : usersWithdrewInFirstRound[oracleId];
         donatedCollateralTokenId = _collateralDonatedTokenId(collateralContractAddress, collateralTokenId, oracleId);
         // Rounded to below for no out-of-funds:
         int128 oracleShare = ABDKMath64x64.divu(conditionalBalance, totalConditionalBalance);
@@ -189,7 +187,7 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
         IERC1155 collateralContractAddress,
         uint256 collateralTokenId,
         uint64 oracleId,
-        uint64 condition,
+        uint256 condition,
         address user
     ) external view returns(uint256) {
         bool inFirstRound = _inFirstRound(oracleId);
@@ -219,12 +217,11 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     /// - We can't transfer to somebody other than `msg.sender` because anybody can transfer (needed for multi-level transfers).
     /// - After this function is called, it becomes impossible to transfer the corresponding conditional token of `msg.sender`
     ///   (to prevent its repeated withdrawal).
-    function withdrawCollateral(IERC1155 collateralContractAddress, uint256 collateralTokenId, uint64 oracleId, uint64 condition, bytes calldata data) external {
+    function withdrawCollateral(IERC1155 collateralContractAddress, uint256 collateralTokenId, uint64 oracleId, uint256 condition, bytes calldata data) external {
         require(isOracleFinished(oracleId), "too early"); // to prevent the denominator or the numerators change meantime
         bool inFirstRound = _inFirstRound(oracleId);
-        uint256 conditionalTokenId = currentConditionalTokenIDs[condition];
-        userUsedRedeemMap[msg.sender][conditionalTokenId] = true;
-        // _burn(msg.sender, conditionalTokenId, conditionalBalance); // Burning it would break using the same token for multiple markets.
+        userUsedRedeemMap[msg.sender][condition] = true;
+        // _burn(msg.sender, condition, conditionalBalance); // Burning it would break using the same token for multiple markets.
         (uint donatedCollateralTokenId, uint256 _owingDonated) =
             collateralOwingBase(collateralContractAddress, collateralTokenId, oracleId, condition, msg.sender, inFirstRound);
 
@@ -333,32 +330,25 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
 
     // Virtual functions //
 
-    function currentAddress(address conditional) internal virtual returns (address) {
-        return conditional;
+    function currentAddress(address originalAddress) internal virtual returns (address) {
+        return originalAddress;
     }
 
-    function _mintToCustomer(uint256 conditionalTokenId, uint256 amount, bytes calldata data) internal virtual {
-        _mint(currentAddress(msg.sender), conditionalTokenId, amount, data);
+    function _mintToCustomer(uint256 condition, uint256 amount, bytes calldata data) internal virtual {
+        _mint(currentAddress(msg.sender), condition, amount, data);
     }
 
     /// Calculate the share of a conditon in an oracle's market.
     /// @param oracleId The oracle ID.
     /// @return Uses `ABDKMath64x64` number ID.
-    function _calcRewardShare(uint64 oracleId, uint64 condition) internal virtual view returns (int128);
+    function _calcRewardShare(uint64 oracleId, uint256 condition) internal virtual view returns (int128);
 
-    function _calcMultiplier(uint64 oracleId, uint64 condition, int128 oracleShare) internal virtual view returns (int128) {
+    function _calcMultiplier(uint64 oracleId, uint256 condition, int128 oracleShare) internal virtual view returns (int128) {
         int128 rewardShare = _calcRewardShare(oracleId, condition);
         return oracleShare.mul(rewardShare);
     }
 
     // Internal //
-
-    /// Generate the initial ERC-1155 ID for a conditional token.
-    /// @param condition The condition (the original receiver of a conditional token).
-    /// FIXME: Check if this function is correctly used everywhere. (Should use the current token ID instead of the first?)
-    function _conditionalTokenIdFirst(uint64 condition) internal pure returns (uint256) {
-        return uint256(keccak256(abi.encodePacked(uint8(TokenKind.TOKEN_CONDITIONAL), condition)));
-    }
 
     /// Generate the ERC-1155 token ID that counts amount of donations for a ERC-1155 collateral token.
     /// @param collateralContractAddress The ERC-1155 contract of the collateral token.
@@ -381,9 +371,8 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
 
         _doTransfer(id, from, to, value);
 
-        uint64 _condition = conditionalTokens[id];
-        if (_condition != 0) {
-            _recreateCondition(_condition);
+        if (id != 0) {
+            _recreateCondition(id);
         }
 
         emit TransferSingle(msg.sender, from, to, id, value);
@@ -444,23 +433,25 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     }
 
     /// Make a new condition that replaces the old one.
-    /// It is useful to remove a trader's incentive to kill the issuer to reduce the circulating supply.
     /// The same can be done by transferring to yourself 0 tokens, but this method uses less gas.
-    /// FIXME: The following can be made the same:
-    ///        - condition
-    ///        - conditional token ID
-    /// TODO: Can we make condition ID and conditional token ID the same and publish linked list of conditional tokens offchain?
+    ///
+    /// We need to create a new condition every time when an outgoimg transfer of a conditional token happens.
+    /// Otherwise an investor would gain if he kills a scientist to reduce the circulating supply of his token to increase the price.
+    /// Allowing old tokens to be exchangeable for new ones? (Allowing the reverse swap would create killer's gain.)
+    /// Additional benefit of this solution: We can have different rewards at different stages of project,
+    /// what may be benefical for early startups funding.
+    /// TODO: There should be an advice to switch to a new token at each milestone of a project?
+    ///
     /// TODO: What should this function return?
     ///
     /// Anyone can create a ERC-1155 contract that allows to use any of the tokens in the list
     /// by locking any of the tokens in the list as a new "general" token. We should recommend customers not to
-    /// use this contract, because it creates for them the killer exploit.
+    /// use such contracts, because it creates for them the killer exploit.
     ///
     /// If we would exchange the old and new tokens for the same amounts of collaterals, then it would be
     /// effectively the same token and therefore minting more new token would possibly devalue the old one,
     /// thus triggering the killer's exploit again. So we make old and new completely independent.
-    /// TODO: We could create new tokens periodically (e.g. each week) instead of on transferring.
-    function _recreateCondition(uint64 _condition) internal myCondition(_condition) {
+    function _recreateCondition(uint256 _condition) internal myConditional(_condition) {
         uint64 _newCondition = _createCondition();
         // TODO: Store the linked list of conditional tokens for a condition.
         // TODO: misc
@@ -473,8 +464,10 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
         _;
     }
 
-    modifier myConditional(uint256 conditionalTokenId) {
-        require(conditionalTokens[conditionalTokenId] != 0, "It's not your conditional.");
+    modifier myConditional(uint256 tokenId) {
+        // Zero 2**-192 probability that tokenId < (1<<64) if it's not a conditional.
+        // TODO: Check this hack carefully!
+        require(tokenId < (1<<64), "It's not your conditional.");
         _;
     }
 }

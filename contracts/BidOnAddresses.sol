@@ -42,9 +42,8 @@ contract BidOnAddresses is BaseBidOnAddresses {
     function registerCustomer(uint64 oracleId, bytes calldata data) external {
         require(oracleId <= maxId, "Oracle doesn't exist."); // FIXME: Using maxId both for oracles and conditions is an error (here an in other places?)
         uint64 _conditionId = _createCondition();
-        uint256 conditionalTokenId = currentConditionalTokenIDs[_conditionId]; // TODO: Remove this query to save gas.
-        conditionalTokensMap[conditionalTokenId] = true; // TODO: Doesn't this map duplicate other variables?
-        _mintToCustomer(conditionalTokenId, INITIAL_CUSTOMER_BALANCE, data);
+        conditionalTokensMap[_conditionId] = true; // FIXME: Remove this map field. Use the principle of myConditional modifier instead
+        _mintToCustomer(_conditionId, INITIAL_CUSTOMER_BALANCE, data);
         emit CustomerRegistered(msg.sender, data);
     }
 }

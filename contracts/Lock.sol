@@ -56,7 +56,7 @@ contract Lock is BaseLock {
         externalConditional.contractAddress.safeTransferFrom(address(this), to, externalConditional.tokenId, amount, data); // last against reentrancy attack
     }
 
-    function _calcRewardShare(uint64 /*oracleId*/, uint64 condition)
+    function _calcRewardShare(uint64 /*oracleId*/, uint256 condition)
         internal virtual override view returns (int128)
     {
         require(condition == 1, "We support only one condition.");
@@ -64,7 +64,7 @@ contract Lock is BaseLock {
     }
 
     // We have just one token, so the multiplier is one.
-    function _calcMultiplier(uint64 /*oracleId*/, uint64 /*condition*/, int128 oracleShare)
+    function _calcMultiplier(uint64 /*oracleId*/, uint256 /*condition*/, int128 oracleShare)
         internal virtual override view returns (int128)
     {
         return oracleShare;

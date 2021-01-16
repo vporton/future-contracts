@@ -51,10 +51,9 @@ contract Salary is BaseBidOnAddresses {
     {
         uint lastSalaryDate = lastSalaryDates[msg.sender];
         require(lastSalaryDate != 0, "You are not registered.");
-        uint256 conditionalTokenId = currentConditionalTokenIDs[conditionId];
         // FIXME: One token per second produces huge numbers inconvenient for humans. Reduce (how much?)
         uint256 amount = (lastSalaryDate - block.timestamp) * 10**18; // one token per second
-        _mintToCustomer(conditionalTokenId, amount, data);
+        _mintToCustomer(conditionId, amount, data);
         lastSalaryDates[msg.sender] = block.timestamp;
         emit SalaryMinted(msg.sender, oracleId, amount, data);
     }

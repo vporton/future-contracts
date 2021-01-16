@@ -10,12 +10,6 @@ import "./Salary.sol";
 ///       Consequently, it makes sense to prevent fishing attacks on resigning from DAO control
 ///       to use two different contracts: One allows account restoration and the other doesn't.
 ///       Need to consider with care the case if one mistakenly discloses his private key.
-/// FIXME: An investor may gain if he kills a scientist to reduce the circulating supply of his token to increase the price.
-///        Possible solution: Create a new salary token after each outgoing transfer.
-///        (Should old tokens be exchangeable for new ones? (Allowing the reverse swap would create killer's gain.))
-///        Additional benefit of this solution: We can have different rewards at different stages of project,
-///        what may be benefical for early startups funding.
-///        TODO: There should be an advice to switch to a new token at each milestone of a project.
 abstract contract BaseRestorableSalary is Salary {
     // INVARIANT: `originalAddress(newToOldAccount[newAccount]) == originalAddress(newAccount)`
     //            if `newToOldAccount[newAccount] != address(0)` for every `newAccount`

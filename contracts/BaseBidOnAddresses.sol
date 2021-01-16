@@ -25,7 +25,7 @@ abstract contract BaseBidOnAddresses is BaseLock {
     /// @param numerator The relative score provided by the oracle.
     event ReportedNumerator(
         uint64 indexed oracleId,
-        uint64 condition,
+        uint256 condition,
         uint256 numerator
     );
 
@@ -42,9 +42,9 @@ abstract contract BaseBidOnAddresses is BaseLock {
     // Whether an oracle finished its work.
     mapping(uint64 => bool) private oracleFinishedMap;
     // Mapping (oracleId => (condition => numerator)) for payout numerators.
-    mapping(uint64 => mapping(uint64 => uint256)) private payoutNumeratorsMap;
+    mapping(uint64 => mapping(uint256 => uint256)) private payoutNumeratorsMap;
     // Mapping (oracleId => denominator) for payout denominators.
-    mapping(uint64 => uint) private payoutDenominatorMap;
+    mapping(uint256 => uint) private payoutDenominatorMap;
 
     /// Constructor.
     /// @param uri_ Our ERC-1155 tokens description URI.
@@ -54,7 +54,7 @@ abstract contract BaseBidOnAddresses is BaseLock {
     /// @param oracleId The oracle ID.
     /// @param condition The condition (the original receiver of a conditional token).
     /// The result can't change if the oracle has finished.
-    function payoutNumerator(uint64 oracleId, uint64 condition) public view returns (uint256) {
+    function payoutNumerator(uint64 oracleId, uint256 condition) public view returns (uint256) {
         return payoutNumeratorsMap[oracleId][condition];
     }
 
@@ -71,7 +71,7 @@ abstract contract BaseBidOnAddresses is BaseLock {
     /// @param numerator The relative score of the condition.
     ///
     /// FIXME: Should we make oracle unable to change it after it has finished?
-    function reportNumerator(uint64 oracleId, uint64 condition, uint256 numerator) external
+    function reportNumerator(uint64 oracleId, uint256 condition, uint256 numerator) external
         _isOracle(oracleId)
     {
         _updateNumerator(oracleId, numerator, condition);
@@ -112,14 +112,14 @@ abstract contract BaseBidOnAddresses is BaseLock {
         return oracleFinishedMap[oracleId];
     }
 
-    function _updateNumerator(uint64 oracleId, uint256 numerator, uint64 condition) private {
+    function _updateNumerator(uint64 oracleId, uint256 numerator, uint256 condition) private {
         payoutDenominatorMap[oracleId] = payoutDenominatorMap[oracleId].add(numerator).sub(payoutNumeratorsMap[oracleId][condition]);
         payoutNumeratorsMap[oracleId][condition] = numerator;
     }
 
     // Virtuals //
 
-    function _calcRewardShare(uint64 oracleId, uint64 condition) internal virtual override view returns (int128) {
+    function _calcRewardShare(uint64 oracleId, uint256 condition) internal virtual override view returns (int128) {
         uint256 numerator = payoutNumeratorsMap[oracleId][condition];
         uint256 denominator = payoutDenominatorMap[oracleId];
         return ABDKMath64x64.divu(numerator, denominator);
