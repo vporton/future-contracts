@@ -52,7 +52,7 @@ contract BidOnAddresses is BaseBidOnAddresses {
     /// - It somehow complicates this contract.
     function registerCustomer(address customer, uint64 oracleId, bytes calldata data) external {
         require(oracleId <= maxOracleId, "Oracle doesn't exist.");
-        uint64 _conditionId = _createCondition(customer);
+        uint256 _conditionId = _createCondition(customer);
         _mintToCustomer(_conditionId, INITIAL_CUSTOMER_BALANCE, data); // TODO: If we register somebody other, mint not to msg.sender
         emit CustomerRegistered(msg.sender, customer, data); // TODO: Do we need also point here the `msg.sender`?
     }
