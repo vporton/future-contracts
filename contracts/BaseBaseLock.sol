@@ -423,12 +423,12 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     /// Start with 1, not 0, to avoid glitch with `conditionalTokens`.
     ///
     /// TODO: Use uint64 variables instead?
-    function _createCondition() internal returns (uint64) {
+    function _createCondition(address customer) internal returns (uint64) {
         uint64 _conditionId = ++maxId;
-        customers[_conditionId] = msg.sender; // TODO: Be able to mint for somebody other?
+        customers[_conditionId] = customer; // TODO: Be able to mint for somebody other?
         // TODO
-        // emit ConditionCreated(oracleId); // TODO
-        // emit ConditionOwnerChanged(msg.sender, oracleId); // TODO
+        // emit ConditionCreated(msg.sender, customer, oracleId); // TODO
+        // emit ConditionOwnerChanged(customer, oracleId); // TODO
         return _conditionId;
     }
 
@@ -452,11 +452,11 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     /// effectively the same token and therefore minting more new token would possibly devalue the old one,
     /// thus triggering the killer's exploit again. So we make old and new completely independent.
     function _recreateCondition(uint256 _condition) internal myConditional(_condition) returns (uint256) {
-        uint64 _newCondition = _createCondition();
+        uint64 _newCondition = _createCondition(msg.sender);
         // TODO: Store the linked list of conditional tokens for a condition.
         // TODO: misc
         // TODO: Event that related old and new condition for traders. Also relate them on-chain? (liked list? map to the first condition in the list?)
-        return newCondition;
+        return _newCondition;
     }
 
     modifier _isOracle(uint64 oracleId) {
