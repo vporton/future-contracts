@@ -463,10 +463,13 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     /// by locking any of the tokens in the list as a new "general" token. We should recommend customers not to
     /// use this contract, because it creates for them the killer exploit.
     ///
-    /// TODO: Need to decide if old and new tokens are to be exchanged for the same amounts of collaterals.
+    /// If we would exchange the old and new tokens for the same amounts of collaterals, then it would be
+    /// effectively the same token and therefore minting more new token would possibly devalue the old one,
+    /// thus triggering the killer's exploit again. So we make old and new completely independent.
+    /// TODO: We could create new tokens periodically (e.g. each week) instead of on transferring.
     function _recreateCondition(uint64 _condition) internal {
         /*uint64 newCondition =*/ _createCondition();
-        uint256 _tokenId = uint256(keccak256(abi.encodePacked(_condition)));
+        uint256 _tokenId = uint256(keccak256(abi.encodePacked(_condition))); // TODO: No need to depend on the old token ID?
         conditionalTokens[_tokenId] = _condition;
         currentConditionalTokenIDs[_condition] = _tokenId;
         // TODO: Store the linked list of conditional tokens for a condition.
