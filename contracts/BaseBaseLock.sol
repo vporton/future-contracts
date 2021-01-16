@@ -306,7 +306,7 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     // Virtual functions //
 
     function _mintToCustomer(uint256 conditionalTokenId, uint256 amount, bytes calldata data) internal virtual {
-        _mint(msg.sender, conditionalTokenId, amount, data);
+        _mint(msg.sender, conditionalTokenId, amount, data); // FIXME: Mint to current, not original address?
     }
 
     /// Calculate the share of a conditon in an oracle's market.
