@@ -16,7 +16,6 @@ abstract contract BaseRestorableSalary is Salary {
     /// Below copied from https://github.com/vporton/restorable-funds/blob/f6192fd23cad529b84155d52ae202430cd97db23/contracts/RestorableERC1155.sol
 
     /// Give the user the "permission" to move funds from `oldAccount_` to `newAccount_`.
-    /// TODO: Ability to remove the permit.
     function permitRestoreAccount(address oldAccount_, address newAccount_) public {
         checkAllowedRestoreAccount(oldAccount_, newAccount_); // only authorized "attorneys" or attorney DAOs
         newToOldAccount[newAccount_] = oldAccount_;
