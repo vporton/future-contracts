@@ -79,6 +79,8 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     mapping(uint256 => mapping(address => uint256)) private lastCollateralBalanceSecondRoundMap; // TODO: Would getter be useful?
     /// Mapping (oracleId => amount user withdrew in first round) (see `docs/Calculations.md`).
     mapping(uint64 => uint256) public usersWithdrewInFirstRound;
+    /// Mapping (token ID => condition ID) - zero means that the token isn't conditional.
+    mapping(uint256 => uint64) public conditionalTokens;
 
     /// Constructor.
     /// @param uri_ Our ERC-1155 tokens description URI.
@@ -96,11 +98,12 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     /// Make a new condition that replaces the old one.
     /// It is useful to remove a trader's incentive to kill the issuer to reduce the circulating supply.
     /// The same can be done by transferring to yourself 0 tokens, but this method uses less gas.
-    function recreateCondition(uint64 condition) public returns (uint64) {
-        uint64 newCondition = _createCondition();
-        // TODO: misc
-        // TODO: event?
-        return newCondition;
+    ///
+    /// TODO: Should we recommend:
+    /// - calling this function on each new project milestone?
+    /// - calling this function regularly (e.g. every week)?
+    function recreateCondition(uint64 _condition) public returns (uint64) {
+        return _recreateCondition(_condition);
     }
 
     /// Modify the owner of an oracle.
@@ -374,6 +377,11 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
 
         _doTransfer(id, from, to, value);
 
+        uint64 _condition = conditionalTokens[id];
+        if (_condition != 0) {
+            _recreateCondition(_condition);
+        }
+
         emit TransferSingle(msg.sender, from, to, id, value);
 
         _doSafeTransferAcceptanceCheck(msg.sender, from, to, id, value, data);
@@ -412,20 +420,33 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
         _balances[id][to] = value.add(_balances[id][to]);
     }
 
+    /// Start with 1, not 0, to avoid glitch with `conditionalTokens`.
     function _createOracle() internal returns (uint64) {
-        uint64 oracleId = maxId++;
+        uint64 oracleId = ++maxId;
         oracleOwnersMap[oracleId] = msg.sender;
         emit OracleCreated(oracleId);
         emit OracleOwnerChanged(msg.sender, oracleId);
         return oracleId;
     }
 
+    /// Start with 1, not 0, to avoid glitch with `conditionalTokens`.
     function _createCondition() internal returns (uint64) {
-        uint64 conditionId = maxId++;
+        uint64 _conditionId = ++maxId;
+        conditionalTokens[_conditionId] = _conditionId;
         // TODO
         // emit ConditionCreated(oracleId); // TODO
         // emit ConditionOwnerChanged(msg.sender, oracleId); // TODO
-        return conditionId;
+        return _conditionId;
+    }
+
+    /// Make a new condition that replaces the old one.
+    /// It is useful to remove a trader's incentive to kill the issuer to reduce the circulating supply.
+    /// The same can be done by transferring to yourself 0 tokens, but this method uses less gas.
+    function _recreateCondition(uint64 /*_condition*/) internal returns (uint64) {
+        uint64 newCondition = _createCondition();
+        // TODO: misc
+        // TODO: event?
+        return newCondition;
     }
 
     modifier _isOracle(uint64 oracleId) {
