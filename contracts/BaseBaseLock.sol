@@ -377,6 +377,7 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
         _doTransfer(id, from, to, value);
 
         if (id != 0) {
+            // FIXME: Call this only when transferred by the conditional minter
             _recreateCondition(id); // FIXME: Only for the last token in the list.
         }
 
@@ -408,6 +409,7 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
             _doTransfer(id, from, to, value);
 
             if (id != 0) {
+                // FIXME: Call this only when transferred by the conditional minter
                 _recreateCondition(id); // FIXME: Only for the last token in the list.
             }
         }
