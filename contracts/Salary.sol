@@ -46,16 +46,16 @@ contract Salary is BaseBidOnAddresses {
         emit CustomerRegistered(msg.sender, oracleId, data);
     }
 
-    // FIXME: Revert if conditionId isn't the last condition in a chain of conditions.
-    function mintSalary(uint64 oracleId, uint64 conditionId, bytes calldata data)
-        myConditional(conditionId) external
+    // FIXME: Revert if condition isn't the last condition in a chain of conditions.
+    function mintSalary(uint64 oracleId, uint64 condition, bytes calldata data)
+        myConditional(condition) external
     {
         uint lastSalaryDate = lastSalaryDates[msg.sender];
         require(lastSalaryDate != 0, "You are not registered.");
         // Note: Even if you withdraw once per 20 years, you will get only 630,720,000 tokens.
         // This number is probably not to big to be displayed well in UIs.
         uint256 amount = (lastSalaryDate - block.timestamp) * 10**18; // one token per second
-        _mintToCustomer(msg.sender, conditionId, amount, data);
+        _mintToCustomer(msg.sender, condition, amount, data);
         lastSalaryDates[msg.sender] = block.timestamp;
         emit SalaryMinted(msg.sender, oracleId, amount, data);
     }
