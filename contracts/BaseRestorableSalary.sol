@@ -12,7 +12,7 @@ import "./Salary.sol";
 ///       Need to consider with care the case if one mistakenly discloses his private key.
 /// FIXME: An investor may gain if he kills a scientist to reduce the circulating supply of his token to increase the price.
 ///        Possible solution: Create a new salary token after each outgoing transfer.
-///        (Should new and old tokens be exchangeable in either direction? If yes, show it does not break this solution.)
+///        (Should old tokens be exchangeable for new ones? (Allowing the reverse swap would create killer's gain.))
 ///        Additional benefit of this solution: We can have different rewards at different stages of project,
 ///        what may be benefical for early startups funding.
 ///        TODO: There should be an advice to switch to a new token at each milestone of a project.
