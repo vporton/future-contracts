@@ -15,6 +15,7 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     using ABDKMath64x64 for int128;
     using SafeMath for uint256;
 
+    // TODO: Unused
     /// Conditional tokens vs collaterals.
     /// - `TOKEN_CONDITIONAL` is for conditional tokens.
     /// - `TOKEN_DONATED` is for counting donated collaterals.
