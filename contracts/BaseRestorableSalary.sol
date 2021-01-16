@@ -2,6 +2,9 @@
 pragma solidity ^0.7.1;
 import "./Salary.sol";
 
+/// TODO: We can allow anyone to resign from DAO control. Then he becomes "deathless" (transferring his salary
+///       to children or other friends) and this seems a trouble.
+///       But if one dies, the price of his tokens will go down making it a stupid act to pass his private key to friends.
 abstract contract BaseRestorableSalary is Salary {
     // INVARIANT: `originalAddress(newToOldAccount[newAccount]) == originalAddress(newAccount)`
     //            if `newToOldAccount[newAccount] != address(0)` for every `newAccount`
