@@ -8,6 +8,7 @@ import { IERC1155 } from "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 
 /// A base class to lock collaterals and distribute them proportional to an oracle result.
 ///
+/// TODO: Say we use small numbers not hashes for conditional token IDs.
 /// TODO: Don't use account addresses as conditional IDs and add ability to move conditionals to other accounts?
 ///       BTW, could this replace the current account restoration mechanism?
 ///       Ability to split/join conditionals?
@@ -80,13 +81,8 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     /// Mapping (oracleId => amount user withdrew in first round) (see `docs/Calculations.md`).
     mapping(uint64 => uint256) public usersWithdrewInFirstRound;
 
-    // TODO: Do we need all these variables? Restructure?
-    /// Mapping (token ID => condition ID) - zero means that the token isn't conditional.
-    mapping(uint256 => uint64) public conditionalTokens;
     /// Mapping (condition ID => account) - salary recipients.
     mapping(uint64 => address) public customers; // TODO: rename
-    /// Mapping (condition ID => token ID) - salary recipients.
-    mapping(uint64 => uint256) public currentConditionalTokenIDs;
 
     /// Constructor.
     /// @param uri_ Our ERC-1155 tokens description URI.
