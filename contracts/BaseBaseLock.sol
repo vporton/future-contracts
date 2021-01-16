@@ -61,8 +61,8 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     );
 
     // Next ID.
-    uint64 internal maxOracleId; // TODO: Make public?
-    uint64 internal maxConditionId; // TODO: Make public?
+    uint64 public maxOracleId; // It doesn't really need to be public.
+    uint64 public maxConditionId; // It doesn't really need to be public.
 
     // Mapping from oracleId to oracle owner.
     mapping(uint64 => address) private oracleOwnersMap;
