@@ -435,8 +435,7 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     /// TODO: Use uint64 variables instead?
     function _createCondition(address customer) internal returns (uint256) {
         uint64 _conditionId = ++maxConditionId;
-        customers[_conditionId] = customer; // TODO: Be able to mint for somebody other?
-        // TODO: need to add anything?
+        customers[_conditionId] = customer;
         emit ConditionCreated(msg.sender, customer);
         return _conditionId;
     }
