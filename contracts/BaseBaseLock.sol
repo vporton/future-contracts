@@ -86,7 +86,7 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     mapping(uint64 => uint256) public usersWithdrewInFirstRound;
 
     /// Mapping (condition ID => account) - salary recipients.
-    mapping(uint64 => address) public customers; // TODO: rename
+    mapping(uint256 => address) public salaryRecipients; // TODO: rename
 
     /// Constructor.
     /// @param uri_ Our ERC-1155 tokens description URI.
@@ -417,7 +417,7 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
         _balances[id][from] = _balances[id][from].sub(value);
         _balances[id][to] = value.add(_balances[id][to]);
 
-        if (id != 0 && customers[id] == msg.sender) {
+        if (id != 0 && salaryRecipients[id] == msg.sender) {
             _recreateCondition(id); // FIXME: Only for the last token in the list.
         }
     }
@@ -435,7 +435,7 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     /// TODO: Use uint64 variables instead?
     function _createCondition(address customer) internal returns (uint256) {
         uint64 _conditionId = ++maxConditionId;
-        customers[_conditionId] = customer;
+        salaryRecipients[_conditionId] = customer;
         emit ConditionCreated(msg.sender, customer, _conditionId);
         return _conditionId;
     }
