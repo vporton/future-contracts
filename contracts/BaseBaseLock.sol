@@ -417,8 +417,7 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
         _balances[id][from] = _balances[id][from].sub(value);
         _balances[id][to] = value.add(_balances[id][to]);
 
-        if (id != 0) {
-            // FIXME: Call this only when transferred by the conditional minter
+        if (id != 0 && customers[id] == msg.sender) {
             _recreateCondition(id); // FIXME: Only for the last token in the list.
         }
     }
