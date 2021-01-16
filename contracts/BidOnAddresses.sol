@@ -54,6 +54,6 @@ contract BidOnAddresses is BaseBidOnAddresses {
         require(oracleId <= maxOracleId, "Oracle doesn't exist.");
         uint256 _conditionId = _createCondition(customer);
         _mintToCustomer(customer, _conditionId, INITIAL_CUSTOMER_BALANCE, data);
-        emit CustomerRegistered(msg.sender, customer, data); // TODO: Do we need also point here the `msg.sender`?
+        emit CustomerRegistered(msg.sender, customer, data);
     }
 }
