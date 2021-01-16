@@ -378,7 +378,7 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
         _doTransfer(id, from, to, value);
 
         if (id != 0) {
-            _recreateCondition(id);
+            _recreateCondition(id); // FIXME: Only for the last token in the list.
         }
 
         emit TransferSingle(msg.sender, from, to, id, value);
