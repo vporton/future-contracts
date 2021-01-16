@@ -10,6 +10,7 @@ import { IERC1155 } from "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 ///
 /// TODO: Don't use account addresses as conditional IDs and add ability to move conditionals to other accounts?
 ///       BTW, could this replace the current account restoration mechanism?
+///       Ability to split/join conditionals?
 abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     using ABDKMath64x64 for int128;
     using SafeMath for uint256;
