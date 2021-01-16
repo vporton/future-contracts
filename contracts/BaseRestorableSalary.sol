@@ -24,6 +24,13 @@ abstract contract BaseRestorableSalary is Salary {
         emit AccountRestored(oldAccount_, newAccount_);
     }
 
+    function dispermitRestoreAccount(address oldAccount_, address newAccount_) public {
+        checkAllowedUnrestoreAccount(oldAccount_, newAccount_); // only authorized "attorneys" or attorney DAOs
+        newToOldAccount[newAccount_] = address(0);
+        originalAddresses[newAccount_] = originalAddress(oldAccount_); // FIXME
+        emit AccountUnrestored(oldAccount_, newAccount_);
+    }
+
     function restoreFunds(address oldAccount_, address newAccount_, uint256 token_) public
         checkMovedOwner(oldAccount_, newAccount_)
     {
@@ -52,6 +59,8 @@ abstract contract BaseRestorableSalary is Salary {
     }
 
     function checkAllowedRestoreAccount(address /*oldAccount_*/, address /*newAccount_*/) public virtual;
+
+    function checkAllowedUnrestoreAccount(address /*oldAccount_*/, address /*newAccount_*/) public virtual;
 
     function originalAddress(address account) public view virtual returns (address) {
         address newAddress = originalAddresses[account];
@@ -83,4 +92,6 @@ abstract contract BaseRestorableSalary is Salary {
     // Events //
 
     event AccountRestored(address oldAccount, address newAccount);
+
+    event AccountUnrestored(address oldAccount, address newAccount);
 }

@@ -8,4 +8,6 @@ interface DAOInterface {
     function checkPersonDead(address account) external;
 
     function checkAllowedRestoreAccount(address oldAccount_, address newAccount_) external;
+
+    function checkAllowedUnrestoreAccount(address oldAccount_, address newAccount_) external;
 }

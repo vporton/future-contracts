@@ -61,6 +61,16 @@ contract SalaryWithDAO is BaseRestorableSalary {
         }
     }
 
+    // FIXME: Which checks do we need?
+    function checkAllowedUnrestoreAccount(address oldAccount_, address newAccount_) public virtual override {
+        // Ensure the user has a salary to make impossible front-running by an evil DAO
+        // moving an account to another address, when one tries to refuse DAO control for a new account.
+        require(registrationDates[oldAccount_] != 0, "It isn't a salary account.");
+        if (!usersThatRefuseDAOControl[oldAccount_]) {
+            daoPlugin.checkAllowedUnrestoreAccount(oldAccount_, newAccount_);
+        }
+    }
+
     // Overrides ///
 
     function registerCustomer(uint64 oracleId, bytes calldata data) virtual override public {
