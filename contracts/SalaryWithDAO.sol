@@ -63,8 +63,9 @@ contract SalaryWithDAO is BaseRestorableSalary {
     ///
     /// Be exteremely careful calling this method: If you refuse and lose your key, your funds are lost!
     ///
-    /// TODO: Fishers may trick one to resign mistakenly. So, make two ERC-1155 contracts:
-    ///       with and without the ability to resign?
+    /// Fishers may trick one to resign mistakenly. However, it's no much worse than just fishing for
+    /// withdrawing the salary token, because a user could just register anew and notify traders/oracles
+    /// that it's the same person.
     function setDAOControl(bool _underControl) public {
         address orig = originalAddress(msg.sender);
         require(accountHasSalary[orig], "Cannot resign account receiving a salary.");
