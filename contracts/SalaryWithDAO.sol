@@ -87,6 +87,7 @@ contract SalaryWithDAO is BaseRestorableSalary {
         super._mintToCustomer(customer, conditionalTokenId, amount, data);
     }
 
+    /// This is to be called among other when a person dies.
     // TODO: Should be called directly by the DAO or by anyone who passes a check by the DAO?
     function forciblyRecalculateSalary(uint256 condition, address account) public onlyDAO {
         // TODO: Check that `minAllowedRecreate` seconds passed.
