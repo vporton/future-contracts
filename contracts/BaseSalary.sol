@@ -122,12 +122,15 @@ contract BaseSalary is BaseBidOnAddresses {
         }
     }
 
-    function _registerCustomer(address customer, uint64 oracleId, bytes calldata data) virtual internal {
+    function _registerCustomer(address customer, uint64 oracleId, bytes calldata data)
+        virtual internal returns (uint256)
+    {
         uint256 _condition = _doCreateCondition(customer);
         require(registrationDates[customer][oracleId][_condition] == 0, "You are already registered.");
         registrationDates[customer][oracleId][_condition] = block.timestamp;
         lastSalaryDates[customer][oracleId][_condition] = block.timestamp;
         emit CustomerRegistered(msg.sender, oracleId, data);
+        return _condition;
     }
 
     // TODO: It is always used to together with myConditional()

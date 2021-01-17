@@ -52,12 +52,14 @@ contract SalaryWithDAO is BaseRestorableSalary {
         return oracleId;
     }
 
-    function registerCustomer(address customer, uint64 oracleId, bool _underDAOControl, bytes calldata data) virtual public {
+    function registerCustomer(address customer, uint64 oracleId, bool _underDAOControl, bytes calldata data)
+        virtual public returns (uint256)
+    {
         address orig = originalAddress(customer);
-        super._registerCustomer(orig, oracleId, data);
         // Auditor: Check that this value is set to false, when (and if) necessary.
         accountHasSalary[customer] = true;
         underDAOControl[customer] = _underDAOControl; // TODO: Every assignment to `underDAOControl` should trigger an event?
+        return super._registerCustomer(orig, oracleId, data);
     }
 
     /// A user can agree for DAO control. Then his account can be restored by DAO for the expense
