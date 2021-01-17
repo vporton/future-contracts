@@ -37,7 +37,7 @@ abstract contract BaseBaseRestorableSalary is Salary {
         address orig = originalAddress(oldAccount_);
         originalAddresses[newAccount_] = orig;
         currentAddresses[orig] = newAccount_;
-        // Auditor: Check that the above invariant hold.
+        // Auditor: Check that the above invariants hold.
         emit AccountRestored(oldAccount_, newAccount_);
     }
 
