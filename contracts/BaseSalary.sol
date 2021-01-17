@@ -79,7 +79,8 @@ contract BaseSalary is BaseBidOnAddresses {
     /// Allowing old tokens to be exchangeable for new ones? (Allowing the reverse swap would create killer's gain.)
     /// Additional benefit of this solution: We can have different rewards at different stages of project,
     /// what may be benefical for early startups funding.
-    /// TODO: There should be an advice to switch to a new token at each milestone of a project?
+    ///
+    /// Problem to be solved later: There should be an advice to switch to a new token at each milestone of a project?
     ///
     /// Anyone can create a ERC-1155 contract that allows to use any of the tokens in the list
     /// by locking any of the tokens in the list as a new "general" token. We should recommend customers not to
