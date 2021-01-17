@@ -54,7 +54,7 @@ contract SalaryWithDAO is BaseRestorableSalary {
         address orig = originalAddress(customer);
         // Auditor: Check that this value is set to false, when (and if) necessary.
         accountHasSalary[customer] = true;
-        underDAOControl[customer] = _underDAOControl; // TODO: Every assignment to `underDAOControl` should trigger an event?
+        underDAOControl[customer] = _underDAOControl; // We don't trigger and event to reduce gas usage.
         return super._registerCustomer(orig, oracleId, data);
     }
 
@@ -68,7 +68,7 @@ contract SalaryWithDAO is BaseRestorableSalary {
     function setDAOControl(bool _underControl) public {
         address orig = originalAddress(msg.sender);
         require(accountHasSalary[orig], "Cannot resign account receiving a salary.");
-        underDAOControl[orig] = _underControl;
+        underDAOControl[orig] = _underControl; // We don't trigger and event to reduce gas usage.
     }
 
     function setDAO(DAOInterface _daoPlugin) public onlyDAO {
