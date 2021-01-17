@@ -107,6 +107,11 @@ contract BaseSalary is BaseBidOnAddresses {
         return _newCondition;
     }
 
+    /// Must be called with `id != 0`.
+    function isLastConditionInChain(uint256 id) internal view returns (bool) {
+        return firstToLastConditionInChain[firstConditionInChain[id]] == id;
+    }
+
     function _doTransfer(uint256 id, address from, address to, uint256 value) internal virtual override {
         super._doTransfer(id, from, to, value);
 
@@ -123,12 +128,6 @@ contract BaseSalary is BaseBidOnAddresses {
         registrationDates[customer][oracleId][_condition] = block.timestamp;
         lastSalaryDates[customer][oracleId][_condition] = block.timestamp;
         emit CustomerRegistered(msg.sender, oracleId, data);
-    }
-
-    /// TODO: Move this declation.
-    /// Must be called with `id != 0`.
-    function isLastConditionInChain(uint256 id) internal view returns (bool) {
-        return firstToLastConditionInChain[firstConditionInChain[id]] == id;
     }
 
     // TODO: It is always used to together with myConditional()
