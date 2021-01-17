@@ -69,7 +69,7 @@ abstract contract BaseBidOnAddresses is BaseLock {
     /// @param oracleId The oracle ID.
     /// @param condition The condition (the original receiver of a conditional token).
     /// @param numerator The relative score of the condition.
-    /// TODO: Make oracles easily verificable by a hash of all the data?
+    /// Note: We could make oracles easily verificable by a hash of all the data, but
     ///       - It may need allowing to set a numerator only once.
     ///       - It may be not necessary because future technology will allow to aggregate blockchains.
     function reportNumerator(uint64 oracleId, uint256 condition, uint256 numerator) external
