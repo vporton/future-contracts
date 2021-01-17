@@ -9,10 +9,6 @@ import { IERC1155 } from "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 /// A base class to lock collaterals and distribute them proportional to an oracle result.
 ///
 /// TODO: Ability to split/join conditionals?
-///
-/// If we'd recreate conditional tokens often, then it is no need to allow DAO to declare somebody dead.
-/// The only way we can do this is to require somebody to pay gas for doing it, what's impossible, because
-/// the number of conditonals is unbounded.
 abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     using ABDKMath64x64 for int128;
     using SafeMath for uint256;
@@ -85,9 +81,6 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     /// Mapping (oracleId => amount user withdrew in first round) (see `docs/Calculations.md`).
     mapping(uint64 => uint256) public usersWithdrewInFirstRound;
 
-    /// Mapping (condition ID => account) - salary recipients.
-    mapping(uint256 => address) public salaryRecipients; // TODO: rename
-
     /// Mapping (condition ID => first condition ID in the chain)
     ///
     /// I call _chain_ of conditions the list of conditions resulting from creating and recreating conditions.
@@ -110,19 +103,6 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     // function createCondition() public returns (uint64) {
     //     return _createCondition();
     // }
-
-    /// Make a new condition that replaces the old one.
-    /// It is useful to remove a trader's incentive to kill the issuer to reduce the circulating supply.
-    /// The same can be done by transferring to yourself 0 tokens, but this method uses less gas.
-    ///
-    /// TODO: Should we recommend:
-    /// - calling this function on each new project milestone?
-    /// - calling this function regularly (e.g. every week)?
-    ///
-    /// This function also withdraws the old token.
-    function recreateCondition(uint256 condition) public returns (uint256) {
-        return _recreateCondition(condition);
-    }
 
     /// Modify the owner of an oracle.
     /// @param newOracleOwner New owner.
@@ -422,15 +402,9 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
         _doSafeBatchTransferAcceptanceCheck(msg.sender, from, to, ids, values, data);
     }
 
-    function _doTransfer(uint256 id, address from, address to, uint256 value) internal {
+    function _doTransfer(uint256 id, address from, address to, uint256 value) internal virtual {
         _balances[id][from] = _balances[id][from].sub(value);
         _balances[id][to] = value.add(_balances[id][to]);
-
-        if (id != 0 && salaryRecipients[id] == msg.sender) {
-            if (firstToLastConditionInChain[firstConditionInChain[id]] == id) { // correct because `id != 0`
-                _recreateCondition(id);
-            }
-        }
     }
 
     function _createOracle() internal returns (uint64) {
@@ -451,10 +425,8 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     /// Start with 1, not 0, to avoid glitch with `conditionalTokens`.
     ///
     /// TODO: Use uint64 variables instead?
-    function _doCreateCondition(address customer) internal returns (uint256) {
+    function _doCreateCondition(address customer) internal virtual returns (uint256) {
         uint64 _conditionId = ++maxConditionId;
-
-        salaryRecipients[_conditionId] = customer;
 
         firstConditionInChain[_conditionId] = _conditionId;
         firstToLastConditionInChain[_conditionId] = _conditionId;
@@ -462,36 +434,6 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
         emit ConditionCreated(msg.sender, customer, _conditionId);
 
         return _conditionId;
-    }
-
-    /// Make a new condition that replaces the old one.
-    /// The same can be done by transferring to yourself 0 tokens, but this method uses less gas.
-    ///
-    /// We need to create a new condition every time when an outgoimg transfer of a conditional token happens.
-    /// Otherwise an investor would gain if he kills a scientist to reduce the circulating supply of his token to increase the price.
-    /// Allowing old tokens to be exchangeable for new ones? (Allowing the reverse swap would create killer's gain.)
-    /// Additional benefit of this solution: We can have different rewards at different stages of project,
-    /// what may be benefical for early startups funding.
-    /// TODO: There should be an advice to switch to a new token at each milestone of a project?
-    ///
-    /// Anyone can create a ERC-1155 contract that allows to use any of the tokens in the list
-    /// by locking any of the tokens in the list as a new "general" token. We should recommend customers not to
-    /// use such contracts, because it creates for them the killer exploit.
-    ///
-    /// If we would exchange the old and new tokens for the same amounts of collaterals, then it would be
-    /// effectively the same token and therefore minting more new token would possibly devalue the old one,
-    /// thus triggering the killer's exploit again. So we make old and new completely independent.
-    ///
-    /// FIXME: Allow to recreate only the last token in the list.
-    ///
-    /// FIXME: This function should be in `Salary` contract instead.
-    /// FIXME: Add `customer` argument.
-    /// FIXME: This function should withdraw the old token.
-    function _recreateCondition(uint256 _condition) internal myConditional(_condition) returns (uint256) {
-        uint256 _newCondition = _doCreateCondition(msg.sender);
-        firstConditionInChain[_newCondition] = firstConditionInChain[_condition];
-        emit ConditionReCreate(msg.sender, _condition, _newCondition);
-        return _newCondition;
     }
 
     modifier _isOracle(uint64 oracleId) {
