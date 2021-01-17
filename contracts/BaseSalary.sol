@@ -40,10 +40,8 @@ contract BaseSalary is BaseBidOnAddresses {
     constructor(string memory uri_) BaseBidOnAddresses(uri_) { }
 
     function mintSalary(uint64 oracleId, uint64 condition, bytes calldata data)
-        myConditional(condition) external
+        myConditional(condition) ensureLastConditionInChain(condition) external
     {
-        require(condition != 0 && isLastConditionInChain(condition), "Can mint only last token.");
-
         uint lastSalaryDate = lastSalaryDates[msg.sender][oracleId][condition];
         require(lastSalaryDate != 0, "You are not registered.");
         // Note: Even if you withdraw once per 20 years, you will get only 630,720,000 tokens.
@@ -92,11 +90,10 @@ contract BaseSalary is BaseBidOnAddresses {
     /// effectively the same token and therefore minting more new token would possibly devalue the old one,
     /// thus triggering the killer's exploit again. So we make old and new completely independent.
     ///
-    /// FIXME: Allow to recreate only the last token in the list.
-    ///
-    /// FIXME: This function should be in `Salary` contract instead.
     /// FIXME: This function should withdraw the old token.
-    function _recreateCondition(uint256 _condition) internal myConditional(_condition) returns (uint256) {
+    function _recreateCondition(uint256 _condition)
+        internal myConditional(_condition) ensureLastConditionInChain(_condition) returns (uint256)
+    {
         address customer = salaryRecipients[_condition];
         uint256 _newCondition = _doCreateCondition(customer);
         firstConditionInChain[_newCondition] = firstConditionInChain[_condition];
@@ -122,8 +119,15 @@ contract BaseSalary is BaseBidOnAddresses {
         emit CustomerRegistered(msg.sender, oracleId, data);
     }
 
+    /// TODO: Move this declation.
     /// Must be called with `id != 0`.
     function isLastConditionInChain(uint256 id) internal view returns (bool) {
         return firstToLastConditionInChain[firstConditionInChain[id]] == id;
+    }
+
+    // TODO: It is always used to together with myConditional()
+    modifier ensureLastConditionInChain(uint256 id) {
+        require(id != 0 && isLastConditionInChain(id), "Only for the last salary token.");
+        _;
     }
 }
