@@ -1,5 +1,7 @@
 "strict";
 
+// TODO: This test needs to be rewritten for the new contract API.
+
 const { expectRevert } = require("openzeppelin-test-helpers");
 const { toBN } = web3.utils;
 const {
