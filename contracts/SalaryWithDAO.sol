@@ -46,7 +46,7 @@ contract SalaryWithDAO is BaseRestorableSalary {
     // FIXME: It's an overriding function with a different number of arguments.
     function registerCustomer(address customer, uint64 oracleId, uint minRecreate, bytes calldata data) virtual public {
         address orig = originalAddress(customer);
-        super.registerCustomer(orig, oracleId, data);
+        super._registerCustomer(orig, oracleId, data);
         // Auditor: Check that this value is set to false, when (and if) necessary.
         accountHasSalary[customer] = true;
         // Salary with refusal of DAO control makes no sense: DAO should be able to declare a salary recipient dead:

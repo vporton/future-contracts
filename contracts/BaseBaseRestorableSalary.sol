@@ -2,7 +2,7 @@
 pragma solidity ^0.7.1;
 import "./Salary.sol";
 
-abstract contract BaseRestorableSalary is BaseSalary {
+abstract contract BaseBaseRestorableSalary is Salary {
     // INVARIANT: `originalAddress(newToOldAccount[newAccount]) == originalAddress(newAccount)`
     //            if `newToOldAccount[newAccount] != address(0)` for every `newAccount`
     // INVARIANT: originalAddresses and currentAddresses are mutually inverse.
@@ -21,7 +21,7 @@ abstract contract BaseRestorableSalary is BaseSalary {
 
     /// Constructor.
     /// @param uri_ Our ERC-1155 tokens description URI.
-    constructor (string memory uri_) BaseSalary(uri_) { }
+    constructor (string memory uri_) Salary(uri_) { }
 
     /// Below copied from https://github.com/vporton/restorable-funds/blob/f6192fd23cad529b84155d52ae202430cd97db23/contracts/RestorableERC1155.sol
 
