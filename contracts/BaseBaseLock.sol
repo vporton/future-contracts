@@ -88,6 +88,15 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     /// Mapping (condition ID => account) - salary recipients.
     mapping(uint256 => address) public salaryRecipients; // TODO: rename
 
+    /// Mapping (condition ID => first condition ID in the chain)
+    ///
+    /// I call _chain_ of conditions the list of conditions resulting from creating and recreating conditions.
+    mapping(uint256 => uint256) public firstConditionInChain;
+    /// Mapping (first condition ID in the chain => last condition ID in the chain)
+    ///
+    /// I call _chain_ of conditions the list of conditions resulting from creating and recreating conditions.
+    mapping(uint256 => uint256) public firstToLastConditionInChain;
+
     /// Constructor.
     /// @param uri_ Our ERC-1155 tokens description URI.
     constructor(string memory uri_) ERC1155WithTotals(uri_) {
@@ -434,9 +443,22 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     ///
     /// TODO: Use uint64 variables instead?
     function _createCondition(address customer) internal returns (uint256) {
+        return _doCreateCondition(customer);
+    }
+
+    /// Start with 1, not 0, to avoid glitch with `conditionalTokens`.
+    ///
+    /// TODO: Use uint64 variables instead?
+    function _doCreateCondition(address customer) internal returns (uint256) {
         uint64 _conditionId = ++maxConditionId;
+
         salaryRecipients[_conditionId] = customer;
+
+        firstConditionInChain[_conditionId] = _conditionId;
+        firstToLastConditionInChain[_conditionId] = _conditionId;
+
         emit ConditionCreated(msg.sender, customer, _conditionId);
+
         return _conditionId;
     }
 
@@ -463,8 +485,8 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     /// FIXME: This function should be in `Salary` contract instead.
     /// FIXME: Add `customer` argument.
     function _recreateCondition(uint256 _condition) internal myConditional(_condition) returns (uint256) {
-        uint256 _newCondition = _createCondition(msg.sender);
-        // TODO: Also relate old and new on-chain? (liked list? map to the first condition in the list?)
+        uint256 _newCondition = _doCreateCondition(msg.sender);
+        firstConditionInChain[_newCondition] = firstConditionInChain[_condition];
         emit ConditionReCreate(msg.sender, _condition, _newCondition);
         return _newCondition;
     }
