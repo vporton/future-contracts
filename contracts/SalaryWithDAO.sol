@@ -7,6 +7,7 @@ import "./DAOInterface.sol";
 /// FIXME: Remove the dictatorship ability to declare anyone dead, instead make possible to forcibly recreate his
 ///        token. It's useful to punish someone for decreasing his work performance or an evil act.
 ///        The same feature effectively prevents to register someone for salary before he is born or is a small child.
+///        However, if the DAO will recreate somebody's token very often, it can harden his life.
 contract SalaryWithDAO is BaseRestorableSalary {
     using ABDKMath64x64 for int128;
 
