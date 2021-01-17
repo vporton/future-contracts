@@ -80,9 +80,9 @@ abstract contract BaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     // The user lost the right to transfer conditional tokens: (user => (conditionalToken => bool)).
     mapping(address => mapping(uint256 => bool)) private userUsedRedeemMap;
     // Mapping (token => (user => amount)) used to calculate withdrawal of collateral amounts.
-    mapping(uint256 => mapping(address => uint256)) private lastCollateralBalanceFirstRoundMap; // TODO: Would getter be useful?
+    mapping(uint256 => mapping(address => uint256)) public lastCollateralBalanceFirstRoundMap;
     // Mapping (token => (user => amount)) used to calculate withdrawal of collateral amounts.
-    mapping(uint256 => mapping(address => uint256)) private lastCollateralBalanceSecondRoundMap; // TODO: Would getter be useful?
+    mapping(uint256 => mapping(address => uint256)) public lastCollateralBalanceSecondRoundMap;
     /// Mapping (oracleId => amount user withdrew in first round) (see `docs/Calculations.md`).
     mapping(uint64 => uint256) public usersWithdrewInFirstRound;
 
