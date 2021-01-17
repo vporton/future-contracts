@@ -27,8 +27,11 @@ contract SalaryWithDAO is BaseRestorableSalary {
     mapping (uint64 => uint) public minAllowedRecreate;
 
     /// When set to true, your account can't be moved to new address (by the DAO).
+    ///
+    /// By default new users are not under DAO control to avoid front-running of resigning control
+    /// by an evil DAO.
     /// FIXME: Is it original or current address?
-    mapping (address => bool) public usersThatRefuseDAOControl;
+    mapping (address => bool) public underDAOControl;
 
     // TODO: Is it _original_ address.
     /// Mapping (original address => account has at least one salary).
@@ -44,14 +47,15 @@ contract SalaryWithDAO is BaseRestorableSalary {
         daoPlugin = _daoPlugin;
     }
 
+    // TODO: Add parameter to specify `underDAOControl` value when calling this. This is to avoid any avoidable loses.
     function registerCustomer(address customer, uint64 oracleId, uint minRecreate, bytes calldata data) virtual public {
         address orig = originalAddress(customer);
         super._registerCustomer(orig, oracleId, data);
         // Auditor: Check that this value is set to false, when (and if) necessary.
         accountHasSalary[customer] = true;
         // Salary with refusal of DAO control makes no sense: DAO should be able to declare a salary recipient dead:
-        usersThatRefuseDAOControl[customer] = false;
-        minAllowedRecreate[oracleId] = minRecreate;
+        underDAOControl[customer] = true;
+        minAllowedRecreate[oracleId] = minRecreate; // FIXME: A very wrong place for this assignment.
     }
 
     /// A user can refuse DAO control. Then his account cannot be restored by DAO.
@@ -70,10 +74,11 @@ contract SalaryWithDAO is BaseRestorableSalary {
     ///       don't have a salary) to resign from control.
     ///       But fishers may trick one to resign mistakenly. So, make two ERC-1155 contracts:
     ///       with and without the ability to resign?
-    function refuseDAOControl(bool _refuse) public {
+    /// FIXME: The boolean parameter meaning was inverted.
+    function refuseDAOControl(bool _underControl) public {
         address orig = originalAddress(msg.sender);
         require(accountHasSalary[orig], "Cannot resign account receiving a salary.");
-        usersThatRefuseDAOControl[orig] = _refuse;
+        underDAOControl[orig] = _underControl;
     }
 
     function setDAO(DAOInterface _daoPlugin) public onlyDAO {
@@ -96,31 +101,30 @@ contract SalaryWithDAO is BaseRestorableSalary {
 
     // Overrides ///
 
-    function checkAllowedRestoreAccount(address oldAccount_, address newAccount_) public virtual override {
-        // FIXME: The following comment seems wrong:
-        // Ensure the user has a salary to make impossible front-running by an evil DAO
-        // moving an account to another address, when one tries to refuse DAO control for a new account.
-        require(accountHasSalary[oldAccount_], "It isn't a salary account."); // TODO: duplicate code
-        if (!usersThatRefuseDAOControl[oldAccount_]) {
-            daoPlugin.checkAllowedRestoreAccount(oldAccount_, newAccount_);
-        }
+    function checkAllowedRestoreAccount(address oldAccount_, address newAccount_)
+        public virtual override isUnderDAOControl(oldAccount_)
+    {
+        daoPlugin.checkAllowedRestoreAccount(oldAccount_, newAccount_);
     }
 
-    // FIXME: Which checks do we need?
-    function checkAllowedUnrestoreAccount(address oldAccount_, address newAccount_) public virtual override {
-        // FIXME: The following comment seems wrong:
-        // Ensure the user has a salary to make impossible front-running by an evil DAO
-        // moving an account to another address, when one tries to refuse DAO control for a new account.
-        require(accountHasSalary[oldAccount_], "It isn't a salary account."); // TODO: duplicate code
-        if (!usersThatRefuseDAOControl[oldAccount_]) {
-            daoPlugin.checkAllowedUnrestoreAccount(oldAccount_, newAccount_);
-        }
+    // TODO: Do we need isUnderDAOControl(oldAccount_) here?
+    // TODO: Allow the user to unrestore by himself?
+    function checkAllowedUnrestoreAccount(address oldAccount_, address newAccount_)
+        public virtual override isUnderDAOControl(oldAccount_)
+    {
+        daoPlugin.checkAllowedUnrestoreAccount(oldAccount_, newAccount_);
     }
 
     // Modifiers //
 
     modifier onlyDAO() {
         require(msg.sender == address(daoPlugin), "Only DAO can do.");
+        _;
+    }
+
+    /// @param customer The current address.
+    modifier isUnderDAOControl(address customer) {
+        require(underDAOControl[customer], "Not under DAO control.");
         _;
     }
 }
