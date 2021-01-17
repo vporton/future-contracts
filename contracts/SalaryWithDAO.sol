@@ -93,6 +93,8 @@ contract SalaryWithDAO is BaseRestorableSalary {
         _recreateCondition(condition);
     }
 
+    // Overrides ///
+
     function checkAllowedRestoreAccount(address oldAccount_, address newAccount_) public virtual override {
         // Ensure the user has a salary to make impossible front-running by an evil DAO
         // moving an account to another address, when one tries to refuse DAO control for a new account.
@@ -111,8 +113,6 @@ contract SalaryWithDAO is BaseRestorableSalary {
             daoPlugin.checkAllowedUnrestoreAccount(oldAccount_, newAccount_);
         }
     }
-
-    // Overrides ///
 
     // Modifiers //
 
