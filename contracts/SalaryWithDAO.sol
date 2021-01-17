@@ -22,8 +22,8 @@ contract SalaryWithDAO is BaseRestorableSalary {
     /// So allow DAO to change it no more often than this value.
     /// Auditors: Recommend the exact diapason.
     ///
-    /// FIXME: Make this a per-oracle value.
-    uint public minAllowedRecreate;
+    /// Mapping (oracle ID => time)
+    mapping (uint64 => uint) public minAllowedRecreate;
 
     /// When set to true, your account can't be moved to new address (by the DAO).
     mapping (address => bool) public usersThatRefuseDAOControl;
@@ -35,11 +35,16 @@ contract SalaryWithDAO is BaseRestorableSalary {
     // DAO share will be zero to prevent theft by voters and because it can be done instead by future voting.
     // int128 public daoShare = int128(0).div(1); // zero by default
 
-    constructor(DAOInterface _daoPlugin, string memory uri_, uint _minAllowedRecreate)
+    constructor(DAOInterface _daoPlugin, string memory uri_)
         BaseRestorableSalary(uri_)
     {
         daoPlugin = _daoPlugin;
-        minAllowedRecreate = _minAllowedRecreate;
+    }
+
+    // FIXME: It's an overriding function with a different number of arguments.
+    function registerCustomer(address customer, uint64 oracleId, uint minRecreate, bytes calldata data) virtual public {
+        super.registerCustomer(customer, oracleId, data);
+        minAllowedRecreate[oracleId] = minRecreate;
     }
 
     /// A user can refuse DAO control. Then his account cannot be restored by DAO.
