@@ -90,13 +90,17 @@ contract BaseSalary is BaseBidOnAddresses {
     /// effectively the same token and therefore minting more new token would possibly devalue the old one,
     /// thus triggering the killer's exploit again. So we make old and new completely independent.
     ///
-    /// FIXME: This function should withdraw the old token.
+    /// Old token is 1:1 converted to the new token.
     function _recreateCondition(uint256 _condition)
         internal myConditional(_condition) ensureLastConditionInChain(_condition) returns (uint256)
     {
         address customer = salaryRecipients[_condition];
         uint256 _newCondition = _doCreateCondition(customer);
         firstConditionInChain[_newCondition] = firstConditionInChain[_condition];
+
+        _balances[_newCondition][customer] = _balances[_condition][customer];
+        _balances[_condition][customer] = 0;
+
         emit ConditionReCreate(customer, _condition, _newCondition);
         return _newCondition;
     }
