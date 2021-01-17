@@ -27,11 +27,13 @@ abstract contract BaseRestorableSalary is BaseSalary {
 
     /// Give the user the "permission" to move funds from `oldAccount_` to `newAccount_`.
     ///
-    /// This function is intented to be called by an attorney.
+    /// This function is intented to be called by an attorney or the user to move to a new account.
     /// @param oldAccount_ is a current address.
     /// @param newAccount_ is a new address.
     function permitRestoreAccount(address oldAccount_, address newAccount_) public {
-        checkAllowedRestoreAccount(oldAccount_, newAccount_); // only authorized "attorneys" or attorney DAOs
+        if (msg.sender != oldAccount) {
+            checkAllowedRestoreAccount(oldAccount_, newAccount_); // only authorized "attorneys" or attorney DAOs
+        }
         // FIXME: Need to check if `newToOldAccount[newAccount_] == address(0)` and/or `originalAddresses[newAccount_] == address(0)`?
         newToOldAccount[newAccount_] = oldAccount_;
         address orig = originalAddress(oldAccount_);
@@ -44,6 +46,8 @@ abstract contract BaseRestorableSalary is BaseSalary {
     /// This function is intented to be called by an attorney.
     /// @param oldAccount_ is an old current address.
     /// @param newAccount_ is a new address.
+    /// We don't allow this to be called by `msg.sender == oldAccount_`, because
+    /// it would allow to keep stealing the salary by hijacked old account.
     function dispermitRestoreAccount(address oldAccount_, address newAccount_) public {
         checkAllowedUnrestoreAccount(oldAccount_, newAccount_); // only authorized "attorneys" or attorney DAOs
         // FIXME: Need to check if `newToOldAccount[newAccount_] != address(0)` and/or `originalAddresses[newAccount_] != address(0)`?
