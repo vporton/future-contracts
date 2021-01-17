@@ -39,7 +39,9 @@ contract Salary is BaseBidOnAddresses {
 
     /// FIXME: Each condition needs to be registered individually. // TODO: What to do in UI when registering multiple times?
     /// Can be called both before or after the oracle finish. However registering after the finish is useless.
-    /// TODO: What the dApp should show on Register page if a user has been registered more than once.
+    /// TODO: Return condition ID.
+    /// TODO: It's reasonable to store on-chain (because services like Infura may stop serving very old events)
+    ///       the first condition ID for a customer address, to use it by default.
     function registerCustomer(address customer, uint64 oracleId, bytes calldata data) virtual public {
         require(registrationDates[customer][oracleId] == 0, "You are already registered.");
         registrationDates[customer][oracleId] = block.timestamp;
