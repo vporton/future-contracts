@@ -8,8 +8,12 @@ import { IERC1155 } from "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 
 /// A base class to lock collaterals and distribute them proportional to an oracle result.
 ///
+/// One can also donate/bequest a smart wallet (explain how).
+///
 /// TODO: Ability to split/join conditionals?
 /// TODO: Use variables like `_x` as arguments.
+/// TODO: If we put a DeFi collateral directly as a donation, the APY is lost.
+///       It can be worked around by donating a smart wallet with the token.
 abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     using ABDKMath64x64 for int128;
     using SafeMath for uint256;
