@@ -80,7 +80,7 @@ contract SalaryWithDAO is BaseRestorableSalary {
 
     function forciblyRecalculateSalary(uint256 condition, address account) public onlyDAO {
         // TODO: Check that `minAllowedRecreate` seconds passed.
-        _recreateCondition(coondition);
+        _recreateCondition(condition);
     }
 
     function checkAllowedRestoreAccount(address oldAccount_, address newAccount_) public virtual override {
