@@ -43,7 +43,6 @@ contract SalaryWithDAO is BaseRestorableSalary {
         daoPlugin = _daoPlugin;
     }
 
-    // FIXME: It's an overriding function with a different number of arguments.
     function registerCustomer(address customer, uint64 oracleId, uint minRecreate, bytes calldata data) virtual public {
         address orig = originalAddress(customer);
         super._registerCustomer(orig, oracleId, data);
