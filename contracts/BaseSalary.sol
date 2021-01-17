@@ -99,9 +99,11 @@ contract BaseSalary is BaseBidOnAddresses {
     /// `firstToLastConditionInChain[]` can be used to transfer away recreated tokens
     /// even if an evil DAO tries to frontrun the customer by recreating his tokens very often.
     ///
-    /// TODO: That wrapper could be carelessly used to create the investor's killing customer incentive
-    ///       by the customer using it to transfer to an investor. Even if the customer uses it only for
-    ///       exchanges, an investor can buy at an exchange and be a killer.
+    /// Note: That wrapper could be carelessly used to create the investor's killing customer incentive
+    /// by the customer using it to transfer to an investor. Even if the customer uses it only for
+    /// exchanges, an investor can buy at an exchange and be a killer.
+    /// To make it safe, it must stop accepting any new tokens after a transfer.
+    /// It can determine if a token is new just comparing by `<` operator.
     function _recreateCondition(uint256 _condition)
         internal myConditional(_condition) ensureLastConditionInChain(_condition) returns (uint256)
     {
