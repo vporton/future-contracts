@@ -15,8 +15,6 @@ import { BaseLock } from "./BaseLock.sol";
 /// - a combination of a collateral contract address and collateral token ID (a counter of donated amount of collateral tokens)
 ///
 /// In functions of this contact `condition` is always a customer's original address.
-///
-/// TODO: Rename this contract.
 abstract contract BaseBidOnAddresses is BaseLock {
     using ABDKMath64x64 for int128;
     using SafeMath for uint256;
