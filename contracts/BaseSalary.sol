@@ -35,7 +35,7 @@ contract BaseSalary is BaseBidOnAddresses {
     /// Mapping (original address => (oracle ID => salary block time)).
     mapping(address => mapping(uint64 => mapping(uint256 => uint))) public lastSalaryDates;
     /// Mapping (condition ID => account) - salary recipients.
-    mapping(uint256 => address) public salaryRecipients; // TODO: rename
+    mapping(uint256 => address) public salaryReceivers;
 
     constructor(string memory uri_) BaseBidOnAddresses(uri_) { }
 
@@ -62,13 +62,13 @@ contract BaseSalary is BaseBidOnAddresses {
     ///
     /// This function also withdraws the old token.
     function recreateCondition(uint256 condition) public returns (uint256) {
-        require(salaryRecipients[condition] == msg.sender, "Not the recipient.");
+        require(salaryReceivers[condition] == msg.sender, "Not the recipient.");
         return _recreateCondition(condition);
     }
 
     function _doCreateCondition(address customer) internal virtual override returns (uint256) {
         uint256 _conditionId = super._doCreateCondition(customer);
-        salaryRecipients[_conditionId] = customer;
+        salaryReceivers[_conditionId] = customer;
         return _conditionId;
     }
 
@@ -94,7 +94,7 @@ contract BaseSalary is BaseBidOnAddresses {
     function _recreateCondition(uint256 _condition)
         internal myConditional(_condition) ensureLastConditionInChain(_condition) returns (uint256)
     {
-        address customer = salaryRecipients[_condition];
+        address customer = salaryReceivers[_condition];
         uint256 _newCondition = _doCreateCondition(customer);
         firstConditionInChain[_newCondition] = firstConditionInChain[_condition];
 
@@ -108,7 +108,7 @@ contract BaseSalary is BaseBidOnAddresses {
     function _doTransfer(uint256 id, address from, address to, uint256 value) internal virtual override {
         super._doTransfer(id, from, to, value);
 
-        if (id != 0 && salaryRecipients[id] == msg.sender) {
+        if (id != 0 && salaryReceivers[id] == msg.sender) {
             if (isLastConditionInChain(id)) { // correct because `id != 0`
                 _recreateCondition(id);
             }
