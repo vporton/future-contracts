@@ -46,7 +46,6 @@ contract SalaryWithDAO is BaseRestorableSalary {
         daoPlugin = _daoPlugin;
     }
 
-    // FIXME: Mistakenly overloads with the same named function in a base contract.
     function createOracle(uint minRecreate) external returns (uint64) {
         uint64 oracleId = _createOracle();
         minAllowedRecreate[oracleId] = minRecreate;
