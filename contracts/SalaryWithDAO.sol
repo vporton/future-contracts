@@ -26,10 +26,12 @@ contract SalaryWithDAO is BaseRestorableSalary {
     mapping (uint64 => uint) public minAllowedRecreate;
 
     /// When set to true, your account can't be moved to new address (by the DAO).
+    /// FIXME: Is it original or current address?
     mapping (address => bool) public usersThatRefuseDAOControl;
 
     // TODO: Is it _original_ address.
     /// Mapping (original address => account has at least one salary).
+    /// FIXME: Is it original or current address?
     mapping (address => bool) public accountHasSalary;
 
     // DAO share will be zero to prevent theft by voters and because it can be done instead by future voting.
@@ -108,13 +110,16 @@ contract SalaryWithDAO is BaseRestorableSalary {
 
     // Overrides ///
 
+    /// @param customer The current customer address.
+    /// @param oracleId The oracle ID.
+    /// @param data The current data.
     function registerCustomer(address customer, uint64 oracleId, bytes calldata data) virtual override public {
-        address orig = originalAddress(customer); // FIXME: Do we need `originalAddress()` here?
+        address orig = originalAddress(customer);
         super.registerCustomer(orig, oracleId, data);
         // Auditor: Check that this value is set to false, when (and if) necessary.
         accountHasSalary[customer] = true;
         // Salary with refusal of DAO control makes no sense: DAO should be able to declare a salary recipient dead:
-        usersThatRefuseDAOControl[orig] = false;
+        usersThatRefuseDAOControl[customer] = false;
     }
 
     // Modifiers //

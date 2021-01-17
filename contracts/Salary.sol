@@ -42,6 +42,9 @@ contract Salary is BaseBidOnAddresses {
     /// Can be called both before or after the oracle finish. However registering after the finish is useless.
     /// TODO: Return condition ID.
     /// TODO: Should we have a linked list of all customer's IDs for an oracle?
+    /// @param customer The original address.
+    /// @param oracleId The oracle ID.
+    /// @param data The current data.
     function registerCustomer(address customer, uint64 oracleId, bytes calldata data) virtual public {
         uint256 _condition = _doCreateCondition(customer);
         require(registrationDates[customer][oracleId][_condition] == 0, "You are already registered.");
