@@ -43,6 +43,7 @@ contract Salary is BaseBidOnAddresses {
     /// TODO: It's reasonable to store on-chain (because services like Infura may stop serving very old events)
     ///       the first condition ID for a customer address, to use it by default.
     ///       Should we also have a linked list of all customer's IDs for an oracle?
+    ///       Or use address-derived variable as the condition ID?
     function registerCustomer(address customer, uint64 oracleId, bytes calldata data) virtual public {
         require(registrationDates[customer][oracleId] == 0, "You are already registered.");
         registrationDates[customer][oracleId] = block.timestamp;
