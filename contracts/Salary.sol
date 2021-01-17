@@ -50,10 +50,11 @@ contract Salary is BaseBidOnAddresses {
         emit CustomerRegistered(msg.sender, oracleId, data);
     }
 
-    // FIXME: Revert if condition isn't the last condition in a chain of conditions.
     function mintSalary(uint64 oracleId, uint64 condition, bytes calldata data)
         myConditional(condition) external
     {
+        require(condition != 0 && isLastConditionInChain(condition), "Can mint only last token.");
+
         uint lastSalaryDate = lastSalaryDates[msg.sender][oracleId][condition];
         require(lastSalaryDate != 0, "You are not registered.");
         // Note: Even if you withdraw once per 20 years, you will get only 630,720,000 tokens.
@@ -117,9 +118,14 @@ contract Salary is BaseBidOnAddresses {
         super._doTransfer(id, from, to, value);
 
         if (id != 0 && salaryRecipients[id] == msg.sender) {
-            if (firstToLastConditionInChain[firstConditionInChain[id]] == id) { // correct because `id != 0`
+            if (isLastConditionInChain(id)) { // correct because `id != 0`
                 _recreateCondition(id);
             }
         }
+    }
+
+    /// Must be called with `id != 0`.
+    function isLastConditionInChain(uint256 id) {
+        return firstToLastConditionInChain[firstConditionInChain[id]] == id;
     }
 }
