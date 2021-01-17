@@ -46,35 +46,23 @@ contract SalaryWithDAO is BaseRestorableSalary {
         daoPlugin = _daoPlugin;
     }
 
-    // TODO: Add parameter to specify `underDAOControl` value when calling this. This is to avoid any avoidable loses.
-    function registerCustomer(address customer, uint64 oracleId, uint minRecreate, bytes calldata data) virtual public {
+    function registerCustomer(address customer, uint64 oracleId, uint minRecreate, bool _underDAOControl, bytes calldata data) virtual public {
         address orig = originalAddress(customer);
         super._registerCustomer(orig, oracleId, data);
         // Auditor: Check that this value is set to false, when (and if) necessary.
         accountHasSalary[customer] = true;
-        // Salary with refusal of DAO control makes no sense: DAO should be able to declare a salary recipient dead:
-        underDAOControl[customer] = true;
+        underDAOControl[customer] = _underDAOControl; // TODO: Every assignment to `underDAOControl` should trigger an event?
         minAllowedRecreate[oracleId] = minRecreate; // FIXME: A very wrong place for this assignment.
     }
 
-    /// A user can refuse DAO control. Then his account cannot be restored by DAO.
-    ///
-    /// A user that has a salary can't call this method, because it would make him "deathless" for calculating salary.
-    /// So refusing may be recommended only for traders, not for salary receivers.
+    /// A user can agree for DAO control. Then his account can be restored by DAO for the expense
+    /// of the DAO assigned personnel or software being able to steal his funds.
     ///
     /// Be exteremely careful calling this method: If you refuse and lose your key, your funds are lost!
     ///
-    /// DAO control refusal cannot be done by a salary receipient, so it can be done only by a "trader".
-    /// Traders are expected to be crypto-responsive persons, so incidentally calling this method is not
-    /// to be counted a fishing vulnerability. Thus a funny thing: all people (or rather all Ethereum accounts)
-    /// are split into two classes: salary recipients and traders. Traders are free, salaries are under society control.
-    ///
-    /// TODO: Because there is no more declaring dead, it is reasonable to allow anyone (now only them who
-    ///       don't have a salary) to resign from control.
-    ///       But fishers may trick one to resign mistakenly. So, make two ERC-1155 contracts:
+    /// TODO: Fishers may trick one to resign mistakenly. So, make two ERC-1155 contracts:
     ///       with and without the ability to resign?
-    /// FIXME: The boolean parameter meaning was inverted.
-    function refuseDAOControl(bool _underControl) public {
+    function setDAOControl(bool _underControl) public {
         address orig = originalAddress(msg.sender);
         require(accountHasSalary[orig], "Cannot resign account receiving a salary.");
         underDAOControl[orig] = _underControl;
