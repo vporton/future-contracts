@@ -131,7 +131,7 @@ contract BaseSalary is BaseBidOnAddresses {
         return _condition;
     }
 
-    // TODO: It is always used to together with myConditional()
+    // TODO: It is always used to together with myConditional(), should we optimize?
     modifier ensureLastConditionInChain(uint256 id) {
         require(id != 0 && isLastConditionInChain(id), "Only for the last salary token.");
         _;
