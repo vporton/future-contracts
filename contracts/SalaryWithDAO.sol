@@ -91,7 +91,7 @@ contract SalaryWithDAO is BaseRestorableSalary {
     // TODO: Should be called directly by the DAO or by anyone who passes a check by the DAO?
     function forciblyRecalculateSalary(uint256 condition, address account) public onlyDAO {
         uint passedTime = block.timestamp - conditionCreationDates[account][condition]; // overflow impossible
-        // FIXME: For this to work, conditions need to be per-oracle.
+        // FIXME: For this to work, conditions need to be per-oracle. But that would require to much from a user (to know future).
         require(passedTime >= minAllowedRecreate[oracleId], "Not allowed to recalculate yet.");
         _recreateCondition(condition);
     }

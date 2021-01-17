@@ -129,7 +129,7 @@ contract BaseSalary is BaseBidOnAddresses {
     {
         uint256 _condition = _doCreateCondition(customer);
         require(conditionCreationDates[customer][_condition] == 0, "You are already registered.");
-        lastSalaryDates[customer][_condition] = block.timestamp; // FIXME: 
+        lastSalaryDates[customer][_condition] = block.timestamp;
         emit CustomerRegistered(msg.sender, oracleId, data);
         return _condition;
     }
