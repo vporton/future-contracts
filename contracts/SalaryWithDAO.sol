@@ -29,7 +29,6 @@ contract SalaryWithDAO is BaseRestorableSalary {
     /// FIXME: Is it original or current address?
     mapping (address => bool) public underDAOControl;
 
-    // TODO: Is it _original_ address.
     /// Mapping (original address => account has at least one salary).
     /// FIXME: Is it original or current address?
     mapping (address => bool) public accountHasSalary;
