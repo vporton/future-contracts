@@ -2,7 +2,6 @@
 pragma solidity ^0.7.1;
 import "./BaseBidOnAddresses.sol";
 
-/// TODO: Allow the DAO to adjust registration date to pay salary retrospectively?
 /// It would cause this effect: A scientist who is already great may register then his date is moved back
 /// in time and instantly he or she receives a very big sum of money to his account.
 /// If it is done erroneously, there may be no way to move the registration date again forward in time,
@@ -16,6 +15,9 @@ import "./BaseBidOnAddresses.sol";
 ///
 /// TODO: Should a salary recipient be able to transfer his salary receipt right to another user?
 ///       Should this transfer also update the token? (If it does, it makes no sense. If it doesn't, does it create a gain to kill him?)
+///
+/// It was considered to allow the DAO to adjust registration date to pay salary retrospectively,
+/// but this seems giving too much rights to the DAO similarly as if it had the right to declare anyone dead.
 contract BaseSalary is BaseBidOnAddresses {
     event CustomerRegistered(
         address customer,
