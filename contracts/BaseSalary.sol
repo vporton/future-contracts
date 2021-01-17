@@ -101,6 +101,7 @@ contract BaseSalary is BaseBidOnAddresses {
 
         _balances[_newCondition][customer] = _balances[_condition][customer];
         _balances[_condition][customer] = 0;
+        // FIXME: Two transfer events forgotten.
 
         lastSalaryDates[customer][_newCondition] = lastSalaryDates[customer][_condition];
         // TODO: Should we here set `lastSalaryDates[customer][oracleId][_condition] = 0` to save storage space?
