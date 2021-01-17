@@ -41,8 +41,8 @@ contract Salary is BaseBidOnAddresses {
     /// Can be called both before or after the oracle finish. However registering after the finish is useless.
     function registerCustomer(uint64 oracleId, bytes calldata data) virtual public {
         require(registrationDates[msg.sender] == 0, "You are already registered.");
-        registrationDates[msg.sender] = block.timestamp;
-        lastSalaryDates[msg.sender] = block.timestamp;
+        registrationDates[msg.sender] = block.timestamp; // FIXME: Should be per-oracleId.
+        lastSalaryDates[msg.sender] = block.timestamp; // FIXME: Should be per-oracleId.
         emit CustomerRegistered(msg.sender, oracleId, data);
     }
 
