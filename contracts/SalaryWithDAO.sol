@@ -9,7 +9,7 @@ import "./DAOInterface.sol";
 ///        The same feature effectively prevents to register someone for salary before he is born or is a small child.
 ///        However, if the DAO will recreate somebody's token very often, it can harden his life.
 ///        So allow DAO to change it no more often than N days, where N can be set to some fixed diapason like
-///        1/2 month - 3 months.
+///        1/2 month - 3 months. Auditors: Recommend the exact diapason.
 contract SalaryWithDAO is BaseRestorableSalary {
     using ABDKMath64x64 for int128;
 
