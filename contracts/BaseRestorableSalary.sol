@@ -63,6 +63,8 @@ abstract contract BaseRestorableSalary is BaseSalary {
     /// @param newAccount_ New account.
     /// @param token_ The ERC-1155 token ID.
     /// This function can be called by the affected user. // TODO: Also allow to be called by an attorney?
+    ///
+    /// Remark: We intentionally create no new tokens as on a regular transfer, because it isn't a transfer to a trader.
     function restoreFunds(address oldAccount_, address newAccount_, uint256 token_) public
         checkMovedOwner(oldAccount_, newAccount_)
     {
@@ -79,6 +81,8 @@ abstract contract BaseRestorableSalary is BaseSalary {
     /// @param newAccount_ New account.
     /// @param tokens_ The ERC-1155 token IDs.
     /// This function can be called by the affected user. // TODO: Also allow to be called by an attorney?
+    ///
+    /// Remark: We intentionally create no new tokens as on a regular transfer, because it isn't a transfer to a trader.
     function restoreFundsBatch(address oldAccount_, address newAccount_, uint256[] calldata tokens_) public
         checkMovedOwner(oldAccount_, newAccount_)
     {

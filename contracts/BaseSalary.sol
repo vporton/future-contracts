@@ -13,9 +13,6 @@ import "./BaseBidOnAddresses.sol";
 /// mitigate.
 /// But should we decide what to disallow to the global voters?
 ///
-/// TODO: Should a salary recipient be able to transfer his salary receipt right to another user?
-///       Should this transfer also update the token? (If it does, it makes no sense. If it doesn't, does it create a gain to kill him?)
-///
 /// It was considered to allow the DAO to adjust registration date to pay salary retrospectively,
 /// but this seems giving too much rights to the DAO similarly as if it had the right to declare anyone dead.
 contract BaseSalary is BaseBidOnAddresses {
