@@ -58,7 +58,7 @@ contract BaseSalary is BaseBidOnAddresses {
     /// It is useful to remove a trader's incentive to kill the issuer to reduce the circulating supply.
     /// The same can be done by transferring to yourself 0 tokens, but this method uses less gas.
     ///
-    /// TODO: Should we recommend:
+    /// Issue to solve later: Should we recommend:
     /// - calling this function on each new project milestone?
     /// - calling this function regularly (e.g. every week)?
     ///
