@@ -97,6 +97,7 @@ contract SalaryWithDAO is BaseRestorableSalary {
     // Overrides ///
 
     function checkAllowedRestoreAccount(address oldAccount_, address newAccount_) public virtual override {
+        // FIXME: The following comment seems wrong:
         // Ensure the user has a salary to make impossible front-running by an evil DAO
         // moving an account to another address, when one tries to refuse DAO control for a new account.
         require(accountHasSalary[oldAccount_], "It isn't a salary account."); // TODO: duplicate code
@@ -107,6 +108,7 @@ contract SalaryWithDAO is BaseRestorableSalary {
 
     // FIXME: Which checks do we need?
     function checkAllowedUnrestoreAccount(address oldAccount_, address newAccount_) public virtual override {
+        // FIXME: The following comment seems wrong:
         // Ensure the user has a salary to make impossible front-running by an evil DAO
         // moving an account to another address, when one tries to refuse DAO control for a new account.
         require(accountHasSalary[oldAccount_], "It isn't a salary account."); // TODO: duplicate code
