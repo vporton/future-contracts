@@ -29,10 +29,10 @@ contract BaseSalary is BaseBidOnAddresses {
         bytes data
     );
 
-    /// Mapping (original address => (oracle ID => (condition ID => registration time))).
-    mapping(address => mapping(uint64 => mapping(uint256 => uint))) public registrationDates;
-    /// Mapping (original address => (oracle ID => salary block time)).
-    mapping(address => mapping(uint64 => mapping(uint256 => uint))) public lastSalaryDates;
+    /// Mapping (original address => (condition ID => registration time)).
+    mapping(address => mapping(uint256 => uint)) public conditionCreationDates;
+    /// Mapping (original address => salary block time).
+    mapping(address => mapping(uint256 => uint)) public lastSalaryDates;
     /// Mapping (condition ID => account) - salary recipients.
     mapping(uint256 => address) public salaryReceivers;
 
@@ -41,7 +41,7 @@ contract BaseSalary is BaseBidOnAddresses {
     function mintSalary(uint64 oracleId, uint64 condition, bytes calldata data)
         myConditional(condition) ensureLastConditionInChain(condition) external
     {
-        uint lastSalaryDate = lastSalaryDates[msg.sender][oracleId][condition];
+        uint lastSalaryDate = lastSalaryDates[msg.sender][condition];
         require(lastSalaryDate != 0, "You are not registered.");
         // Note: Even if you withdraw once per 20 years, you will get only 630,720,000 tokens.
         // This number is probably not to big to be displayed well in UIs.
@@ -66,9 +66,10 @@ contract BaseSalary is BaseBidOnAddresses {
     }
 
     function _doCreateCondition(address customer) internal virtual override returns (uint256) {
-        uint256 _conditionId = super._doCreateCondition(customer);
-        salaryReceivers[_conditionId] = customer;
-        return _conditionId;
+        uint256 _condition = super._doCreateCondition(customer);
+        salaryReceivers[_condition] = customer;
+        conditionCreationDates[customer][_condition] = block.timestamp;
+        return _condition;
     }
 
     /// Make a new condition that replaces the old one.
@@ -101,6 +102,9 @@ contract BaseSalary is BaseBidOnAddresses {
         _balances[_newCondition][customer] = _balances[_condition][customer];
         _balances[_condition][customer] = 0;
 
+        lastSalaryDates[customer][_newCondition] = lastSalaryDates[customer][_condition];
+        // TODO: Should we here set `lastSalaryDates[customer][oracleId][_condition] = 0` to save storage space?
+
         emit ConditionReCreate(customer, _condition, _newCondition);
         return _newCondition;
     }
@@ -124,9 +128,8 @@ contract BaseSalary is BaseBidOnAddresses {
         virtual internal returns (uint256)
     {
         uint256 _condition = _doCreateCondition(customer);
-        require(registrationDates[customer][oracleId][_condition] == 0, "You are already registered.");
-        registrationDates[customer][oracleId][_condition] = block.timestamp;
-        lastSalaryDates[customer][oracleId][_condition] = block.timestamp;
+        require(conditionCreationDates[customer][_condition] == 0, "You are already registered.");
+        lastSalaryDates[customer][_condition] = block.timestamp; // FIXME: 
         emit CustomerRegistered(msg.sender, oracleId, data);
         return _condition;
     }

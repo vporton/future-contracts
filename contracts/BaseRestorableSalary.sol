@@ -31,7 +31,7 @@ abstract contract BaseRestorableSalary is BaseSalary {
     /// @param oldAccount_ is a current address.
     /// @param newAccount_ is a new address.
     function permitRestoreAccount(address oldAccount_, address newAccount_) public {
-        if (msg.sender != oldAccount) {
+        if (msg.sender != oldAccount_) {
             checkAllowedRestoreAccount(oldAccount_, newAccount_); // only authorized "attorneys" or attorney DAOs
         }
         // FIXME: Need to check if `newToOldAccount[newAccount_] == address(0)` and/or `originalAddresses[newAccount_] == address(0)`?

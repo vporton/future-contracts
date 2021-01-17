@@ -90,7 +90,9 @@ contract SalaryWithDAO is BaseRestorableSalary {
     /// This is to be called among other when a person dies.
     // TODO: Should be called directly by the DAO or by anyone who passes a check by the DAO?
     function forciblyRecalculateSalary(uint256 condition, address account) public onlyDAO {
-        // TODO: Check that `minAllowedRecreate` seconds passed.
+        uint passedTime = block.timestamp - conditionCreationDates[account][condition]; // overflow impossible
+        // FIXME: For this to work, conditions need to be per-oracle.
+        require(passedTime >= minAllowedRecreate[oracleId], "Not allowed to recalculate yet.");
         _recreateCondition(condition);
     }
 
