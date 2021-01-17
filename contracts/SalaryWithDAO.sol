@@ -15,6 +15,10 @@ contract SalaryWithDAO is BaseRestorableSalary {
     /// When set to true, your account can't be moved to new address (by the DAO).
     mapping (address => bool) public usersThatRefuseDAOControl;
 
+    // TODO: Is it _original_ address.
+    /// Mapping (original address => account has at least one salary).
+    mapping (address => bool) public accountHasSalary;
+
     // DAO share will be zero to prevent theft by voters and because it can be done instead by future voting.
     // int128 public daoShare = int128(0).div(1); // zero by default
 
@@ -40,8 +44,7 @@ contract SalaryWithDAO is BaseRestorableSalary {
     ///       with and without the ability to resign?
     function refuseDAOControl(bool _refuse) public {
         address orig = originalAddress(msg.sender);
-        // FIXME: (not here) `registrationDates` should be probably per-condition, not per account.
-        require(registrationDates[orig] == 0, "Cannot resign account receiving a salary.");
+        require(accountHasSalary[orig], "Cannot resign account receiving a salary.");
         usersThatRefuseDAOControl[orig] = _refuse;
     }
 
@@ -62,7 +65,7 @@ contract SalaryWithDAO is BaseRestorableSalary {
     function checkAllowedRestoreAccount(address oldAccount_, address newAccount_) public virtual override {
         // Ensure the user has a salary to make impossible front-running by an evil DAO
         // moving an account to another address, when one tries to refuse DAO control for a new account.
-        require(registrationDates[oldAccount_] != 0, "It isn't a salary account.");
+        require(accountHasSalary[oldAccount_], "It isn't a salary account."); // TODO: duplicate code
         if (!usersThatRefuseDAOControl[oldAccount_]) {
             daoPlugin.checkAllowedRestoreAccount(oldAccount_, newAccount_);
         }
@@ -72,7 +75,7 @@ contract SalaryWithDAO is BaseRestorableSalary {
     function checkAllowedUnrestoreAccount(address oldAccount_, address newAccount_) public virtual override {
         // Ensure the user has a salary to make impossible front-running by an evil DAO
         // moving an account to another address, when one tries to refuse DAO control for a new account.
-        require(registrationDates[oldAccount_] != 0, "It isn't a salary account.");
+        require(accountHasSalary[oldAccount_], "It isn't a salary account."); // TODO: duplicate code
         if (!usersThatRefuseDAOControl[oldAccount_]) {
             daoPlugin.checkAllowedUnrestoreAccount(oldAccount_, newAccount_);
         }
@@ -80,11 +83,13 @@ contract SalaryWithDAO is BaseRestorableSalary {
 
     // Overrides ///
 
-    function registerCustomer(uint64 oracleId, bytes calldata data) virtual override public {
-        address orig = originalAddress(msg.sender); // FIXME: Do we need `originalAddress()` here?
+    function registerCustomer(address customer, uint64 oracleId, bytes calldata data) virtual override public {
+        address orig = originalAddress(customer); // FIXME: Do we need `originalAddress()` here?
+        super.registerCustomer(orig, oracleId, data);
+        // Auditor: Check that this value is set to false, when (and if) necessary.
+        accountHasSalary[customer] = true;
         // Salary with refusal of DAO control makes no sense: DAO should be able to declare a salary recipient dead:
         usersThatRefuseDAOControl[orig] = false;
-        super.registerCustomer(oracleId, data);
     }
 
     // Modifiers //

@@ -30,19 +30,18 @@ contract Salary is BaseBidOnAddresses {
         bytes data
     );
 
-    /// Mapping from original address to registration time.
-    mapping(address => uint) public registrationDates;
-    /// Mapping from original address to last salary block time.
-    mapping(address => uint) public lastSalaryDates;
+    /// Mapping (original address => (oracle ID => registration time)).
+    mapping(address => mapping(uint64 => uint)) public registrationDates;
+    /// Mapping (original address => (oracle ID => salary block time)).
+    mapping(address => mapping(uint64 => uint)) public lastSalaryDates;
 
     constructor(string memory uri_) BaseBidOnAddresses(uri_) { }
 
-    /// Anyone can register himself.
     /// Can be called both before or after the oracle finish. However registering after the finish is useless.
-    function registerCustomer(uint64 oracleId, bytes calldata data) virtual public {
-        require(registrationDates[msg.sender] == 0, "You are already registered.");
-        registrationDates[msg.sender] = block.timestamp; // FIXME: Should be per-oracleId.
-        lastSalaryDates[msg.sender] = block.timestamp; // FIXME: Should be per-oracleId.
+    function registerCustomer(address customer, uint64 oracleId, bytes calldata data) virtual public {
+        require(registrationDates[customer][oracleId] == 0, "You are already registered.");
+        registrationDates[customer][oracleId] = block.timestamp; // FIXME: Should be per-oracleId.
+        lastSalaryDates[customer][oracleId] = block.timestamp; // FIXME: Should be per-oracleId.
         emit CustomerRegistered(msg.sender, oracleId, data);
     }
 
@@ -50,13 +49,13 @@ contract Salary is BaseBidOnAddresses {
     function mintSalary(uint64 oracleId, uint64 condition, bytes calldata data)
         myConditional(condition) external
     {
-        uint lastSalaryDate = lastSalaryDates[msg.sender];
+        uint lastSalaryDate = lastSalaryDates[msg.sender][oracleId];
         require(lastSalaryDate != 0, "You are not registered.");
         // Note: Even if you withdraw once per 20 years, you will get only 630,720,000 tokens.
         // This number is probably not to big to be displayed well in UIs.
         uint256 amount = (lastSalaryDate - block.timestamp) * 10**18; // one token per second
         _mintToCustomer(msg.sender, condition, amount, data);
-        lastSalaryDates[msg.sender] = block.timestamp;
+        lastSalaryDates[msg.sender][oracleId] = block.timestamp;
         emit SalaryMinted(msg.sender, oracleId, amount, data);
     }
 }
