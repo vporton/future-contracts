@@ -9,19 +9,6 @@ contract SalaryWithDAO is BaseRestorableSalary {
 
     DAOInterface public daoPlugin;
 
-    /// Minimum allowed interval between adjanced salary token recreations triggered by the DAO.
-    ///
-    /// This is set once and can't be changed by the DAO:
-    ///
-    /// The same feature effectively prevents to register someone for salary before he is born or is a small child.
-    ///
-    /// However, if the DAO will recreate somebody's token very often, it can harden his life.
-    /// So allow DAO to change it no more often than this value.
-    /// Auditors: Recommend the exact diapason.
-    ///
-    /// Mapping (oracle ID => time)
-    mapping (uint64 => uint) public minAllowedRecreate;
-
     /// When set to true, your account can't be moved to new address (by the DAO).
     ///
     /// By default new users are not under DAO control to avoid front-running of resigning control
@@ -42,10 +29,8 @@ contract SalaryWithDAO is BaseRestorableSalary {
         daoPlugin = _daoPlugin;
     }
 
-    function createOracle(uint minRecreate) external returns (uint64) {
-        uint64 oracleId = _createOracle();
-        minAllowedRecreate[oracleId] = minRecreate;
-        return oracleId;
+    function createOracle() external returns (uint64) {
+        return _createOracle();
     }
 
     function registerCustomer(address customer, uint64 oracleId, bool _underDAOControl, bytes calldata data)
@@ -90,10 +75,7 @@ contract SalaryWithDAO is BaseRestorableSalary {
     /// This is to be called among other when a person dies.
     // TODO: Should be called directly by the DAO or by anyone who passes a check by the DAO?
     function forciblyRecalculateSalary(uint256 condition, address account) public onlyDAO {
-        uint passedTime = block.timestamp - conditionCreationDates[account][condition]; // overflow impossible
-        // FIXME: For this to work, conditions need to be per-oracle. But that would require too much from a user (to know future).
-        require(passedTime >= minAllowedRecreate[oracleId], "Not allowed to recalculate yet.");
-        _recreateCondition(condition);
+        _recreateCondition(condition); // FIXME: forgotten account
     }
 
     // Overrides ///

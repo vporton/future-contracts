@@ -47,7 +47,7 @@ contract BaseSalary is BaseBidOnAddresses {
         // This number is probably not to big to be displayed well in UIs.
         uint256 amount = (lastSalaryDate - block.timestamp) * 10**18; // one token per second
         _mintToCustomer(msg.sender, condition, amount, data);
-        lastSalaryDates[msg.sender][oracleId][condition] = block.timestamp;
+        lastSalaryDates[msg.sender][condition] = block.timestamp;
         emit SalaryMinted(msg.sender, oracleId, amount, data);
     }
 
