@@ -39,6 +39,7 @@ contract Salary is BaseBidOnAddresses {
 
     /// FIXME: Each condition needs to be registered individually. // TODO: What to do in UI when registering multiple times?
     /// Can be called both before or after the oracle finish. However registering after the finish is useless.
+    /// TODO: What the dApp should show on Register page if a user has been registered more than once.
     function registerCustomer(address customer, uint64 oracleId, bytes calldata data) virtual public {
         require(registrationDates[customer][oracleId] == 0, "You are already registered.");
         registrationDates[customer][oracleId] = block.timestamp;
