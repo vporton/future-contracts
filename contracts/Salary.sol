@@ -75,6 +75,7 @@ contract Salary is BaseBidOnAddresses {
     ///
     /// This function also withdraws the old token.
     function recreateCondition(uint256 condition) public returns (uint256) {
+        require(salaryRecipients[condition] == msg.sender, "Not the recipient.");
         return _recreateCondition(condition);
     }
 
@@ -105,12 +106,12 @@ contract Salary is BaseBidOnAddresses {
     /// FIXME: Allow to recreate only the last token in the list.
     ///
     /// FIXME: This function should be in `Salary` contract instead.
-    /// FIXME: Add `customer` argument.
     /// FIXME: This function should withdraw the old token.
     function _recreateCondition(uint256 _condition) internal myConditional(_condition) returns (uint256) {
-        uint256 _newCondition = _doCreateCondition(msg.sender);
+        address customer = salaryRecipients[_condition];
+        uint256 _newCondition = _doCreateCondition(customer);
         firstConditionInChain[_newCondition] = firstConditionInChain[_condition];
-        emit ConditionReCreate(msg.sender, _condition, _newCondition);
+        emit ConditionReCreate(customer, _condition, _newCondition);
         return _newCondition;
     }
 
@@ -125,7 +126,7 @@ contract Salary is BaseBidOnAddresses {
     }
 
     /// Must be called with `id != 0`.
-    function isLastConditionInChain(uint256 id) {
+    function isLastConditionInChain(uint256 id) internal view returns (bool) {
         return firstToLastConditionInChain[firstConditionInChain[id]] == id;
     }
 }
