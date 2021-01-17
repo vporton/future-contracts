@@ -92,6 +92,16 @@ contract BaseSalary is BaseBidOnAddresses {
     /// thus triggering the killer's exploit again. So we make old and new completely independent.
     ///
     /// Old token is 1:1 converted to the new token.
+    ///
+    /// Remark: To make easy to exchange the token even if it is recreated, we can make a wrapper or locker
+    /// token that uses `firstConditionInChain[]` to aggregate several tokens together.
+    /// A similar wrapper (the customer need to `setApprovalForAll()` on it) that uses
+    /// `firstToLastConditionInChain[]` can be used to transfer away recreated tokens
+    /// even if an evil DAO tries to frontrun the customer by recreating his tokens very often.
+    ///
+    /// TODO: That wrapper could be carelessly used to create the investor's killing customer incentive
+    ///       by the customer using it to transfer to an investor. Even if the customer uses it only for
+    ///       exchanges, an investor can buy at an exchange and be a killer.
     function _recreateCondition(uint256 _condition)
         internal myConditional(_condition) ensureLastConditionInChain(_condition) returns (uint256)
     {
