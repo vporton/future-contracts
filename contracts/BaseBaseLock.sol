@@ -119,7 +119,7 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     /// - calling this function on each new project milestone?
     /// - calling this function regularly (e.g. every week)?
     ///
-    /// Note: To sell N tokens need to create a new 1 token that we also need to sell in some future.
+    /// This function also withdraws the old token.
     function recreateCondition(uint256 condition) public returns (uint256) {
         return _recreateCondition(condition);
     }
@@ -486,6 +486,7 @@ abstract contract BaseBaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     ///
     /// FIXME: This function should be in `Salary` contract instead.
     /// FIXME: Add `customer` argument.
+    /// FIXME: This function should withdraw the old token.
     function _recreateCondition(uint256 _condition) internal myConditional(_condition) returns (uint256) {
         uint256 _newCondition = _doCreateCondition(msg.sender);
         firstConditionInChain[_newCondition] = firstConditionInChain[_condition];
