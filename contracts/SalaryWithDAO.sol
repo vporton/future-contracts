@@ -4,16 +4,27 @@ import { ABDKMath64x64 } from "abdk-libraries-solidity/ABDKMath64x64.sol";
 import "./BaseRestorableSalary.sol";
 import "./DAOInterface.sol";
 
-/// FIXME: Remove the dictatorship ability to declare anyone dead, instead make possible to forcibly recreate his
-///        token. It's useful to punish someone for decreasing his work performance or an evil act.
-///        The same feature effectively prevents to register someone for salary before he is born or is a small child.
-///        However, if the DAO will recreate somebody's token very often, it can harden his life.
-///        So allow DAO to change it no more often than N days, where N can be set to some fixed diapason like
-///        1/2 month - 3 months. Auditors: Recommend the exact diapason.
+/// FIXME: 
 contract SalaryWithDAO is BaseRestorableSalary {
     using ABDKMath64x64 for int128;
 
     DAOInterface public daoPlugin;
+
+    /// Minimum allowed interval between adjanced salary token recreations triggered by the DAO.
+    ///
+    /// This is set once and can't be changed by the DAO:
+    ///
+    /// TODO: Remove the dictatorship ability to declare anyone dead, instead make possible to forcibly recreate his
+    /// token. It's useful to punish someone for decreasing his work performance or an evil act.
+    ///
+    /// The same feature effectively prevents to register someone for salary before he is born or is a small child.
+    ///
+    /// However, if the DAO will recreate somebody's token very often, it can harden his life.
+    /// So allow DAO to change it no more often than this value.
+    /// Auditors: Recommend the exact diapason.
+    ///
+    /// FIXME: Make this a per-oracle value.
+    uint public minAllowedRecreate;
 
     /// When set to true, your account can't be moved to new address (by the DAO).
     mapping (address => bool) public usersThatRefuseDAOControl;
@@ -25,8 +36,11 @@ contract SalaryWithDAO is BaseRestorableSalary {
     // DAO share will be zero to prevent theft by voters and because it can be done instead by future voting.
     // int128 public daoShare = int128(0).div(1); // zero by default
 
-    constructor(DAOInterface _daoPlugin, string memory uri_) BaseRestorableSalary(uri_) {
+    constructor(DAOInterface _daoPlugin, string memory uri_, uint _minAllowedRecreate)
+        BaseRestorableSalary(uri_)
+    {
         daoPlugin = _daoPlugin;
+        minAllowedRecreate = _minAllowedRecreate;
     }
 
     /// A user can refuse DAO control. Then his account cannot be restored by DAO.
@@ -61,8 +75,12 @@ contract SalaryWithDAO is BaseRestorableSalary {
     }
 
     function _mintToCustomer(address customer, uint256 conditionalTokenId, uint256 amount, bytes calldata data) internal virtual override {
-        daoPlugin.checkPersonDead(customer);
         super._mintToCustomer(customer, conditionalTokenId, amount, data);
+    }
+
+    function forciblyRecalculateSalary(uint256 condition, address account) public onlyDAO {
+        // TODO: Check that `minAllowedRecreate` seconds passed.
+        _recreateCondition(coondition);
     }
 
     function checkAllowedRestoreAccount(address oldAccount_, address newAccount_) public virtual override {
