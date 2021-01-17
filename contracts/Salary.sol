@@ -6,7 +6,6 @@ contract Salary is BaseSalary {
     constructor(string memory uri_) BaseSalary(uri_) { }
 
     /// Can be called both before or after the oracle finish. However registering after the finish is useless.
-    /// TODO: Should we have a linked list of all customer's IDs for an oracle?
     /// @param customer The original address.
     /// @param oracleId The oracle ID.
     /// @param data The current data.
