@@ -7,7 +7,6 @@ import "./DAOInterface.sol";
 contract SalaryWithDAO is BaseRestorableSalary {
     using ABDKMath64x64 for int128;
 
-    // FIXME: Separate DAO for every oracle.
     DAOInterface public daoPlugin;
 
     /// Minimum allowed interval between adjanced salary token recreations triggered by the DAO.
