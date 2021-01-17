@@ -13,9 +13,6 @@ contract SalaryWithDAO is BaseRestorableSalary {
     ///
     /// This is set once and can't be changed by the DAO:
     ///
-    /// TODO: Remove the dictatorship ability to declare anyone dead, instead make possible to forcibly recreate his
-    /// token. It's useful to punish someone for decreasing his work performance or an evil act.
-    ///
     /// The same feature effectively prevents to register someone for salary before he is born or is a small child.
     ///
     /// However, if the DAO will recreate somebody's token very often, it can harden his life.
@@ -88,6 +85,8 @@ contract SalaryWithDAO is BaseRestorableSalary {
         super._mintToCustomer(customer, conditionalTokenId, amount, data);
     }
 
+    /// It's useful to punish someone for decreasing his work performance or an evil act.
+    ///
     /// This is to be called among other when a person dies.
     // TODO: Should be called directly by the DAO or by anyone who passes a check by the DAO?
     function forciblyRecalculateSalary(uint256 condition, address account) public onlyDAO {
