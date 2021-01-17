@@ -73,9 +73,10 @@ contract SalaryWithDAO is BaseRestorableSalary {
     /// It's useful to punish someone for decreasing his work performance or an evil act.
     ///
     /// This is to be called among other when a person dies.
-    // TODO: Should be called directly by the DAO or by anyone who passes a check by the DAO?
-    function forciblyRecalculateSalary(uint256 condition, address account) public onlyDAO {
-        _recreateCondition(condition); // FIXME: forgotten account
+    ///
+    /// TODO: Should be called directly by the DAO or by anyone who passes a check by the DAO?
+    function forciblyRecalculateSalary(uint256 condition) public onlyDAO {
+        _recreateCondition(condition);
     }
 
     // Overrides ///

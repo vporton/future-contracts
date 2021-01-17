@@ -106,6 +106,8 @@ contract BaseSalary is BaseBidOnAddresses {
     /// It can determine if a token is new just comparing by `<` operator.
     /// It's strongly recommended that an app that uses this contract provides its own swap/exchange UI
     /// and warns the user not to use arbitrary exchanges as being an incentive to kill the user.
+    ///
+    /// FIXME: When called by the DAO, the myConditional(_condition) check is superfluous.
     function _recreateCondition(uint256 _condition)
         internal myConditional(_condition) ensureLastConditionInChain(_condition) returns (uint256)
     {
