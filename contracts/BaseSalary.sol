@@ -104,6 +104,8 @@ contract BaseSalary is BaseBidOnAddresses {
     /// exchanges, an investor can buy at an exchange and be a killer.
     /// To make it safe, it must stop accepting any new tokens after a transfer.
     /// It can determine if a token is new just comparing by `<` operator.
+    /// It's strongly recommended that an app that uses this contract provides its own swap/exchange UI
+    /// and warns the user not to use arbitrary exchanges as being an incentive to kill the user.
     function _recreateCondition(uint256 _condition)
         internal myConditional(_condition) ensureLastConditionInChain(_condition) returns (uint256)
     {
