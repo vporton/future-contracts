@@ -30,21 +30,21 @@ contract Salary is BaseBidOnAddresses {
         bytes data
     );
 
-    /// Mapping (original address => (oracle ID => registration time)).
-    mapping(address => mapping(uint64 => uint)) public registrationDates;
+    /// Mapping (original address => (oracle ID => (condition ID => registration time))).
+    mapping(address => mapping(uint64 => mapping(uint256 => uint))) public registrationDates;
     /// Mapping (original address => (oracle ID => salary block time)).
-    mapping(address => mapping(uint64 => uint)) public lastSalaryDates;
+    mapping(address => mapping(uint64 => mapping(uint256 => uint))) public lastSalaryDates;
 
     constructor(string memory uri_) BaseBidOnAddresses(uri_) { }
 
-    /// FIXME: Each condition needs to be registered individually. // TODO: What to do in UI when registering multiple times?
     /// Can be called both before or after the oracle finish. However registering after the finish is useless.
     /// TODO: Return condition ID.
     /// TODO: Should we have a linked list of all customer's IDs for an oracle?
     function registerCustomer(address customer, uint64 oracleId, bytes calldata data) virtual public {
-        require(registrationDates[customer][oracleId] == 0, "You are already registered.");
-        registrationDates[customer][oracleId] = block.timestamp;
-        lastSalaryDates[customer][oracleId] = block.timestamp;
+        uint256 _condition = _doCreateCondition(customer);
+        require(registrationDates[customer][oracleId][_condition] == 0, "You are already registered.");
+        registrationDates[customer][oracleId][_condition] = block.timestamp;
+        lastSalaryDates[customer][oracleId][_condition] = block.timestamp;
         emit CustomerRegistered(msg.sender, oracleId, data);
     }
 
@@ -52,13 +52,13 @@ contract Salary is BaseBidOnAddresses {
     function mintSalary(uint64 oracleId, uint64 condition, bytes calldata data)
         myConditional(condition) external
     {
-        uint lastSalaryDate = lastSalaryDates[msg.sender][oracleId];
+        uint lastSalaryDate = lastSalaryDates[msg.sender][oracleId][condition];
         require(lastSalaryDate != 0, "You are not registered.");
         // Note: Even if you withdraw once per 20 years, you will get only 630,720,000 tokens.
         // This number is probably not to big to be displayed well in UIs.
         uint256 amount = (lastSalaryDate - block.timestamp) * 10**18; // one token per second
         _mintToCustomer(msg.sender, condition, amount, data);
-        lastSalaryDates[msg.sender][oracleId] = block.timestamp;
+        lastSalaryDates[msg.sender][oracleId][condition] = block.timestamp;
         emit SalaryMinted(msg.sender, oracleId, amount, data);
     }
 }
