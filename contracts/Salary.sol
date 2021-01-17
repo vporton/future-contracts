@@ -37,6 +37,7 @@ contract Salary is BaseBidOnAddresses {
 
     constructor(string memory uri_) BaseBidOnAddresses(uri_) { }
 
+    /// FIXME: Each condition needs to be registered individually.
     /// Can be called both before or after the oracle finish. However registering after the finish is useless.
     function registerCustomer(address customer, uint64 oracleId, bytes calldata data) virtual public {
         require(registrationDates[customer][oracleId] == 0, "You are already registered.");
