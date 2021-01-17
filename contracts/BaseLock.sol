@@ -12,8 +12,6 @@ import { IERC1155 } from "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 ///
 /// TODO: Ability to split/join conditionals?
 /// TODO: Use variables like `_x` as arguments.
-/// TODO: If we put a DeFi collateral directly as a donation, the APY is lost.
-///       It can be worked around by donating a smart wallet with the token.
 ///
 /// Inheriting from here don't forget to create `createOracle()` external method.
 abstract contract BaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
@@ -134,6 +132,9 @@ abstract contract BaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     /// First, the collateral token need to be approved to be spent by this contract from the address `from`.
     ///
     /// It also mints a token (with a different ID), that counts donations in that token.
+    ///
+    /// If we put a DeFi collateral directly as a donation, the APY is lost.
+    /// It can be worked around by bequesting a smart contract with the token.
     /// @param collateralContractAddress The collateral ERC-1155 contract address.
     /// @param collateralTokenId The collateral ERC-1155 token ID.
     /// @param oracleId The oracle ID to whose ecosystem to donate to.
