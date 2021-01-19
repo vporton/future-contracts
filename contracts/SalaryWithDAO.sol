@@ -13,11 +13,11 @@ contract SalaryWithDAO is BaseRestorableSalary {
     ///
     /// By default new users are not under DAO control to avoid front-running of resigning control
     /// by an evil DAO.
-    /// FIXME: Is it original or current address?
+    ///
+    /// Mapping (current address => under control)
     mapping (address => bool) public underDAOControl;
 
-    /// Mapping (original address => account has at least one salary).
-    /// FIXME: Is it original or current address?
+    /// Mapping (current address => account has at least one salary).
     mapping (address => bool) public accountHasSalary;
 
     // DAO share will be zero to prevent theft by voters and because it can be done instead by future voting.
