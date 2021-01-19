@@ -98,10 +98,23 @@ contract SalaryWithDAO is BaseRestorableSalary {
         daoPlugin.checkAllowedUnrestoreAccount(oldAccount_, newAccount_);
     }
 
+    function _checkRecreatePermissions(uint256 _condition) internal virtual override
+    {
+        if (!_isDAO()) {
+            super._checkRecreatePermissions(_condition);
+        }
+    }
+
+    // Internal //
+
+    function _isDAO() internal view returns (bool) {
+        return msg.sender == address(daoPlugin);
+    }
+
     // Modifiers //
 
     modifier onlyDAO() {
-        require(msg.sender == address(daoPlugin), "Only DAO can do.");
+        require(_isDAO(), "Only DAO can do.");
         _;
     }
 

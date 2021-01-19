@@ -117,7 +117,7 @@ abstract contract BaseRestorableSalary is BaseSalary {
 
     // Internal functions //
 
-    function _avoidZeroAddressManipulatins(address oldAccount_, address newAccount_) internal {
+    function _avoidZeroAddressManipulatins(address oldAccount_, address newAccount_) internal view {
         // To avoid make-rich-quick manipulations with lost funds:
         require(oldAccount_ != address(0) && newAccount_ != address(0) &&
                 originalAddresses[newAccount_] != address(0) && newToOldAccount[newAccount_] != address(0),

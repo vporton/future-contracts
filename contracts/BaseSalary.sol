@@ -107,9 +107,9 @@ contract BaseSalary is BaseBidOnAddresses {
     /// It's strongly recommended that an app that uses this contract provides its own swap/exchange UI
     /// and warns the user not to use arbitrary exchanges as being an incentive to kill the user.
     ///
-    /// FIXME: When called by the DAO, the myConditional(_condition) check is superfluous.
+    /// TODO: Allow to be called by anyone, not only the account owner or DAO?
     function _recreateCondition(uint256 _condition)
-        internal myConditional(_condition) ensureLastConditionInChain(_condition) returns (uint256)
+        internal _canRecreatePermissions(_condition) ensureLastConditionInChain(_condition) returns (uint256)
     {
         address customer = salaryReceivers[_condition];
         uint256 _newCondition = _doCreateCondition(customer);
@@ -154,6 +154,15 @@ contract BaseSalary is BaseBidOnAddresses {
         lastSalaryDates[customer][_condition] = block.timestamp;
         emit CustomerRegistered(msg.sender, oracleId, data);
         return _condition;
+    }
+
+    function _checkRecreatePermissions(uint256 _condition)
+        internal virtual myConditional(_condition)
+    { }
+
+    modifier _canRecreatePermissions(uint256 _condition) {
+        _checkRecreatePermissions(_condition);
+        _;
     }
 
     // TODO: It is always used together with myConditional(), should we optimize?
