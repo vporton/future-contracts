@@ -25,6 +25,8 @@ abstract contract BaseRestorableSalary is BaseSalary {
 
     /// Below copied from https://github.com/vporton/restorable-funds/blob/f6192fd23cad529b84155d52ae202430cd97db23/contracts/RestorableERC1155.sol
 
+    // TODO: Joining several accounts together creates a mess. Prevent it? Allow attorneys to clear the mess?
+
     /// Give the user the "permission" to move funds from `oldAccount_` to `newAccount_`.
     ///
     /// This function is intented to be called by an attorney or the user to move to a new account.
@@ -34,7 +36,7 @@ abstract contract BaseRestorableSalary is BaseSalary {
         if (msg.sender != oldAccount_) {
             checkAllowedRestoreAccount(oldAccount_, newAccount_); // only authorized "attorneys" or attorney DAOs
         }
-        // FIXME: Need to check if `newToOldAccount[newAccount_] == address(0)` and/or `originalAddresses[newAccount_] == address(0)`?
+        _avoidZeroAddressManipulatins(oldAccount_, newAccount_);
         newToOldAccount[newAccount_] = oldAccount_;
         address orig = originalAddress(oldAccount_);
         originalAddresses[newAccount_] = orig;
@@ -50,7 +52,7 @@ abstract contract BaseRestorableSalary is BaseSalary {
     /// it would allow to keep stealing the salary by hijacked old account.
     function dispermitRestoreAccount(address oldAccount_, address newAccount_) public {
         checkAllowedUnrestoreAccount(oldAccount_, newAccount_); // only authorized "attorneys" or attorney DAOs
-        // FIXME: Need to check if `newToOldAccount[newAccount_] != address(0)` and/or `originalAddresses[newAccount_] != address(0)`?
+        _avoidZeroAddressManipulatins(oldAccount_, newAccount_);
         newToOldAccount[newAccount_] = address(0);
         currentAddresses[oldAccount_] = address(0);
         originalAddresses[newAccount_] = address(0);
@@ -107,9 +109,19 @@ abstract contract BaseRestorableSalary is BaseSalary {
 
     /// Find the original address of a given account.
     /// @param account The current address.
+    /// TODO: no need to be public/external
     function originalAddress(address account) public view virtual returns (address) {
         address newAddress = originalAddresses[account];
         return newAddress != address(0) ? newAddress : account;
+    }
+
+    // Internal functions //
+
+    function _avoidZeroAddressManipulatins(address oldAccount_, address newAccount_) internal {
+        // To avoid make-rich-quick manipulations with lost funds:
+        require(oldAccount_ != address(0) && newAccount_ != address(0) &&
+                originalAddresses[newAccount_] != address(0) && newToOldAccount[newAccount_] != address(0),
+                "Trying to get nobody's funds.");
     }
 
     // Virtual functions //
