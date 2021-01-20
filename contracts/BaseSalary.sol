@@ -17,6 +17,9 @@ import "./BaseBidOnAddresses.sol";
 /// individuals can receive from them as if they themselves registered in the past.
 /// So it in some cases (if the registration date is past the contract deployment) this issue is impossible to
 /// mitigate.
+///
+/// The salary is paid in minted tokens groups into "chains":
+/// the original salary token and anyone can replace it by another token, next in the chain.
 contract BaseSalary is BaseBidOnAddresses {
     /// Salary receiver registered.
     /// @param customer The customer address.
@@ -40,7 +43,7 @@ contract BaseSalary is BaseBidOnAddresses {
         bytes data
     );
 
-    /// Salary token recreated.
+    /// Salary token recreated (salary recalculation request).
     /// @param customer The customer address.
     /// @param oldCondition The old token ID.
     /// @param newCondition The new token ID.
@@ -59,7 +62,12 @@ contract BaseSalary is BaseBidOnAddresses {
 
     constructor(string memory _uri) BaseBidOnAddresses(_uri) { }
 
-    function mintSalary(uint64 _oracleId, uint64 _condition, bytes calldata _data)
+    /// Mint a salary token.
+    /// @param _oracleId The oracle ID.
+    /// @param _condition The condition ID.
+    /// @param _data Additional data.
+    /// This method can be called only by the salary receiver.
+    function mintSalary(uint64 _oracleId, uint256 _condition, bytes calldata _data)
         ensureLastConditionInChain(_condition) external
     {
         uint _lastSalaryDate = lastSalaryDates[msg.sender][_condition];
