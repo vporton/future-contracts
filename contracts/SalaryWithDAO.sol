@@ -103,7 +103,7 @@ contract SalaryWithDAO is BaseRestorableSalary {
         _;
     }
 
-    /// @param customer The current address.
+    /// @param _customer The current address.
     modifier isUnderDAOControl(address _customer) {
         require(underDAOControl[_customer], "Not under DAO control.");
         _;

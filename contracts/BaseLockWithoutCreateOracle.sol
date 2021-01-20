@@ -16,6 +16,6 @@ import { BaseLock } from "./BaseLock.sol";
 /// In functions of this contact `condition` is always a customer's original address.
 abstract contract BaseLockWithoutCreateOracle is BaseLock {
     /// Constructor.
-    /// @param uri_ Our ERC-1155 tokens description URI.
-    constructor(string memory _uri) BaseLock(uri) { }
+    /// @param _uri Our ERC-1155 tokens description URI.
+    constructor(string memory _uri) BaseLock(_uri) { }
 }

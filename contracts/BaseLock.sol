@@ -95,7 +95,7 @@ abstract contract BaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     mapping(uint256 => uint256) public firstToLastConditionInChain;
 
     /// Constructor.
-    /// @param uri_ Our ERC-1155 tokens description URI.
+    /// @param _uri Our ERC-1155 tokens description URI.
     constructor(string memory _uri) ERC1155WithTotals(_uri) {
         _registerInterface(
             BaseLock(0).onERC1155Received.selector ^
@@ -109,8 +109,8 @@ abstract contract BaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     // }
 
     /// Modify the owner of an oracle.
-    /// @param newOracleOwner New owner.
-    /// @param oracleId The oracle whose owner to change.
+    /// @param _newOracleOwner New owner.
+    /// @param _oracleId The oracle whose owner to change.
     function changeOracleOwner(address _newOracleOwner, uint64 _oracleId) public _isOracle(_oracleId) {
         oracleOwnersMap[_oracleId] = _newOracleOwner;
         emit OracleOwnerChanged(_newOracleOwner, _oracleId);
@@ -134,13 +134,13 @@ abstract contract BaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     ///
     /// If we put a DeFi collateral directly as a donation, the APY is lost.
     /// It can be worked around by bequesting a smart contract with the token.
-    /// @param collateralContractAddress The collateral ERC-1155 contract address.
-    /// @param collateralTokenId The collateral ERC-1155 token ID.
-    /// @param oracleId The oracle ID to whose ecosystem to donate to.
-    /// @param amount The amount to donate.
-    /// @param from From whom to take the donation.
-    /// @param to On whose account the donation amount is assigned.
-    /// @param data Additional transaction data.
+    /// @param _collateralContractAddress The collateral ERC-1155 contract address.
+    /// @param _collateralTokenId The collateral ERC-1155 token ID.
+    /// @param _oracleId The oracle ID to whose ecosystem to donate to.
+    /// @param _amount The amount to donate.
+    /// @param _from From whom to take the donation.
+    /// @param _to On whose account the donation amount is assigned.
+    /// @param _data Additional transaction data.
     function donate(
         IERC1155 _collateralContractAddress,
         uint256 _collateralTokenId,
@@ -182,11 +182,11 @@ abstract contract BaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     }
 
     /// Calculate how much collateral is owed to a user.
-    /// @param collateralContractAddress The ERC-1155 collateral token contract.
-    /// @param collateralTokenId The ERC-1155 collateral token ID.
-    /// @param oracleId From which oracle's "account" to withdraw.
-    /// @param condition The condition (the original receiver of a conditional token).
-    /// @param user The user to which we may owe.
+    /// @param _collateralContractAddress The ERC-1155 collateral token contract.
+    /// @param _collateralTokenId The ERC-1155 collateral token ID.
+    /// @param _oracleId From which oracle's "account" to withdraw.
+    /// @param _condition The condition (the original receiver of a conditional token).
+    /// @param _user The user to which we may owe.
     function collateralOwing(
         IERC1155 _collateralContractAddress,
         uint256 _collateralTokenId,
@@ -194,24 +194,24 @@ abstract contract BaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
         uint256 _condition,
         address _user
     ) external view returns(uint256) {
-        bool inFirstRound = _inFirstRound(_oracleId);
+        bool inFirstRound = _isInFirstRound(_oracleId);
         (, uint256 donated) =
             collateralOwingBase(_collateralContractAddress, _collateralTokenId, _oracleId, _condition, _user, inFirstRound);
         return donated;
     }
 
-    function _inFirstRound(uint64 _oracleId) internal view returns (bool) {
+    function _isInFirstRound(uint64 _oracleId) internal view returns (bool) {
         return block.timestamp < gracePeriodEnds[_oracleId];
     }
 
     /// Transfer to `msg.sender` the collateral ERC-1155 token.
     ///
     /// The amount transfered is proportional to the score of `condition` by the oracle.
-    /// @param collateralContractAddress The ERC-1155 collateral token contract.
-    /// @param collateralTokenId The ERC-1155 collateral token ID.
-    /// @param oracleId From which oracle's "account" to withdraw.
-    /// @param condition The condition (the original receiver of a conditional token).
-    /// @param data Additional data.
+    /// @param _collateralContractAddress The ERC-1155 collateral token contract.
+    /// @param _collateralTokenId The ERC-1155 collateral token ID.
+    /// @param _oracleId From which oracle's "account" to withdraw.
+    /// @param _condition The condition (the original receiver of a conditional token).
+    /// @param _data Additional data.
     ///
     /// Notes:
     /// - It is made impossible to withdraw somebody's other collateral, as otherwise we can't mark non-active accounts.
@@ -226,7 +226,7 @@ abstract contract BaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
         bytes calldata _data) external
     {
         require(isOracleFinished(_oracleId), "too early"); // to prevent the denominator or the numerators change meantime
-        bool inFirstRound = _inFirstRound(_oracleId);
+        bool inFirstRound = _isInFirstRound(_oracleId);
         userUsedRedeemMap[msg.sender][_condition] = true;
         // _burn(msg.sender, _condition, conditionalBalance); // Burning it would break using the same token for multiple markets.
         (uint donatedCollateralTokenId, uint256 _owingDonated) =
@@ -308,7 +308,7 @@ abstract contract BaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     // Getters //
 
     /// Get the oracle owner.
-    /// @param oracleId The oracle ID.
+    /// @param _oracleId The oracle ID.
     function oracleOwner(uint64 _oracleId) public view returns (address) {
         return oracleOwnersMap[_oracleId];
     }
@@ -323,14 +323,14 @@ abstract contract BaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     /// Are transfers of a conditinal token locked?
     ///
     /// This is used to prevent its repeated withdrawal.
-    /// @param user Querying if locked for this user.
-    /// @param condition The condition (the original receiver of a conditional token).
+    /// @param _user Querying if locked for this user.
+    /// @param _condition The condition (the original receiver of a conditional token).
     function isConditionalLocked(address _user, uint256 _condition) public view returns (bool) {
         return userUsedRedeemMap[_user][_condition];
     }
 
     /// Retrive the end of the grace period.
-    /// @param oracleId For which oracle.
+    /// @param _oracleId For which oracle.
     function gracePeriodEnd(uint64 _oracleId) public view returns (uint) {
         return gracePeriodEnds[_oracleId];
     }
@@ -346,7 +346,7 @@ abstract contract BaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     }
 
     /// Calculate the share of a conditon in an oracle's market.
-    /// @param oracleId The oracle ID.
+    /// @param _oracleId The oracle ID.
     /// @return Uses `ABDKMath64x64` number ID.
     function _calcRewardShare(uint64 _oracleId, uint256 _condition) internal virtual view returns (int128);
 
@@ -358,9 +358,9 @@ abstract contract BaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     // Internal //
 
     /// Generate the ERC-1155 token ID that counts amount of donations for a ERC-1155 collateral token.
-    /// @param collateralContractAddress The ERC-1155 contract of the collateral token.
-    /// @param collateralTokenId The ERC-1155 ID of the collateral token.
-    /// @param oracleId The oracle ID.
+    /// @param _collateralContractAddress The ERC-1155 contract of the collateral token.
+    /// @param _collateralTokenId The ERC-1155 ID of the collateral token.
+    /// @param _oracleId The oracle ID.
     /// Note: It does not conflict with other tokens kinds, becase the only other one is the uint64 conditional.
     function _collateralDonatedTokenId(IERC1155 _collateralContractAddress, uint256 _collateralTokenId, uint64 _oracleId)
         internal pure returns (uint256)

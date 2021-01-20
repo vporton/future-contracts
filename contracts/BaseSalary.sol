@@ -136,7 +136,7 @@ contract BaseSalary is BaseBidOnAddresses {
 
     /// Must be called with `id != 0`.
     function isLastConditionInChain(uint256 _id) internal view returns (bool) {
-        return firstToLastConditionInChain[firstConditionInChain[id]] == _id;
+        return firstToLastConditionInChain[firstConditionInChain[_id]] == _id;
     }
 
     function _doTransfer(uint256 _id, address _from, address _to, uint256 _value) internal virtual override {

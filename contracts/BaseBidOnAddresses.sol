@@ -47,28 +47,28 @@ abstract contract BaseBidOnAddresses is BaseLock {
     mapping(uint256 => uint) private payoutDenominatorMap;
 
     /// Constructor.
-    /// @param uri_ Our ERC-1155 tokens description URI.
+    /// @param _uri Our ERC-1155 tokens description URI.
     constructor(string memory _uri) BaseLock(_uri) { }
 
     /// Retrieve the last stored payout numerator (relative score of a condition).
-    /// @param oracleId The oracle ID.
-    /// @param condition The condition (the original receiver of a conditional token).
+    /// @param _oracleId The oracle ID.
+    /// @param _condition The condition (the original receiver of a conditional token).
     /// The result can't change if the oracle has finished.
     function payoutNumerator(uint64 _oracleId, uint256 _condition) public view returns (uint256) {
         return payoutNumeratorsMap[_oracleId][_condition];
     }
 
     /// Retrieve the last stored payout denominator (the sum of all numerators of the oracle).
-    /// @param oracleId The oracle ID.
+    /// @param _oracleId The oracle ID.
     /// The result can't change if the oracle has finished.
     function payoutDenominator(uint64 _oracleId) public view returns (uint256) {
         return payoutDenominatorMap[_oracleId];
     }
 
     /// Called by the oracle owner for reporting results of conditions.
-    /// @param oracleId The oracle ID.
-    /// @param condition The condition (the original receiver of a conditional token).
-    /// @param numerator The relative score of the condition.
+    /// @param _oracleId The oracle ID.
+    /// @param _condition The condition (the original receiver of a conditional token).
+    /// @param _numerator The relative score of the condition.
     /// Note: We could make oracles easily verificable by a hash of all the data, but
     ///       - It may need allowing to set a numerator only once.
     ///       - It may be not necessary because future technology will allow to aggregate blockchains.
@@ -81,9 +81,9 @@ abstract contract BaseBidOnAddresses is BaseLock {
     }
 
     /// Called by the oracle owner for reporting results of several conditions.
-    /// @param oracleId The oracle ID.
-    /// @param conditions The conditions (the original receiver of a conditional token).
-    /// @param numerators The relative scores of the condition.
+    /// @param _oracleId The oracle ID.
+    /// @param _conditions The conditions (the original receiver of a conditional token).
+    /// @param _numerators The relative scores of the condition.
     function reportNumeratorsBatch(uint64 _oracleId, uint64[] calldata _conditions, uint256[] calldata _numerators) external
         _isOracle(_oracleId)
         _oracleNotFinished(_oracleId) // otherwise an oracle can break data consistency
@@ -96,7 +96,7 @@ abstract contract BaseBidOnAddresses is BaseLock {
     }
 
     /// Need to be called after all numerators were reported.
-    /// @param oracleId The oracle ID.
+    /// @param _oracleId The oracle ID.
     ///
     /// You should set grace period end time before calling this method.
     function finishOracle(uint64 _oracleId) external
@@ -107,7 +107,7 @@ abstract contract BaseBidOnAddresses is BaseLock {
     }
 
     /// Check if an oracle has finished.
-    /// @param oracleId The oracle ID.
+    /// @param _oracleId The oracle ID.
     /// @return `true` if it has finished.
     function isOracleFinished(uint64 _oracleId) public view override returns (bool) {
         return oracleFinishedMap[_oracleId];

@@ -33,7 +33,7 @@ contract Lock is BaseLock {
         uint64 _oracleId = _createOracle();
         externalConditionals[_oracleId] = _token;
         emit OracleToken(_token);
-        return oracleId;
+        return _oracleId;
     }
 
     /// Reverts if called after redeem.

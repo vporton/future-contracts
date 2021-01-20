@@ -20,7 +20,7 @@ abstract contract BaseRestorableSalary is BaseSalary {
     mapping(address => address) public newToOldAccount;
 
     /// Constructor.
-    /// @param uri_ Our ERC-1155 tokens description URI.
+    /// @param _uri Our ERC-1155 tokens description URI.
     constructor (string memory _uri) BaseSalary(_uri) { }
 
     /// Below copied from https://github.com/vporton/restorable-funds/blob/f6192fd23cad529b84155d52ae202430cd97db23/contracts/RestorableERC1155.sol
@@ -110,7 +110,7 @@ abstract contract BaseRestorableSalary is BaseSalary {
     function checkAllowedUnrestoreAccount(address /*_oldAccount*/, address /*_newAccount*/) public virtual;
 
     /// Find the original address of a given account.
-    /// @param account The current address.
+    /// @param _account The current address.
     function _originalAddress(address _account) internal view virtual returns (address) {
         address newAddress = originalAddresses[_account];
         return newAddress != address(0) ? newAddress : _account;
@@ -128,7 +128,7 @@ abstract contract BaseRestorableSalary is BaseSalary {
     // Virtual functions //
 
     /// Find the current address for an original address.
-    /// @param conditional The original address.
+    /// @param _conditional The original address.
     function currentAddress(address _conditional) internal virtual override returns (address) {
         return currentAddresses[_conditional];
     }
