@@ -40,18 +40,20 @@ contract Lock is BaseLock {
     function mintConditional(uint64 _oracleId, uint256 _conditionalTokenId, uint256 _amount, bytes calldata _data)
         public checkIsConditional(_conditionalTokenId)
     {
-        ERC1155Token storage externalConditional = externalConditionals[_oracleId];
+        ERC1155Token storage _externalConditional = externalConditionals[_oracleId];
         _mintToCustomer(msg.sender, _conditionalTokenId, _amount, _data);
-        externalConditional.contractAddress.safeTransferFrom(msg.sender, address(this), externalConditional.tokenId, _amount, _data); // last against reentrancy attack
+        // Last against reentrancy attack:
+        _externalConditional.contractAddress.safeTransferFrom(msg.sender, address(this), _externalConditional.tokenId, _amount, _data);
     }
 
     /// Reverts if called after redeem.
     function burnConditional(uint64 _oracleId, uint256 _conditionalTokenId, address _to, uint256 _amount, bytes calldata _data)
         public checkIsConditional(_conditionalTokenId)
     {
-        ERC1155Token storage externalConditional = externalConditionals[_oracleId];
+        ERC1155Token storage _externalConditional = externalConditionals[_oracleId];
         _burn(msg.sender, _conditionalTokenId, _amount);
-        externalConditional.contractAddress.safeTransferFrom(address(this), _to, externalConditional.tokenId, _amount, _data); // last against reentrancy attack
+        // Last against reentrancy attack:
+        _externalConditional.contractAddress.safeTransferFrom(address(this), _to, _externalConditional.tokenId, _amount, _data);
     }
 
     function _calcRewardShare(uint64 /*oracleId*/, uint256 _condition)

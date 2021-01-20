@@ -89,8 +89,8 @@ abstract contract BaseBidOnAddresses is BaseLock {
         _oracleNotFinished(_oracleId) // otherwise an oracle can break data consistency
     {
         require(_conditions.length == _numerators.length, "Length mismatch.");
-        for (uint i = 0; i < _conditions.length; ++i) {
-            _updateNumerator(_oracleId, _numerators[i], _conditions[i]);
+        for (uint _i = 0; _i < _conditions.length; ++_i) {
+            _updateNumerator(_oracleId, _numerators[_i], _conditions[_i]);
         }
         emit ReportedNumeratorsBatch(_oracleId, _conditions, _numerators);
     }
@@ -121,9 +121,9 @@ abstract contract BaseBidOnAddresses is BaseLock {
     // Virtuals //
 
     function _calcRewardShare(uint64 _oracleId, uint256 _condition) internal virtual override view returns (int128) {
-        uint256 numerator = payoutNumeratorsMap[_oracleId][_condition];
-        uint256 denominator = payoutDenominatorMap[_oracleId];
-        return ABDKMath64x64.divu(numerator, denominator);
+        uint256 _numerator = payoutNumeratorsMap[_oracleId][_condition];
+        uint256 _denominator = payoutDenominatorMap[_oracleId];
+        return ABDKMath64x64.divu(_numerator, _denominator);
     }
 
     // Modifiers //

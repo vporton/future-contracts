@@ -41,14 +41,14 @@ contract BaseSalary is BaseBidOnAddresses {
     function mintSalary(uint64 _oracleId, uint64 _condition, bytes calldata _data)
         ensureLastConditionInChain(_condition) external
     {
-        uint lastSalaryDate = lastSalaryDates[msg.sender][_condition];
-        require(lastSalaryDate != 0, "You are not registered.");
+        uint _lastSalaryDate = lastSalaryDates[msg.sender][_condition];
+        require(_lastSalaryDate != 0, "You are not registered.");
         // Note: Even if you withdraw once per 20 years, you will get only 630,720,000 tokens.
         // This number is probably not to big to be displayed well in UIs.
-        uint256 amount = (lastSalaryDate - block.timestamp) * 10**18; // one token per second
-        _mintToCustomer(msg.sender, _condition, amount, _data);
+        uint256 _amount = (_lastSalaryDate - block.timestamp) * 10**18; // one token per second
+        _mintToCustomer(msg.sender, _condition, _amount, _data);
         lastSalaryDates[msg.sender][_condition] = block.timestamp;
-        emit SalaryMinted(msg.sender, _oracleId, amount, _data);
+        emit SalaryMinted(msg.sender, _oracleId, _amount, _data);
     }
 
     /// Make a new condition that replaces the old one.
@@ -115,22 +115,22 @@ contract BaseSalary is BaseBidOnAddresses {
     function _recreateCondition(uint256 _condition)
         internal ensureLastConditionInChain(_condition) returns (uint256)
     {
-        address customer = salaryReceivers[_condition];
-        uint256 _newCondition = _doCreateCondition(customer);
+        address _customer = salaryReceivers[_condition];
+        uint256 _newCondition = _doCreateCondition(_customer);
         firstConditionInChain[_newCondition] = firstConditionInChain[_condition];
 
-        uint256 _amount = _balances[_condition][customer];
-        _balances[_newCondition][customer] = _amount;
-        _balances[_condition][customer] = 0;
+        uint256 _amount = _balances[_condition][_customer];
+        _balances[_newCondition][_customer] = _amount;
+        _balances[_condition][_customer] = 0;
 
         // TODO: Should we swap two following lines?
-        emit TransferSingle(msg.sender, customer, address(0), _condition, _amount);
-        emit TransferSingle(msg.sender, address(0), customer, _newCondition, _amount);
+        emit TransferSingle(msg.sender, _customer, address(0), _condition, _amount);
+        emit TransferSingle(msg.sender, address(0), _customer, _newCondition, _amount);
 
-        lastSalaryDates[customer][_newCondition] = lastSalaryDates[customer][_condition];
-        // TODO: Should we here set `lastSalaryDates[customer][oracleId][_condition] = 0` to save storage space?
+        lastSalaryDates[_customer][_newCondition] = lastSalaryDates[_customer][_condition];
+        // TODO: Should we here set `lastSalaryDates[_customer][oracleId][_condition] = 0` to save storage space?
 
-        emit ConditionReCreate(customer, _condition, _newCondition);
+        emit ConditionReCreate(_customer, _condition, _newCondition);
         return _newCondition;
     }
 

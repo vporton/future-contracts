@@ -10,8 +10,6 @@ import { IERC1155 } from "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 ///
 /// One can also donate/bequest a smart wallet (explain how).
 ///
-/// TODO: Use variables like `_x` as arguments.
-///
 /// Inheriting from here don't forget to create `createOracle()` external method.
 abstract contract BaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     using ABDKMath64x64 for int128;
@@ -150,8 +148,8 @@ abstract contract BaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
         address _to,
         bytes calldata _data) external
     {
-        uint donatedCollateralTokenId = _collateralDonatedTokenId(_collateralContractAddress, _collateralTokenId, _oracleId);
-        _mint(_to, donatedCollateralTokenId, _amount, _data);
+        uint _donatedCollateralTokenId = _collateralDonatedTokenId(_collateralContractAddress, _collateralTokenId, _oracleId);
+        _mint(_to, _donatedCollateralTokenId, _amount, _data);
         emit DonateCollateral(_collateralContractAddress, _collateralTokenId, _from, _amount, _to, _data);
         _collateralContractAddress.safeTransferFrom(_from, address(this), _collateralTokenId, _amount, _data); // last against reentrancy attack
     }
@@ -164,21 +162,21 @@ abstract contract BaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
         address _user,
         bool _inFirstRound
     )
-        private view returns (uint donatedCollateralTokenId, uint256 donated)
+        private view returns (uint _donatedCollateralTokenId, uint256 _donated)
     {
-        uint256 conditionalBalance = balanceOf(_user, _condition);
-        uint256 totalConditionalBalance =
+        uint256 _conditionalBalance = balanceOf(_user, _condition);
+        uint256 _totalConditionalBalance =
             _inFirstRound ? totalBalanceOf(_condition) : usersWithdrewInFirstRound[_oracleId];
-        donatedCollateralTokenId = _collateralDonatedTokenId(_collateralContractAddress, _collateralTokenId, _oracleId);
+        _donatedCollateralTokenId = _collateralDonatedTokenId(_collateralContractAddress, _collateralTokenId, _oracleId);
         // Rounded to below for no out-of-funds:
-        int128 oracleShare = ABDKMath64x64.divu(conditionalBalance, totalConditionalBalance);
+        int128 _oracleShare = ABDKMath64x64.divu(_conditionalBalance, _totalConditionalBalance);
         uint256 _newDividendsDonated =
-            totalBalanceOf(donatedCollateralTokenId) -
+            totalBalanceOf(_donatedCollateralTokenId) -
             (_inFirstRound
-                ? lastCollateralBalanceFirstRoundMap[donatedCollateralTokenId][_user] 
-                : lastCollateralBalanceSecondRoundMap[donatedCollateralTokenId][_user]);
-        int128 multiplier = _calcMultiplier(_oracleId, _condition, oracleShare);
-        donated = multiplier.mulu(_newDividendsDonated);
+                ? lastCollateralBalanceFirstRoundMap[_donatedCollateralTokenId][_user] 
+                : lastCollateralBalanceSecondRoundMap[_donatedCollateralTokenId][_user]);
+        int128 _multiplier = _calcMultiplier(_oracleId, _condition, _oracleShare);
+        _donated = _multiplier.mulu(_newDividendsDonated);
     }
 
     /// Calculate how much collateral is owed to a user.
@@ -194,10 +192,10 @@ abstract contract BaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
         uint256 _condition,
         address _user
     ) external view returns(uint256) {
-        bool inFirstRound = _isInFirstRound(_oracleId);
-        (, uint256 donated) =
-            collateralOwingBase(_collateralContractAddress, _collateralTokenId, _oracleId, _condition, _user, inFirstRound);
-        return donated;
+        bool _inFirstRound = _isInFirstRound(_oracleId);
+        (, uint256 _donated) =
+            collateralOwingBase(_collateralContractAddress, _collateralTokenId, _oracleId, _condition, _user, _inFirstRound);
+        return _donated;
     }
 
     function _isInFirstRound(uint64 _oracleId) internal view returns (bool) {
@@ -226,24 +224,24 @@ abstract contract BaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
         bytes calldata _data) external
     {
         require(isOracleFinished(_oracleId), "too early"); // to prevent the denominator or the numerators change meantime
-        bool inFirstRound = _isInFirstRound(_oracleId);
+        bool _inFirstRound = _isInFirstRound(_oracleId);
         userUsedRedeemMap[msg.sender][_condition] = true;
         // _burn(msg.sender, _condition, conditionalBalance); // Burning it would break using the same token for multiple markets.
-        (uint donatedCollateralTokenId, uint256 _owingDonated) =
-            collateralOwingBase(_collateralContractAddress, _collateralTokenId, _oracleId, _condition, msg.sender, inFirstRound);
+        (uint _donatedCollateralTokenId, uint256 _owingDonated) =
+            collateralOwingBase(_collateralContractAddress, _collateralTokenId, _oracleId, _condition, msg.sender, _inFirstRound);
 
         // Against rounding errors. Not necessary because of rounding down.
         // if(_owing > balanceOf(address(this), _collateralTokenId)) _owing = balanceOf(address(this), _collateralTokenId);
 
         if (_owingDonated != 0) {
-            uint256 newTotal = totalBalanceOf(donatedCollateralTokenId);
-            if (inFirstRound) {
-                lastCollateralBalanceFirstRoundMap[donatedCollateralTokenId][msg.sender] = newTotal;
+            uint256 _newTotal = totalBalanceOf(_donatedCollateralTokenId);
+            if (_inFirstRound) {
+                lastCollateralBalanceFirstRoundMap[_donatedCollateralTokenId][msg.sender] = _newTotal;
             } else {
-                lastCollateralBalanceSecondRoundMap[donatedCollateralTokenId][msg.sender] = newTotal;
+                lastCollateralBalanceSecondRoundMap[_donatedCollateralTokenId][msg.sender] = _newTotal;
             }
         }
-        if (!inFirstRound) {
+        if (!_inFirstRound) {
             usersWithdrewInFirstRound[_oracleId] = usersWithdrewInFirstRound[_oracleId].add(_owingDonated);
         }
         // Last to prevent reentrancy attack:
@@ -285,8 +283,8 @@ abstract contract BaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     )
         public override
     {
-        for(uint i = 0; i < _ids.length; ++i) {
-            _checkTransferAllowed(_ids[i], _from);
+        for(uint _i = 0; _i < _ids.length; ++_i) {
+            _checkTransferAllowed(_ids[_i], _from);
         }
         _baseSafeBatchTransferFrom(_from, _to, _ids, _values, _data);
     }
@@ -402,9 +400,9 @@ abstract contract BaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
             "ERC1155: need operator approval for 3rd party transfers."
         );
 
-        for (uint256 i = 0; i < _ids.length; ++i) {
-            uint256 _id = _ids[i];
-            uint256 _value = _values[i];
+        for (uint256 _i = 0; _i < _ids.length; ++_i) {
+            uint256 _id = _ids[_i];
+            uint256 _value = _values[_i];
 
             _doTransfer(_id, _from, _to, _value);
         }

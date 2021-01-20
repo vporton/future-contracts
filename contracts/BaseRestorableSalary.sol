@@ -35,14 +35,14 @@ abstract contract BaseRestorableSalary is BaseSalary {
             checkAllowedRestoreAccount(_oldAccount, _newAccount); // only authorized "attorneys" or attorney DAOs
         }
         _avoidZeroAddressManipulatins(_oldAccount, _newAccount);
-        address orig = _originalAddress(_oldAccount);
+        address _orig = _originalAddress(_oldAccount);
 
         // We don't disallow joining several accounts together to consolidate salaries for different projects.
         // require(originalAddresses[_newAccount] == 0, "Account is taken.")
 
         newToOldAccount[_newAccount] = _oldAccount;
-        originalAddresses[_newAccount] = orig;
-        currentAddresses[orig] = _newAccount;
+        originalAddresses[_newAccount] = _orig;
+        currentAddresses[_orig] = _newAccount;
         // Auditor: Check that the above invariant hold.
         emit AccountRestored(_oldAccount, _newAccount);
     }
@@ -72,12 +72,12 @@ abstract contract BaseRestorableSalary is BaseSalary {
     function restoreFunds(address _oldAccount, address _newAccount, uint256 _token) public
         checkMovedOwner(_oldAccount, _newAccount)
     {
-        uint256 amount = _balances[_token][_oldAccount];
+        uint256 _amount = _balances[_token][_oldAccount];
 
         _balances[_token][_newAccount] = _balances[_token][_oldAccount];
         _balances[_token][_oldAccount] = 0;
 
-        emit TransferSingle(_msgSender(), _oldAccount, _newAccount, _token, amount);
+        emit TransferSingle(_msgSender(), _oldAccount, _newAccount, _token, _amount);
     }
 
     /// Move the entire balance of tokens from an old account to a new account of the same user.
@@ -90,17 +90,17 @@ abstract contract BaseRestorableSalary is BaseSalary {
     function restoreFundsBatch(address _oldAccount, address _newAccount, uint256[] calldata _tokens) public
         checkMovedOwner(_oldAccount, _newAccount)
     {
-        uint256[] memory amounts = new uint256[](_tokens.length);
-        for (uint i = 0; i < _tokens.length; ++i) {
-            uint256 token = _tokens[i];
-            uint256 amount = _balances[token][_oldAccount];
-            amounts[i] = amount;
+        uint256[] memory _amounts = new uint256[](_tokens.length);
+        for (uint _i = 0; _i < _tokens.length; ++_i) {
+            uint256 _token = _tokens[_i];
+            uint256 _amount = _balances[_token][_oldAccount];
+            _amounts[_i] = _amount;
 
-            _balances[token][_newAccount] = _balances[token][_oldAccount];
-            _balances[token][_oldAccount] = 0;
+            _balances[_token][_newAccount] = _balances[_token][_oldAccount];
+            _balances[_token][_oldAccount] = 0;
         }
 
-        emit TransferBatch(_msgSender(), _oldAccount, _newAccount, _tokens, amounts);
+        emit TransferBatch(_msgSender(), _oldAccount, _newAccount, _tokens, _amounts);
     }
 
     /// Check if `msg.sender` is an attorney allowed to restore a user's account.
@@ -112,8 +112,8 @@ abstract contract BaseRestorableSalary is BaseSalary {
     /// Find the original address of a given account.
     /// @param _account The current address.
     function _originalAddress(address _account) internal view virtual returns (address) {
-        address newAddress = originalAddresses[_account];
-        return newAddress != address(0) ? newAddress : _account;
+        address _newAddress = originalAddresses[_account];
+        return _newAddress != address(0) ? _newAddress : _account;
     }
 
     // Internal functions //
@@ -142,8 +142,8 @@ abstract contract BaseRestorableSalary is BaseSalary {
             checkAllowedRestoreAccount(_oldAccount, _newAccount); // only authorized "attorneys" or attorney DAOs
         }
 
-        for (address account = _oldAccount; account != _newAccount; account = newToOldAccount[account]) {
-            require(account != address(0), "Not a moved owner");
+        for (address _account = _oldAccount; _account != _newAccount; _account = newToOldAccount[_account]) {
+            require(_account != address(0), "Not a moved owner");
         }
 
         _;
