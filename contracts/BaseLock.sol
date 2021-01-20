@@ -26,12 +26,6 @@ abstract contract BaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
 
     event ConditionCreated(address indexed sender, address indexed customer, uint256 indexed condition);
 
-    event ConditionReCreate(
-        address indexed customer,
-        uint256 indexed oldCondition,
-        uint256 indexed newCondition
-    );
-
     /// Emitted when a collateral is donated.
     /// @param collateralContractAddress The ERC-1155 contract of the donated token.
     /// @param collateralTokenId The ERC-1155 ID of the donated token.

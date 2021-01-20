@@ -29,6 +29,12 @@ contract BaseSalary is BaseBidOnAddresses {
         bytes data
     );
 
+    event ConditionReCreate(
+        address indexed customer,
+        uint256 indexed oldCondition,
+        uint256 indexed newCondition
+    );
+
     /// Mapping (original address => (condition ID => registration time)).
     mapping(address => mapping(uint256 => uint)) public conditionCreationDates;
     /// Mapping (original address => salary block time).
