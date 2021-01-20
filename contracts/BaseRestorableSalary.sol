@@ -25,8 +25,6 @@ abstract contract BaseRestorableSalary is BaseSalary {
 
     /// Below copied from https://github.com/vporton/restorable-funds/blob/f6192fd23cad529b84155d52ae202430cd97db23/contracts/RestorableERC1155.sol
 
-    // TODO: Joining several accounts together creates a mess. Prevent it? Allow attorneys to clear the mess?
-
     /// Give the user the "permission" to move funds from `oldAccount_` to `newAccount_`.
     ///
     /// This function is intented to be called by an attorney or the user to move to a new account.
@@ -37,8 +35,12 @@ abstract contract BaseRestorableSalary is BaseSalary {
             checkAllowedRestoreAccount(oldAccount_, newAccount_); // only authorized "attorneys" or attorney DAOs
         }
         _avoidZeroAddressManipulatins(oldAccount_, newAccount_);
-        newToOldAccount[newAccount_] = oldAccount_;
         address orig = _originalAddress(oldAccount_);
+
+        // We don't disallow joining several accounts together to consolidate salaries for different projects.
+        // require(originalAddresses[newAccount_] == 0, "Account is taken.")
+
+        newToOldAccount[newAccount_] = oldAccount_;
         originalAddresses[newAccount_] = orig;
         currentAddresses[orig] = newAccount_;
         // Auditor: Check that the above invariant hold.
