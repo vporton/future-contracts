@@ -81,10 +81,16 @@ contract BaseSalary is BaseBidOnAddresses {
     }
 
     /// Make a new condition that replaces the old one.
-    /// It is useful to remove a trader's incentive to kill the issuer to reduce the circulating supply.
+    ///
+    /// In other words, it is a request to recalculate somebody's salary.
+    ///
+    /// Anyone can request to recalculate anyone's salary.
+    ///
     /// It's also useful to punish someone for decreasing his work performance or an evil act.
     /// This is to be called among other when a person dies.
-    /// The same can be done by transferring to yourself 0 tokens, but this method uses less gas.
+    ///
+    /// Recalculation is also forced when a salary receiver transfers away his current salary token.
+    /// It is useful to remove a trader's incentive to kill the issuer to reduce the circulating supply.
     ///
     /// Issue to solve later: Should we recommend:
     /// - calling this function on each new project milestone?
@@ -142,6 +148,7 @@ contract BaseSalary is BaseBidOnAddresses {
     /// A similar wrapper (the customer need to `setApprovalForAll()` on it) that uses
     /// `firstToLastConditionInChain[]` can be used to transfer away recreated tokens
     /// even if an evil DAO tries to frontrun the customer by recreating his tokens very often.
+    /// TODO: Test that it's possible to create such a locker.
     ///
     /// Note: That wrapper could be carelessly used to create the investor's killing customer incentive
     /// by the customer using it to transfer to an investor. Even if the customer uses it only for
@@ -177,7 +184,12 @@ contract BaseSalary is BaseBidOnAddresses {
         return _newCondition;
     }
 
-    /// Must be called with `id != 0`.
+    /// Check if it is the last condition in a chain of conditions.
+    /// @param _id The condition ID.
+    ///
+    /// Must be called with `_id != 0`.
+    ///
+    /// TODO: Should make this function public?
     function isLastConditionInChain(uint256 _id) internal view returns (bool) {
         return firstToLastConditionInChain[firstConditionInChain[_id]] == _id;
     }
