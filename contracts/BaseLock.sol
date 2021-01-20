@@ -215,9 +215,6 @@ abstract contract BaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     ///
     /// Notes:
     /// - It is made impossible to withdraw somebody's other collateral, as otherwise we can't mark non-active accounts.
-    /// - It uses _original_ user's address. It is assumed that this operation is done only by professional traders,
-    ///   not "regular" users, and they are able to secure their account without account restoration.
-    ///   (TODO: Or do we need to support mapped addresses?)
     /// - We can't transfer to somebody other than `msg.sender` because anybody can transfer (needed for multi-level transfers).
     /// - After this function is called, it becomes impossible to transfer the corresponding conditional token of `msg.sender`
     ///   (to prevent its repeated withdrawal).
