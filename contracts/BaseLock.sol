@@ -437,7 +437,7 @@ abstract contract BaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     /// Start with 1, not 0, to avoid glitch with `conditionalTokens`.
     ///
     /// TODO: Use uint64 variables instead?
-    /// FIXME: Store the condition ID
+    /// FIXME: Store `customer` and use it later to check.
     function _doCreateCondition(address customer) internal virtual returns (uint256) {
         uint64 _conditionId = ++maxConditionId;
 
