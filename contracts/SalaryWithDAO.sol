@@ -4,11 +4,13 @@ import { ABDKMath64x64 } from "abdk-libraries-solidity/ABDKMath64x64.sol";
 import "./BaseRestorableSalary.sol";
 import "./DAOInterface.sol";
 
+/// Salary system with a "DAO" that can assign attorneys to restore lost Ethereum accounts.
 /// @author Victor Porton
 /// @notice Not audited, not enough tested.
 contract SalaryWithDAO is BaseRestorableSalary {
     using ABDKMath64x64 for int128;
 
+    /// The DAO interface.
     DAOInterface public daoPlugin;
 
     /// When set to true, your account can't be moved to new address (by the DAO).
@@ -25,16 +27,32 @@ contract SalaryWithDAO is BaseRestorableSalary {
     // DAO share will be zero to prevent theft by voters and because it can be done instead by future voting.
     // int128 public daoShare = int128(0).div(1); // zero by default
 
+    /// Constructor.
+    /// @param _daoPlugin The DAO interface.
+    /// @param _uri The ERC-1155 token URI.
     constructor(DAOInterface _daoPlugin, string memory _uri)
         BaseRestorableSalary(_uri)
     {
         daoPlugin = _daoPlugin;
     }
 
+    /// Create an oracle for caclcualting salary amounts.
     function createOracle() external returns (uint64) {
         return _createOracle();
     }
 
+    /// Register a salary recepient.
+    ///
+    /// Can be called both before or after the oracle finish. However registering after the finish is useless.
+    ///
+    /// Anyone can register anyone (useful for robots registering a person).
+    ///
+    /// Registering another person is giving him money against his will (forcing to hire bodyguards, etc.),
+    /// but if one does not want, he can just not associate this address with his identity in his publications.
+    /// @param _customer The original address.
+    /// @param _oracleId The oracle ID.
+    /// @param _underDAOControl If the registered address will be under DAO control.
+    /// @param _data The current data.
     function registerCustomer(address _customer, uint64 _oracleId, bool _underDAOControl, bytes calldata _data)
         virtual public returns (uint256)
     {
@@ -59,6 +77,7 @@ contract SalaryWithDAO is BaseRestorableSalary {
         underDAOControl[_orig] = _underControl; // We don't trigger and event to reduce gas usage.
     }
 
+    /// The DAO can replace itself.
     function setDAO(DAOInterface _daoPlugin) public onlyDAO {
         daoPlugin = _daoPlugin;
     }
@@ -66,12 +85,6 @@ contract SalaryWithDAO is BaseRestorableSalary {
     /// Set the token URI.
     function setURI(string memory _newuri) public onlyDAO {
         _setURI(_newuri);
-    }
-
-    function _mintToCustomer(address _customer, uint256 _conditionalTokenId, uint256 _amount, bytes calldata _data)
-        internal virtual override
-    {
-        super._mintToCustomer(_customer, _conditionalTokenId, _amount, _data);
     }
 
     // Overrides ///

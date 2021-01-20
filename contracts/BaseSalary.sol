@@ -2,7 +2,7 @@
 pragma solidity ^0.7.1;
 import "./BaseBidOnAddresses.sol";
 
-/// @title "Salary" that is paid one token per second using minted conditionals.
+/// @title Base class for a "salary" that is paid one token per second using minted conditionals.
 /// @author Victor Porton
 /// @notice Not audited, not enough tested.
 /// It was considered to allow the DAO to adjust registration date to pay salary retrospectively,
@@ -60,6 +60,8 @@ contract BaseSalary is BaseBidOnAddresses {
     /// Mapping (condition ID => account) - salary recipients.
     mapping(uint256 => address) public salaryReceivers;
 
+    /// Constructor.
+    /// @param _uri The ERC-1155 token URI.
     constructor(string memory _uri) BaseBidOnAddresses(_uri) { }
 
     /// Mint a salary token.

@@ -21,22 +21,31 @@ contract Lock is BaseLock {
         uint256 tokenId;
     }
 
-    event OracleToken(ERC1155Token token);
+    /// Assign a token to an orcle
+    /// @param oracleId The oracle ID.
+    /// @param token The token.
+    event OracleToken(uint64 oracleId, ERC1155Token token);
 
     /// Mapping (oracleId => external conditional token).
     mapping(uint64 => ERC1155Token) public externalConditionals;
 
+    /// Constructor.
+    /// @param _uri The ERC-1155 token URI.
     constructor(string memory _uri) BaseLock(_uri) { }
 
     /// Create a new oracle
     function createOracle(ERC1155Token calldata _token) external returns (uint64) {
         uint64 _oracleId = _createOracle();
         externalConditionals[_oracleId] = _token;
-        emit OracleToken(_token);
+        emit OracleToken(_oracleId, _token);
         return _oracleId;
     }
 
-    /// Reverts if called after redeem.
+    /// Mint a conditional token
+    /// @param _oracleId The oracle ID.
+    /// @param _conditionalTokenId The conditional token ID.
+    /// @param _amount The minted amount.
+    /// @param _data Additional data.
     function mintConditional(uint64 _oracleId, uint256 _conditionalTokenId, uint256 _amount, bytes calldata _data)
         public checkIsConditional(_conditionalTokenId)
     {
@@ -46,7 +55,12 @@ contract Lock is BaseLock {
         _externalConditional.contractAddress.safeTransferFrom(msg.sender, address(this), _externalConditional.tokenId, _amount, _data);
     }
 
-    /// Reverts if called after redeem.
+    /// Burn a conditional token
+    /// @param _oracleId The oracle ID.
+    /// @param _conditionalTokenId The conditional token ID.
+    /// @param _to The token recepient.
+    /// @param _amount The minted amount.
+    /// @param _data Additional data.
     function burnConditional(uint64 _oracleId, uint256 _conditionalTokenId, address _to, uint256 _amount, bytes calldata _data)
         public checkIsConditional(_conditionalTokenId)
     {

@@ -5,12 +5,13 @@ import "./BaseBidOnAddresses.sol";
 /// @title Bidding on Ethereum addresses
 /// @author Victor Porton
 /// @notice Not audited, not enough tested.
-/// This allows anyone claim 1000 conditional tokens in order for him to transfer money from the future.
+/// This allows anyone to claim 1000 conditional tokens in order for him to transfer money from the future.
 /// See `docs/future-money.rst` and anyone to donate.
 ///
-/// We have three kinds of ERC-1155 token ID
-/// - a combination of market ID, collateral address, and customer address (conditional tokens)
-/// - a combination of TOKEN_DONATED and collateral address (donated collateral tokens)
+/// We have two kinds of ERC-1155 token IDs:
+/// - conditional tokens: numbers < 2**64
+/// - a combination of a collateral contract address and collateral token ID
+///   (a counter of donated amount of collateral tokens, don't confuse with collateral tokens themselves)
 ///
 /// In functions of this contact `condition` is always a customer's original address.
 ///
@@ -18,12 +19,17 @@ import "./BaseBidOnAddresses.sol";
 contract BidOnAddresses is BaseBidOnAddresses {
     uint constant INITIAL_CUSTOMER_BALANCE = 1000 * 10**18; // an arbitrarily choosen value
 
+    /// Customer registered.
+    /// @param sender `msg.sender`.
+    /// @param customer The customer address.
+    /// @param data Additional data.
     event CustomerRegistered(
         address sender,
         address customer,
         bytes data
     );
 
+    /// @param _uri The ERC-1155 token URI.
     constructor(string memory _uri) BaseBidOnAddresses(_uri) {
         _registerInterface(
             BidOnAddresses(0).onERC1155Received.selector ^
@@ -50,6 +56,9 @@ contract BidOnAddresses is BaseBidOnAddresses {
     /// - It requires to install MetaMask.
     /// - It bothers the person to sign something, when he could just be hesitant to get what he needs.
     /// - It somehow complicates this contract.
+    /// @param _customer The address of the customer. // TODO: current or original
+    /// @param _oracleId The oracle ID.
+    /// @param _data Additional data.
     function registerCustomer(address _customer, uint64 _oracleId, bytes calldata _data) external {
         require(_oracleId <= maxOracleId, "Oracle doesn't exist.");
         uint256 _conditionId = _createCondition(_customer);
