@@ -44,6 +44,7 @@ contract BaseSalary is BaseBidOnAddresses {
 
     constructor(string memory _uri) BaseBidOnAddresses(_uri) { }
 
+    // FIXME: Check that somebody's salary is minted to him, not to other.
     function mintSalary(uint64 _oracleId, uint64 _condition, bytes calldata _data)
         ensureLastConditionInChain(_condition) external
     {
