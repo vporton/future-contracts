@@ -62,8 +62,6 @@ contract BaseSalary is BaseBidOnAddresses {
     /// - calling this function regularly (e.g. every week)?
     ///
     /// This function also withdraws the old token.
-    ///
-    /// TODO: Move this function up in the inheritance?
     function recreateCondition(uint256 condition) public returns (uint256) {
         return _recreateCondition(condition);
     }
