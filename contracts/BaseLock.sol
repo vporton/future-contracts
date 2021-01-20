@@ -77,6 +77,8 @@ abstract contract BaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     /// Mapping (oracleId => amount user withdrew in first round) (see `docs/Calculations.md`).
     mapping(uint64 => uint256) public usersWithdrewInFirstRound;
 
+    // Mapping (condition ID => original account)
+    mapping(uint256 => address) public conditionOwners;
     /// Mapping (condition ID => first condition ID in the chain)
     ///
     /// I call _chain_ of conditions the list of conditions resulting from creating and recreating conditions.
@@ -334,7 +336,7 @@ abstract contract BaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     }
 
     function _mintToCustomer(address _customer, uint256 _condition, uint256 _amount, bytes calldata _data) internal virtual {
-        require(conditionOwners[_conditon] == _customer, "Other's salary get attempt.")
+        require(conditionOwners[_condition] == _customer, "Other's salary get attempt.");
         _mint(currentAddress(_customer), _condition, _amount, _data);
     }
 
