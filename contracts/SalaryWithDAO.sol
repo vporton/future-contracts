@@ -36,7 +36,7 @@ contract SalaryWithDAO is BaseRestorableSalary {
     function registerCustomer(address customer, uint64 oracleId, bool _underDAOControl, bytes calldata data)
         virtual public returns (uint256)
     {
-        address orig = originalAddress(customer);
+        address orig = _originalAddress(customer);
         // Auditor: Check that this value is set to false, when (and if) necessary.
         accountHasSalary[customer] = true;
         underDAOControl[customer] = _underDAOControl; // We don't trigger and event to reduce gas usage.
@@ -52,7 +52,7 @@ contract SalaryWithDAO is BaseRestorableSalary {
     /// withdrawing the salary token, because a user could just register anew and notify traders/oracles
     /// that it's the same person.
     function setDAOControl(bool _underControl) public {
-        address orig = originalAddress(msg.sender);
+        address orig = _originalAddress(msg.sender);
         require(accountHasSalary[orig], "Cannot resign account receiving a salary.");
         underDAOControl[orig] = _underControl; // We don't trigger and event to reduce gas usage.
     }

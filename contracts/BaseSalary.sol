@@ -120,7 +120,7 @@ contract BaseSalary is BaseBidOnAddresses {
         _balances[_condition][customer] = 0;
 
         // TODO: Should we swap two following lines?
-        // TODO: `customer` or `originalAddress(customer)`
+        // TODO: `customer` or `_originalAddress(customer)`
         emit TransferSingle(msg.sender, customer, address(0), _condition, _amount);
         emit TransferSingle(msg.sender, address(0), customer, _newCondition, _amount);
 

@@ -18,12 +18,12 @@ abstract contract ERC1155WithTotals is ERC1155 {
 
     // Need also update totals - commented out
     // function _mintBatch(address to, uint256[] memory ids, uint256[] memory amounts, bytes memory data) internal virtual override {
-    //     return super._mintBatch(originalAddress(to), ids, amounts, data);
+    //     return super._mintBatch(_originalAddress(to), ids, amounts, data);
     // }
 
     // Need also update totals - commented out
     // function _burnBatch(address account, uint256[] memory ids, uint256[] memory amounts) internal virtual override {
-    //     return super._burnBatch(originalAddress(account), ids, amounts);
+    //     return super._burnBatch(_originalAddress(account), ids, amounts);
     // }
 
     /// Total supply of a token.

@@ -331,8 +331,8 @@ abstract contract BaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
 
     // Virtual functions //
 
-    function currentAddress(address originalAddress) internal virtual returns (address) {
-        return originalAddress;
+    function currentAddress(address _originalAddress) internal virtual returns (address) {
+        return _originalAddress;
     }
 
     function _mintToCustomer(address customer, uint256 condition, uint256 amount, bytes calldata data) internal virtual {

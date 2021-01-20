@@ -3,7 +3,7 @@ pragma solidity ^0.7.1;
 import "./Salary.sol";
 
 abstract contract BaseRestorableSalary is BaseSalary {
-    // INVARIANT: `originalAddress(newToOldAccount[newAccount]) == originalAddress(newAccount)`
+    // INVARIANT: `_originalAddress(newToOldAccount[newAccount]) == _originalAddress(newAccount)`
     //            if `newToOldAccount[newAccount] != address(0)` for every `newAccount`
     // INVARIANT: originalAddresses and currentAddresses are mutually inverse.
     //            That is:
@@ -38,7 +38,7 @@ abstract contract BaseRestorableSalary is BaseSalary {
         }
         _avoidZeroAddressManipulatins(oldAccount_, newAccount_);
         newToOldAccount[newAccount_] = oldAccount_;
-        address orig = originalAddress(oldAccount_);
+        address orig = _originalAddress(oldAccount_);
         originalAddresses[newAccount_] = orig;
         currentAddresses[orig] = newAccount_;
         // Auditor: Check that the above invariant hold.
@@ -110,7 +110,7 @@ abstract contract BaseRestorableSalary is BaseSalary {
     /// Find the original address of a given account.
     /// @param account The current address.
     /// TODO: no need to be public/external
-    function originalAddress(address account) public view virtual returns (address) {
+    function _originalAddress(address account) internal view virtual returns (address) {
         address newAddress = originalAddresses[account];
         return newAddress != address(0) ? newAddress : account;
     }
