@@ -50,10 +50,12 @@ abstract contract BaseRestorableSalary is BaseSalary {
         emit AccountRestored(_oldAccount, _newAccount);
     }
 
+    /// Retire the user's "permission" to move funds from `_oldAccount` to `_newAccount`.
+    ///
     /// This function is intented to be called by an attorney.
     /// @param _oldAccount is an old current address.
     /// @param _newAccount is a new address.
-    /// We (in general) don't allow this to be called by `msg.sender == _oldAccount`,
+    /// (In general) it isn't allowed to be called by `msg.sender == _oldAccount`,
     /// because it would allow to keep stealing the salary by hijacked old account.
     function dispermitRestoreAccount(address _oldAccount, address _newAccount) public {
         checkAllowedUnrestoreAccount(_oldAccount, _newAccount); // only authorized "attorneys" or attorney DAOs
@@ -71,7 +73,8 @@ abstract contract BaseRestorableSalary is BaseSalary {
     /// @param _token The ERC-1155 token ID.
     /// This function can be called by the affected user.
     ///
-    /// Remark: We intentionally create no new tokens as on a regular transfer, because it isn't a transfer to a trader.
+    /// Remark: We don't need to create new tokens like as on a regular transfer,
+    /// because it isn't a transfer to a trader.
     function restoreFunds(address _oldAccount, address _newAccount, uint256 _token) public
         checkMovedOwner(_oldAccount, _newAccount)
     {
@@ -89,7 +92,8 @@ abstract contract BaseRestorableSalary is BaseSalary {
     /// @param _tokens The ERC-1155 token IDs.
     /// This function can be called by the affected user.
     ///
-    /// Remark: We intentionally create no new tokens as on a regular transfer, because it isn't a transfer to a trader.
+    /// Remark: We don't need to create new tokens like as on a regular transfer,
+    /// because it isn't a transfer to a trader.
     function restoreFundsBatch(address _oldAccount, address _newAccount, uint256[] calldata _tokens) public
         checkMovedOwner(_oldAccount, _newAccount)
     {
@@ -106,19 +110,6 @@ abstract contract BaseRestorableSalary is BaseSalary {
         emit TransferBatch(_msgSender(), _oldAccount, _newAccount, _tokens, _amounts);
     }
 
-    /// Check if `msg.sender` is an attorney allowed to restore a user's account.
-    function checkAllowedRestoreAccount(address /*_oldAccount*/, address /*_newAccount*/) public virtual;
-
-    /// Check if `msg.sender` is an attorney allowed to unrestore a user's account.
-    function checkAllowedUnrestoreAccount(address /*_oldAccount*/, address /*_newAccount*/) public virtual;
-
-    /// Find the original address of a given account.
-    /// @param _account The current address.
-    function _originalAddress(address _account) internal view virtual returns (address) {
-        address _newAddress = originalAddresses[_account];
-        return _newAddress != address(0) ? _newAddress : _account;
-    }
-
     // Internal functions //
 
     function _avoidZeroAddressManipulatins(address _oldAccount, address _newAccount) internal view {
@@ -130,10 +121,24 @@ abstract contract BaseRestorableSalary is BaseSalary {
 
     // Virtual functions //
 
-    /// Find the current address for an original address.
-    /// @param _conditional The original address.
-    function currentAddress(address _conditional) internal virtual override returns (address) {
-        return currentAddresses[_conditional];
+    /// Check if `msg.sender` is an attorney allowed to restore a user's account.
+    function checkAllowedRestoreAccount(address /*_oldAccount*/, address /*_newAccount*/) public virtual;
+
+    /// Check if `msg.sender` is an attorney allowed to unrestore a user's account.
+    function checkAllowedUnrestoreAccount(address /*_oldAccount*/, address /*_newAccount*/) public virtual;
+
+    /// Find the original address of a given account.
+    /// This function is internal, because it can be calculated off-chain.
+    /// @param _account The current address.
+    function _originalAddress(address _account) internal view virtual returns (address) {
+        address _newAddress = originalAddresses[_account];
+        return _newAddress != address(0) ? _newAddress : _account;
+    }
+
+    // Find the current address for an original address.
+    // @param _conditional The original address.
+    function currentAddress(address _customer) internal virtual override returns (address) {
+        return currentAddresses[_customer];
     }
 
     // Modifiers //
