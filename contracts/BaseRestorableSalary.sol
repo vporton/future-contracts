@@ -66,7 +66,7 @@ abstract contract BaseRestorableSalary is BaseSalary {
     /// @param oldAccount_ Old account.
     /// @param newAccount_ New account.
     /// @param token_ The ERC-1155 token ID.
-    /// This function can be called by the affected user. // TODO: Also allow to be called by an attorney?
+    /// This function can be called by the affected user.
     ///
     /// Remark: We intentionally create no new tokens as on a regular transfer, because it isn't a transfer to a trader.
     function restoreFunds(address oldAccount_, address newAccount_, uint256 token_) public
@@ -84,7 +84,7 @@ abstract contract BaseRestorableSalary is BaseSalary {
     /// @param oldAccount_ Old account.
     /// @param newAccount_ New account.
     /// @param tokens_ The ERC-1155 token IDs.
-    /// This function can be called by the affected user. // TODO: Also allow to be called by an attorney?
+    /// This function can be called by the affected user.
     ///
     /// Remark: We intentionally create no new tokens as on a regular transfer, because it isn't a transfer to a trader.
     function restoreFundsBatch(address oldAccount_, address newAccount_, uint256[] calldata tokens_) public
@@ -135,8 +135,12 @@ abstract contract BaseRestorableSalary is BaseSalary {
 
     // Modifiers //
 
+    /// We also allow funds restoration by attorneys for convenience of users.
+    /// This is not an increased security risk, because a dishonest attorney can anyway tranfer money to himself.
     modifier checkMovedOwner(address oldAccount_, address newAccount_) virtual {
-        require(newAccount_ == _msgSender(), "Not account owner.");
+        if (_msgSender() != newAccount_) {
+            checkAllowedRestoreAccount(oldAccount_, newAccount_); // only authorized "attorneys" or attorney DAOs
+        }
 
         for (address account = oldAccount_; account != newAccount_; account = newToOldAccount[account]) {
             require(account != address(0), "Not a moved owner");
