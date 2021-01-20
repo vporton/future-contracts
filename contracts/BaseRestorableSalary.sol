@@ -4,6 +4,7 @@ import "./Salary.sol";
 
 /// @author Victor Porton
 /// @notice Not audited, not enough tested.
+/// A base class for salary with receiver accounts that can be restored by an "attorney".
 abstract contract BaseRestorableSalary is BaseSalary {
     // INVARIANT: `_originalAddress(newToOldAccount[newAccount]) == _originalAddress(newAccount)`
     //            if `newToOldAccount[newAccount] != address(0)` for every `newAccount`
@@ -12,10 +13,10 @@ abstract contract BaseRestorableSalary is BaseSalary {
     //            - `originalAddresses[currentAddresses[x]] == x` if `currentAddresses[x] != address(0)`
     //            - `currentAddresses[originalAddresses[x]] == x` if `originalAddresses[x] != address(0)`
 
-    /// The very first address an account had.
+    /// Mapping (current address => very first address an account had).
     mapping(address => address) public originalAddresses;
 
-    /// original address => current address
+    /// Mapping (very first address an account had => current address).
     mapping(address => address) public currentAddresses;
 
     // Mapping from old to new account addresses (created after every change of an address).
@@ -52,8 +53,8 @@ abstract contract BaseRestorableSalary is BaseSalary {
     /// This function is intented to be called by an attorney.
     /// @param _oldAccount is an old current address.
     /// @param _newAccount is a new address.
-    /// We don't allow this to be called by `msg.sender == _oldAccount`, because
-    /// it would allow to keep stealing the salary by hijacked old account.
+    /// We (in general) don't allow this to be called by `msg.sender == _oldAccount`,
+    /// because it would allow to keep stealing the salary by hijacked old account.
     function dispermitRestoreAccount(address _oldAccount, address _newAccount) public {
         checkAllowedUnrestoreAccount(_oldAccount, _newAccount); // only authorized "attorneys" or attorney DAOs
         _avoidZeroAddressManipulatins(_oldAccount, _newAccount);
@@ -137,6 +138,8 @@ abstract contract BaseRestorableSalary is BaseSalary {
 
     // Modifiers //
 
+    /// Check that `_newAccount` is the user that has the right to restore funds from `_oldAccount`.
+    ///
     /// We also allow funds restoration by attorneys for convenience of users.
     /// This is not an increased security risk, because a dishonest attorney can anyway tranfer money to himself.
     modifier checkMovedOwner(address _oldAccount, address _newAccount) virtual {
