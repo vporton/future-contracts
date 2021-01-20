@@ -78,8 +78,10 @@ contract SalaryWithDAO is BaseRestorableSalary {
         daoPlugin.checkAllowedRestoreAccount(oldAccount_, newAccount_);
     }
 
-    // TODO: Do we need isUnderDAOControl(oldAccount_) here?
-    // TODO: Allow the user to unrestore by himself?
+    /// Allow the user to unrestore by himself?
+    /// We won't not allow it to `oldAccount_` because it may be a stolen private key.
+    /// We could allow it to `newAccount_`, but this makes no much sense, because
+    /// it would only prevent the user to do a theft by himself, let only DAO could be allowed to do.
     function checkAllowedUnrestoreAccount(address oldAccount_, address newAccount_)
         public virtual override isUnderDAOControl(oldAccount_)
     {
