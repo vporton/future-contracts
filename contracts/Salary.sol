@@ -2,6 +2,8 @@
 pragma solidity ^0.7.1;
 import "./BaseSalary.sol";
 
+/// @author Victor Porton
+/// @notice Not audited, not enough tested.
 contract Salary is BaseSalary {
     constructor(string memory _uri) BaseSalary(_uri) { }
 

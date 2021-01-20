@@ -2,6 +2,8 @@
 pragma solidity ^0.7.1;
 import "./BaseBidOnAddresses.sol";
 
+/// @author Victor Porton
+/// @notice Not audited, not enough tested.
 /// It would cause this effect: A scientist who is already great may register then his date is moved back
 /// in time and instantly he or she receives a very big sum of money to his account.
 /// If it is done erroneously, there may be no way to move the registration date again forward in time,

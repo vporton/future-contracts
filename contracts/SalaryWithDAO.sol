@@ -4,6 +4,8 @@ import { ABDKMath64x64 } from "abdk-libraries-solidity/ABDKMath64x64.sol";
 import "./BaseRestorableSalary.sol";
 import "./DAOInterface.sol";
 
+/// @author Victor Porton
+/// @notice Not audited, not enough tested.
 contract SalaryWithDAO is BaseRestorableSalary {
     using ABDKMath64x64 for int128;
 

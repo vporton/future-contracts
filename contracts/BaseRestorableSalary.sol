@@ -2,6 +2,8 @@
 pragma solidity ^0.7.1;
 import "./Salary.sol";
 
+/// @author Victor Porton
+/// @notice Not audited, not enough tested.
 abstract contract BaseRestorableSalary is BaseSalary {
     // INVARIANT: `_originalAddress(newToOldAccount[newAccount]) == _originalAddress(newAccount)`
     //            if `newToOldAccount[newAccount] != address(0)` for every `newAccount`
