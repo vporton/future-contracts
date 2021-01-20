@@ -70,20 +70,6 @@ contract SalaryWithDAO is BaseRestorableSalary {
         super._mintToCustomer(customer, conditionalTokenId, amount, data);
     }
 
-    /// It's useful to punish someone for decreasing his work performance or an evil act.
-    ///
-    /// This is to be called among other when a person dies.
-    ///
-    /// TODO: Should be called directly by the DAO or by anyone who passes a check by the DAO?
-    ///
-    /// TODO: Maybe allow forcing recalculation by anybody, not just the DAO? We can wrap several tokens into one anyway,
-    /// so it would not much disturb the user.
-    ///
-    /// TODO: duplicate functionality
-    function forciblyRecalculateSalary(uint256 condition) public onlyDAO {
-        _recreateCondition(condition);
-    }
-
     // Overrides ///
 
     function checkAllowedRestoreAccount(address oldAccount_, address newAccount_)

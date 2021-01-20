@@ -53,6 +53,8 @@ contract BaseSalary is BaseBidOnAddresses {
 
     /// Make a new condition that replaces the old one.
     /// It is useful to remove a trader's incentive to kill the issuer to reduce the circulating supply.
+    /// It's also useful to punish someone for decreasing his work performance or an evil act.
+    /// This is to be called among other when a person dies.
     /// The same can be done by transferring to yourself 0 tokens, but this method uses less gas.
     ///
     /// Issue to solve later: Should we recommend:
