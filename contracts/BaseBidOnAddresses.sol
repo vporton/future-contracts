@@ -9,8 +9,6 @@ import { BaseLock } from "./BaseLock.sol";
 /// @notice Not audited, not enough tested.
 /// This allows anyone claim conditional tokens in order for him to transfer money from the future.
 /// See `docs/future-money.rst`.
-///
-/// In functions of this contact `condition` is always a customer's original address.
 abstract contract BaseBidOnAddresses is BaseLock {
     using ABDKMath64x64 for int128;
     using SafeMath for uint256;
