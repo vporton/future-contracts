@@ -96,7 +96,7 @@ abstract contract BaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
 
     /// Constructor.
     /// @param uri_ Our ERC-1155 tokens description URI.
-    constructor(string memory uri_) ERC1155WithTotals(uri_) {
+    constructor(string memory _uri) ERC1155WithTotals(_uri) {
         _registerInterface(
             BaseLock(0).onERC1155Received.selector ^
             BaseLock(0).onERC1155BatchReceived.selector
@@ -111,9 +111,9 @@ abstract contract BaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     /// Modify the owner of an oracle.
     /// @param newOracleOwner New owner.
     /// @param oracleId The oracle whose owner to change.
-    function changeOracleOwner(address newOracleOwner, uint64 oracleId) public _isOracle(oracleId) {
-        oracleOwnersMap[oracleId] = newOracleOwner;
-        emit OracleOwnerChanged(newOracleOwner, oracleId);
+    function changeOracleOwner(address _newOracleOwner, uint64 _oracleId) public _isOracle(_oracleId) {
+        oracleOwnersMap[_oracleId] = _newOracleOwner;
+        emit OracleOwnerChanged(_newOracleOwner, _oracleId);
     }
 
     /// Set the end time of the grace period.
@@ -122,8 +122,8 @@ abstract contract BaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     /// The second withdrawal can be done after the end of the grace period and only if the first withdrawal was done.
     ///
     /// The intention of the grace period is to check which of users are active ("alive").
-    function updateGracePeriodEnds(uint64 oracleId, uint time) public _isOracle(oracleId) {
-        gracePeriodEnds[oracleId] = time;
+    function updateGracePeriodEnds(uint64 _oracleId, uint _time) public _isOracle(_oracleId) {
+        gracePeriodEnds[_oracleId] = _time;
     }
 
     /// Donate funds in a ERC1155 token.
@@ -142,42 +142,42 @@ abstract contract BaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     /// @param to On whose account the donation amount is assigned.
     /// @param data Additional transaction data.
     function donate(
-        IERC1155 collateralContractAddress,
-        uint256 collateralTokenId,
-        uint64 oracleId,
-        uint256 amount,
-        address from,
-        address to,
-        bytes calldata data) external
+        IERC1155 _collateralContractAddress,
+        uint256 _collateralTokenId,
+        uint64 _oracleId,
+        uint256 _amount,
+        address _from,
+        address _to,
+        bytes calldata _data) external
     {
-        uint donatedCollateralTokenId = _collateralDonatedTokenId(collateralContractAddress, collateralTokenId, oracleId);
-        _mint(to, donatedCollateralTokenId, amount, data);
-        emit DonateCollateral(collateralContractAddress, collateralTokenId, from, amount, to, data);
-        collateralContractAddress.safeTransferFrom(from, address(this), collateralTokenId, amount, data); // last against reentrancy attack
+        uint donatedCollateralTokenId = _collateralDonatedTokenId(_collateralContractAddress, _collateralTokenId, _oracleId);
+        _mint(_to, donatedCollateralTokenId, _amount, _data);
+        emit DonateCollateral(_collateralContractAddress, _collateralTokenId, _from, _amount, _to, _data);
+        _collateralContractAddress.safeTransferFrom(_from, address(this), _collateralTokenId, _amount, _data); // last against reentrancy attack
     }
 
     function collateralOwingBase(
-        IERC1155 collateralContractAddress,
-        uint256 collateralTokenId,
-        uint64 oracleId,
-        uint256 condition,
-        address user,
-        bool inFirstRound
+        IERC1155 _collateralContractAddress,
+        uint256 _collateralTokenId,
+        uint64 _oracleId,
+        uint256 _condition,
+        address _user,
+        bool _inFirstRound
     )
         private view returns (uint donatedCollateralTokenId, uint256 donated)
     {
-        uint256 conditionalBalance = balanceOf(user, condition);
+        uint256 conditionalBalance = balanceOf(_user, _condition);
         uint256 totalConditionalBalance =
-            inFirstRound ? totalBalanceOf(condition) : usersWithdrewInFirstRound[oracleId];
-        donatedCollateralTokenId = _collateralDonatedTokenId(collateralContractAddress, collateralTokenId, oracleId);
+            _inFirstRound ? totalBalanceOf(_condition) : usersWithdrewInFirstRound[_oracleId];
+        donatedCollateralTokenId = _collateralDonatedTokenId(_collateralContractAddress, _collateralTokenId, _oracleId);
         // Rounded to below for no out-of-funds:
         int128 oracleShare = ABDKMath64x64.divu(conditionalBalance, totalConditionalBalance);
         uint256 _newDividendsDonated =
             totalBalanceOf(donatedCollateralTokenId) -
-            (inFirstRound
-                ? lastCollateralBalanceFirstRoundMap[donatedCollateralTokenId][user] 
-                : lastCollateralBalanceSecondRoundMap[donatedCollateralTokenId][user]);
-        int128 multiplier = _calcMultiplier(oracleId, condition, oracleShare);
+            (_inFirstRound
+                ? lastCollateralBalanceFirstRoundMap[donatedCollateralTokenId][_user] 
+                : lastCollateralBalanceSecondRoundMap[donatedCollateralTokenId][_user]);
+        int128 multiplier = _calcMultiplier(_oracleId, _condition, oracleShare);
         donated = multiplier.mulu(_newDividendsDonated);
     }
 
@@ -188,20 +188,20 @@ abstract contract BaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     /// @param condition The condition (the original receiver of a conditional token).
     /// @param user The user to which we may owe.
     function collateralOwing(
-        IERC1155 collateralContractAddress,
-        uint256 collateralTokenId,
-        uint64 oracleId,
-        uint256 condition,
-        address user
+        IERC1155 _collateralContractAddress,
+        uint256 _collateralTokenId,
+        uint64 _oracleId,
+        uint256 _condition,
+        address _user
     ) external view returns(uint256) {
-        bool inFirstRound = _inFirstRound(oracleId);
+        bool inFirstRound = _inFirstRound(_oracleId);
         (, uint256 donated) =
-            collateralOwingBase(collateralContractAddress, collateralTokenId, oracleId, condition, user, inFirstRound);
+            collateralOwingBase(_collateralContractAddress, _collateralTokenId, _oracleId, _condition, _user, inFirstRound);
         return donated;
     }
 
-    function _inFirstRound(uint64 oracleId) internal view returns (bool) {
-        return block.timestamp < gracePeriodEnds[oracleId];
+    function _inFirstRound(uint64 _oracleId) internal view returns (bool) {
+        return block.timestamp < gracePeriodEnds[_oracleId];
     }
 
     /// Transfer to `msg.sender` the collateral ERC-1155 token.
@@ -218,16 +218,22 @@ abstract contract BaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     /// - We can't transfer to somebody other than `msg.sender` because anybody can transfer (needed for multi-level transfers).
     /// - After this function is called, it becomes impossible to transfer the corresponding conditional token of `msg.sender`
     ///   (to prevent its repeated withdrawal).
-    function withdrawCollateral(IERC1155 collateralContractAddress, uint256 collateralTokenId, uint64 oracleId, uint256 condition, bytes calldata data) external {
-        require(isOracleFinished(oracleId), "too early"); // to prevent the denominator or the numerators change meantime
-        bool inFirstRound = _inFirstRound(oracleId);
-        userUsedRedeemMap[msg.sender][condition] = true;
-        // _burn(msg.sender, condition, conditionalBalance); // Burning it would break using the same token for multiple markets.
+    function withdrawCollateral(
+        IERC1155 _collateralContractAddress,
+        uint256 _collateralTokenId,
+        uint64 _oracleId,
+        uint256 _condition,
+        bytes calldata _data) external
+    {
+        require(isOracleFinished(_oracleId), "too early"); // to prevent the denominator or the numerators change meantime
+        bool inFirstRound = _inFirstRound(_oracleId);
+        userUsedRedeemMap[msg.sender][_condition] = true;
+        // _burn(msg.sender, _condition, conditionalBalance); // Burning it would break using the same token for multiple markets.
         (uint donatedCollateralTokenId, uint256 _owingDonated) =
-            collateralOwingBase(collateralContractAddress, collateralTokenId, oracleId, condition, msg.sender, inFirstRound);
+            collateralOwingBase(_collateralContractAddress, _collateralTokenId, _oracleId, _condition, msg.sender, inFirstRound);
 
         // Against rounding errors. Not necessary because of rounding down.
-        // if(_owing > balanceOf(address(this), collateralTokenId)) _owing = balanceOf(address(this), collateralTokenId);
+        // if(_owing > balanceOf(address(this), _collateralTokenId)) _owing = balanceOf(address(this), _collateralTokenId);
 
         if (_owingDonated != 0) {
             uint256 newTotal = totalBalanceOf(donatedCollateralTokenId);
@@ -238,14 +244,14 @@ abstract contract BaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
             }
         }
         if (!inFirstRound) {
-            usersWithdrewInFirstRound[oracleId] = usersWithdrewInFirstRound[oracleId].add(_owingDonated);
+            usersWithdrewInFirstRound[_oracleId] = usersWithdrewInFirstRound[_oracleId].add(_owingDonated);
         }
         // Last to prevent reentrancy attack:
-        collateralContractAddress.safeTransferFrom(address(this), msg.sender, collateralTokenId, _owingDonated, data);
+        _collateralContractAddress.safeTransferFrom(address(this), msg.sender, _collateralTokenId, _owingDonated, _data);
         emit CollateralWithdrawn(
-            collateralContractAddress,
-            collateralTokenId,
-            oracleId,
+            _collateralContractAddress,
+            _collateralTokenId,
+            _oracleId,
             msg.sender,
             _owingDonated
         );
@@ -255,34 +261,34 @@ abstract contract BaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     ///
     /// We disallow transfers of conditional tokens after redeem to prevent "gathering" them before redeeming each oracle.
     function safeTransferFrom(
-        address from,
-        address to,
-        uint256 id,
-        uint256 value,
-        bytes calldata data
+        address _from,
+        address _to,
+        uint256 _id,
+        uint256 _value,
+        bytes calldata _data
     )
         public override
     {
-        _checkTransferAllowed(id, from);
-        _baseSafeTransferFrom(from, to, id, value, data);
+        _checkTransferAllowed(_id, _from);
+        _baseSafeTransferFrom(_from, _to, _id, _value, _data);
     }
 
     /// A ERC-1155 function.
     ///
-    /// We disallow transfers of conditional tokens after redeem to prevent "gathering" them before redeeming each oracle.
+    /// We disallow transfers of conditional tokens after redeem _to prevent "gathering" them before redeeming each oracle.
     function safeBatchTransferFrom(
-        address from,
-        address to,
-        uint256[] calldata ids,
-        uint256[] calldata values,
-        bytes calldata data
+        address _from,
+        address _to,
+        uint256[] calldata _ids,
+        uint256[] calldata _values,
+        bytes calldata _data
     )
         public override
     {
-        for(uint i = 0; i < ids.length; ++i) {
-            _checkTransferAllowed(ids[i], from);
+        for(uint i = 0; i < _ids.length; ++i) {
+            _checkTransferAllowed(_ids[i], _from);
         }
-        _baseSafeBatchTransferFrom(from, to, ids, values, data);
+        _baseSafeBatchTransferFrom(_from, _to, _ids, _values, _data);
     }
 
     /// A ERC-1155 function.
@@ -303,8 +309,8 @@ abstract contract BaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
 
     /// Get the oracle owner.
     /// @param oracleId The oracle ID.
-    function oracleOwner(uint64 oracleId) public view returns (address) {
-        return oracleOwnersMap[oracleId];
+    function oracleOwner(uint64 _oracleId) public view returns (address) {
+        return oracleOwnersMap[_oracleId];
     }
 
     /// Is the oracle marked as having finished its work?
@@ -319,14 +325,14 @@ abstract contract BaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     /// This is used to prevent its repeated withdrawal.
     /// @param user Querying if locked for this user.
     /// @param condition The condition (the original receiver of a conditional token).
-    function isConditionalLocked(address user, uint256 condition) public view returns (bool) {
-        return userUsedRedeemMap[user][condition];
+    function isConditionalLocked(address _user, uint256 _condition) public view returns (bool) {
+        return userUsedRedeemMap[_user][_condition];
     }
 
     /// Retrive the end of the grace period.
     /// @param oracleId For which oracle.
-    function gracePeriodEnd(uint64 oracleId) public view returns (uint) {
-        return gracePeriodEnds[oracleId];
+    function gracePeriodEnd(uint64 _oracleId) public view returns (uint) {
+        return gracePeriodEnds[_oracleId];
     }
 
     // Virtual functions //
@@ -335,18 +341,18 @@ abstract contract BaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
         return _originalAddress;
     }
 
-    function _mintToCustomer(address customer, uint256 condition, uint256 amount, bytes calldata data) internal virtual {
-        _mint(currentAddress(customer), condition, amount, data);
+    function _mintToCustomer(address _customer, uint256 _condition, uint256 _amount, bytes calldata _data) internal virtual {
+        _mint(currentAddress(_customer), _condition, _amount, _data);
     }
 
     /// Calculate the share of a conditon in an oracle's market.
     /// @param oracleId The oracle ID.
     /// @return Uses `ABDKMath64x64` number ID.
-    function _calcRewardShare(uint64 oracleId, uint256 condition) internal virtual view returns (int128);
+    function _calcRewardShare(uint64 _oracleId, uint256 _condition) internal virtual view returns (int128);
 
-    function _calcMultiplier(uint64 oracleId, uint256 condition, int128 oracleShare) internal virtual view returns (int128) {
-        int128 rewardShare = _calcRewardShare(oracleId, condition);
-        return oracleShare.mul(rewardShare);
+    function _calcMultiplier(uint64 _oracleId, uint256 _condition, int128 _oracleShare) internal virtual view returns (int128) {
+        int128 _rewardShare = _calcRewardShare(_oracleId, _condition);
+        return _oracleShare.mul(_rewardShare);
     }
 
     // Internal //
@@ -356,79 +362,82 @@ abstract contract BaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     /// @param collateralTokenId The ERC-1155 ID of the collateral token.
     /// @param oracleId The oracle ID.
     /// Note: It does not conflict with other tokens kinds, becase the only other one is the uint64 conditional.
-    function _collateralDonatedTokenId(IERC1155 collateralContractAddress, uint256 collateralTokenId, uint64 oracleId) internal pure returns (uint256) {
-        return uint256(keccak256(abi.encodePacked(collateralContractAddress, collateralTokenId, oracleId)));
+    function _collateralDonatedTokenId(IERC1155 _collateralContractAddress, uint256 _collateralTokenId, uint64 _oracleId)
+        internal pure returns (uint256)
+    {
+        return uint256(keccak256(abi.encodePacked(_collateralContractAddress, _collateralTokenId, _oracleId)));
     }
 
-    function _checkTransferAllowed(uint256 id, address from) internal view {
-        require(!userUsedRedeemMap[from][id], "You can't trade conditional tokens after redeem.");
+    function _checkTransferAllowed(uint256 _id, address _from) internal view {
+        require(!userUsedRedeemMap[_from][_id], "You can't trade conditional tokens after redeem.");
     }
 
-    function _baseSafeTransferFrom(address from, address to, uint256 id, uint256 value, bytes memory data) private {
-        require(to != address(0), "ERC1155: target address must be non-zero");
+    function _baseSafeTransferFrom(address _from, address _to, uint256 _id, uint256 _value, bytes memory _data) private {
+        require(_to != address(0), "ERC1155: target address must be non-zero");
         require(
-            from == msg.sender || _operatorApprovals[from][msg.sender] == true,
+            _from == msg.sender || _operatorApprovals[_from][msg.sender] == true,
             "ERC1155: need operator approval for 3rd party transfers."
         );
 
-        _doTransfer(id, from, to, value);
+        _doTransfer(_id, _from, _to, _value);
 
-        emit TransferSingle(msg.sender, from, to, id, value);
+        emit TransferSingle(msg.sender, _from, _to, _id, _value);
 
-        _doSafeTransferAcceptanceCheck(msg.sender, from, to, id, value, data);
+        _doSafeTransferAcceptanceCheck(msg.sender, _from, _to, _id, _value, _data);
     }
 
     function _baseSafeBatchTransferFrom(
-        address from,
-        address to,
-        uint256[] memory ids,
-        uint256[] memory values,
-        bytes memory data
+        address _from,
+        address _to,
+        uint256[] memory _ids,
+        uint256[] memory _values,
+        bytes memory _data
     )
         private
     {
-        require(ids.length == values.length, "ERC1155: IDs and values must have same lengths");
-        require(to != address(0), "ERC1155: target address must be non-zero");
+        require(_ids.length == _values.length, "ERC1155: IDs and _values must have same lengths");
+        require(_to != address(0), "ERC1155: target address must be non-zero");
         require(
-            from == msg.sender || _operatorApprovals[from][msg.sender] == true,
+            _from == msg.sender || _operatorApprovals[_from][msg.sender] == true,
             "ERC1155: need operator approval for 3rd party transfers."
         );
 
-        for (uint256 i = 0; i < ids.length; ++i) {
-            uint256 id = ids[i];
-            uint256 value = values[i];
+        for (uint256 i = 0; i < _ids.length; ++i) {
+            uint256 _id = _ids[i];
+            uint256 _value = _values[i];
 
-            _doTransfer(id, from, to, value);
+            _doTransfer(_id, _from, _to, _value);
         }
 
-        emit TransferBatch(msg.sender, from, to, ids, values);
+        emit TransferBatch(msg.sender, _from, _to, _ids, _values);
 
-        _doSafeBatchTransferAcceptanceCheck(msg.sender, from, to, ids, values, data);
+        _doSafeBatchTransferAcceptanceCheck(msg.sender, _from, _to, _ids, _values, _data);
     }
 
-    function _doTransfer(uint256 id, address from, address to, uint256 value) internal virtual {
-        _balances[id][from] = _balances[id][from].sub(value);
-        _balances[id][to] = value.add(_balances[id][to]);
+    function _doTransfer(uint256 _id, address _from, address _to, uint256 _value) internal virtual {
+        _balances[_id][_from] = _balances[_id][_from].sub(_value);
+        _balances[_id][_to] = _value.add(_balances[_id][_to]);
     }
 
     function _createOracle() internal returns (uint64) {
-        uint64 oracleId = ++maxOracleId;
-        oracleOwnersMap[oracleId] = msg.sender;
-        emit OracleCreated(oracleId);
-        emit OracleOwnerChanged(msg.sender, oracleId);
-        return oracleId;
+        uint64 _oracleId = ++maxOracleId;
+        oracleOwnersMap[_oracleId] = msg.sender;
+        emit OracleCreated(_oracleId);
+        emit OracleOwnerChanged(msg.sender, _oracleId);
+        return _oracleId;
     }
 
     /// Start with 1, not 0, to avoid glitch with `conditionalTokens`.
     ///
     /// TODO: Use uint64 variables instead?
-    function _createCondition(address customer) internal returns (uint256) {
-        return _doCreateCondition(customer);
+    function _createCondition(address _customer) internal returns (uint256) {
+        return _doCreateCondition(_customer);
     }
 
     /// Start with 1, not 0, to avoid glitch with `conditionalTokens`.
     ///
     /// TODO: Use uint64 variables instead?
+    /// FIXME: Store the condition ID
     function _doCreateCondition(address customer) internal virtual returns (uint256) {
         uint64 _conditionId = ++maxConditionId;
 
