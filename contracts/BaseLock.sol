@@ -334,6 +334,7 @@ abstract contract BaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     }
 
     function _mintToCustomer(address _customer, uint256 _condition, uint256 _amount, bytes calldata _data) internal virtual {
+        require(conditionOwners[_conditon] == _customer, "Other's salary get attempt.")
         _mint(currentAddress(_customer), _condition, _amount, _data);
     }
 
@@ -429,10 +430,10 @@ abstract contract BaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     /// Start with 1, not 0, to avoid glitch with `conditionalTokens`.
     ///
     /// TODO: Use uint64 variables instead?
-    /// FIXME: Store `customer` and use it later to check.
     function _doCreateCondition(address _customer) internal virtual returns (uint256) {
         uint64 _conditionId = ++maxConditionId;
 
+        conditionOwners[_conditionId] = _customer;
         firstConditionInChain[_conditionId] = _conditionId;
         firstToLastConditionInChain[_conditionId] = _conditionId;
 

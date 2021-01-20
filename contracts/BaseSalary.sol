@@ -41,10 +41,11 @@ contract BaseSalary is BaseBidOnAddresses {
     mapping(address => mapping(uint256 => uint)) public lastSalaryDates;
     /// Mapping (condition ID => account) - salary recipients.
     mapping(uint256 => address) public salaryReceivers;
+    // Mapping (condition ID => original account)
+    mapping(uint256 => address) public conditionOwners;
 
     constructor(string memory _uri) BaseBidOnAddresses(_uri) { }
 
-    // FIXME: Check that somebody's salary is minted to him, not to other.
     function mintSalary(uint64 _oracleId, uint64 _condition, bytes calldata _data)
         ensureLastConditionInChain(_condition) external
     {
