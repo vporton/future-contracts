@@ -111,7 +111,6 @@ abstract contract BaseRestorableSalary is BaseSalary {
 
     /// Find the original address of a given account.
     /// @param account The current address.
-    /// TODO: no need to be public/external
     function _originalAddress(address account) internal view virtual returns (address) {
         address newAddress = originalAddresses[account];
         return newAddress != address(0) ? newAddress : account;
