@@ -210,7 +210,6 @@ contract BaseSalary is BaseBidOnAddresses {
         virtual internal returns (uint256)
     {
         uint256 _condition = _doCreateCondition(_customer);
-        require(conditionCreationDates[_customer][_condition] == 0, "You are already registered.");
         lastSalaryDates[_customer][_condition] = block.timestamp;
         emit CustomerRegistered(msg.sender, _oracleId, _data);
         return _condition;
