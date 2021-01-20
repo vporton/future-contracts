@@ -36,19 +36,19 @@ contract BaseSalary is BaseBidOnAddresses {
     /// Mapping (condition ID => account) - salary recipients.
     mapping(uint256 => address) public salaryReceivers;
 
-    constructor(string memory uri_) BaseBidOnAddresses(uri_) { }
+    constructor(string memory _uri) BaseBidOnAddresses(_uri) { }
 
-    function mintSalary(uint64 oracleId, uint64 condition, bytes calldata data)
-        ensureLastConditionInChain(condition) external
+    function mintSalary(uint64 _oracleId, uint64 _condition, bytes calldata _data)
+        ensureLastConditionInChain(_condition) external
     {
-        uint lastSalaryDate = lastSalaryDates[msg.sender][condition];
+        uint lastSalaryDate = lastSalaryDates[msg.sender][_condition];
         require(lastSalaryDate != 0, "You are not registered.");
         // Note: Even if you withdraw once per 20 years, you will get only 630,720,000 tokens.
         // This number is probably not to big to be displayed well in UIs.
         uint256 amount = (lastSalaryDate - block.timestamp) * 10**18; // one token per second
-        _mintToCustomer(msg.sender, condition, amount, data);
-        lastSalaryDates[msg.sender][condition] = block.timestamp;
-        emit SalaryMinted(msg.sender, oracleId, amount, data);
+        _mintToCustomer(msg.sender, _condition, amount, _data);
+        lastSalaryDates[msg.sender][_condition] = block.timestamp;
+        emit SalaryMinted(msg.sender, _oracleId, amount, _data);
     }
 
     /// Make a new condition that replaces the old one.
@@ -62,14 +62,14 @@ contract BaseSalary is BaseBidOnAddresses {
     /// - calling this function regularly (e.g. every week)?
     ///
     /// This function also withdraws the old token.
-    function recreateCondition(uint256 condition) public returns (uint256) {
-        return _recreateCondition(condition);
+    function recreateCondition(uint256 _condition) public returns (uint256) {
+        return _recreateCondition(_condition);
     }
 
-    function _doCreateCondition(address customer) internal virtual override returns (uint256) {
-        uint256 _condition = super._doCreateCondition(customer);
-        salaryReceivers[_condition] = customer;
-        conditionCreationDates[customer][_condition] = block.timestamp;
+    function _doCreateCondition(address _customer) internal virtual override returns (uint256) {
+        uint256 _condition = super._doCreateCondition(_customer);
+        salaryReceivers[_condition] = _customer;
+        conditionCreationDates[_customer][_condition] = block.timestamp;
         return _condition;
     }
 
@@ -135,32 +135,32 @@ contract BaseSalary is BaseBidOnAddresses {
     }
 
     /// Must be called with `id != 0`.
-    function isLastConditionInChain(uint256 id) internal view returns (bool) {
-        return firstToLastConditionInChain[firstConditionInChain[id]] == id;
+    function isLastConditionInChain(uint256 _id) internal view returns (bool) {
+        return firstToLastConditionInChain[firstConditionInChain[id]] == _id;
     }
 
-    function _doTransfer(uint256 id, address from, address to, uint256 value) internal virtual override {
-        super._doTransfer(id, from, to, value);
+    function _doTransfer(uint256 _id, address _from, address _to, uint256 _value) internal virtual override {
+        super._doTransfer(_id, _from, _to, _value);
 
-        if (id != 0 && salaryReceivers[id] == msg.sender) {
-            if (isLastConditionInChain(id)) { // correct because `id != 0`
-                _recreateCondition(id);
+        if (_id != 0 && salaryReceivers[_id] == msg.sender) {
+            if (isLastConditionInChain(_id)) { // correct because `_id != 0`
+                _recreateCondition(_id);
             }
         }
     }
 
-    function _registerCustomer(address customer, uint64 oracleId, bytes calldata data)
+    function _registerCustomer(address _customer, uint64 _oracleId, bytes calldata _data)
         virtual internal returns (uint256)
     {
-        uint256 _condition = _doCreateCondition(customer);
-        require(conditionCreationDates[customer][_condition] == 0, "You are already registered.");
-        lastSalaryDates[customer][_condition] = block.timestamp;
-        emit CustomerRegistered(msg.sender, oracleId, data);
+        uint256 _condition = _doCreateCondition(_customer);
+        require(conditionCreationDates[_customer][_condition] == 0, "You are already registered.");
+        lastSalaryDates[_customer][_condition] = block.timestamp;
+        emit CustomerRegistered(msg.sender, _oracleId, _data);
         return _condition;
     }
 
-    modifier ensureLastConditionInChain(uint256 id) {
-        require(_isConditional(id) && id != 0 && isLastConditionInChain(id), "Only for the last salary token.");
+    modifier ensureLastConditionInChain(uint256 _id) {
+        require(_isConditional(_id) && _id != 0 && isLastConditionInChain(_id), "Only for the last salary token.");
         _;
     }
 }

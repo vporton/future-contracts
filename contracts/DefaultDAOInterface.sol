@@ -3,11 +3,11 @@ pragma solidity ^0.7.1;
 import "./DAOInterface.sol";
 
 contract DefaultDAOInterface is DAOInterface {
-    function checkAllowedRestoreAccount(address /*oldAccount_*/, address /*newAccount_*/) external pure override {
+    function checkAllowedRestoreAccount(address /*_oldAccount*/, address /*_newAccount*/) external pure override {
         revert("unimplemented");
     }
 
-    function checkAllowedUnrestoreAccount(address /*oldAccount_*/, address /*newAccount_*/) external pure override {
+    function checkAllowedUnrestoreAccount(address /*_oldAccount*/, address /*_newAccount*/) external pure override {
         revert("unimplemented");
     }
 }

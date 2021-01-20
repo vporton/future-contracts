@@ -2,7 +2,7 @@
 pragma solidity ^0.7.1;
 
 interface DAOInterface {
-    function checkAllowedRestoreAccount(address oldAccount_, address newAccount_) external;
+    function checkAllowedRestoreAccount(address _oldAccount, address _newAccount) external;
 
-    function checkAllowedUnrestoreAccount(address oldAccount_, address newAccount_) external;
+    function checkAllowedUnrestoreAccount(address _oldAccount, address _newAccount) external;
 }

@@ -438,30 +438,30 @@ abstract contract BaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     ///
     /// TODO: Use uint64 variables instead?
     /// FIXME: Store `customer` and use it later to check.
-    function _doCreateCondition(address customer) internal virtual returns (uint256) {
+    function _doCreateCondition(address _customer) internal virtual returns (uint256) {
         uint64 _conditionId = ++maxConditionId;
 
         firstConditionInChain[_conditionId] = _conditionId;
         firstToLastConditionInChain[_conditionId] = _conditionId;
 
-        emit ConditionCreated(msg.sender, customer, _conditionId);
+        emit ConditionCreated(msg.sender, _customer, _conditionId);
 
         return _conditionId;
     }
 
-    function _isConditional(uint256 tokenId) internal pure returns (bool) {
+    function _isConditional(uint256 _tokenId) internal pure returns (bool) {
         // Zero 2**-192 probability that tokenId < (1<<64) if it's not a conditional.
         // Note to auditor: It's a hack, check for no errors carefully.
-        return tokenId < (1<<64);
+        return _tokenId < (1<<64);
     }
 
-    modifier _isOracle(uint64 oracleId) {
-        require(oracleOwnersMap[oracleId] == msg.sender, "Not the oracle owner.");
+    modifier _isOracle(uint64 _oracleId) {
+        require(oracleOwnersMap[_oracleId] == msg.sender, "Not the oracle owner.");
         _;
     }
 
-    modifier checkIsConditional(uint256 tokenId) {
-        require(_isConditional(tokenId), "It's not your conditional.");
+    modifier checkIsConditional(uint256 _tokenId) {
+        require(_isConditional(_tokenId), "It's not your conditional.");
         _;
     }
 }

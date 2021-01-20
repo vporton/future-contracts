@@ -3,15 +3,15 @@ pragma solidity ^0.7.1;
 import "./BaseSalary.sol";
 
 contract Salary is BaseSalary {
-    constructor(string memory uri_) BaseSalary(uri_) { }
+    constructor(string memory _uri_) BaseSalary(_uri) { }
 
     /// Can be called both before or after the oracle finish. However registering after the finish is useless.
     /// @param customer The original address.
     /// @param oracleId The oracle ID.
     /// @param data The current data.
-    function registerCustomer(address customer, uint64 oracleId, bytes calldata data)
+    function registerCustomer(address _customer, uint64 _oracleId, bytes calldata _data)
         virtual public returns (uint256)
     {
-        return _registerCustomer(customer, oracleId, data);
+        return _registerCustomer(_customer, _oracleId, _data);
     }
 }

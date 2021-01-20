@@ -17,5 +17,5 @@ import { BaseLock } from "./BaseLock.sol";
 abstract contract BaseLockWithoutCreateOracle is BaseLock {
     /// Constructor.
     /// @param uri_ Our ERC-1155 tokens description URI.
-    constructor(string memory uri_) BaseLock(uri_) { }
+    constructor(string memory _uri) BaseLock(uri) { }
 }

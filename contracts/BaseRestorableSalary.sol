@@ -21,107 +21,107 @@ abstract contract BaseRestorableSalary is BaseSalary {
 
     /// Constructor.
     /// @param uri_ Our ERC-1155 tokens description URI.
-    constructor (string memory uri_) BaseSalary(uri_) { }
+    constructor (string memory _uri) BaseSalary(_uri) { }
 
     /// Below copied from https://github.com/vporton/restorable-funds/blob/f6192fd23cad529b84155d52ae202430cd97db23/contracts/RestorableERC1155.sol
 
-    /// Give the user the "permission" to move funds from `oldAccount_` to `newAccount_`.
+    /// Give the user the "permission" to move funds from `_oldAccount` to `_newAccount`.
     ///
     /// This function is intented to be called by an attorney or the user to move to a new account.
-    /// @param oldAccount_ is a current address.
-    /// @param newAccount_ is a new address.
-    function permitRestoreAccount(address oldAccount_, address newAccount_) public {
-        if (msg.sender != oldAccount_) {
-            checkAllowedRestoreAccount(oldAccount_, newAccount_); // only authorized "attorneys" or attorney DAOs
+    /// @param _oldAccount is a current address.
+    /// @param _newAccount is a new address.
+    function permitRestoreAccount(address _oldAccount, address _newAccount) public {
+        if (msg.sender != _oldAccount) {
+            checkAllowedRestoreAccount(_oldAccount, _newAccount); // only authorized "attorneys" or attorney DAOs
         }
-        _avoidZeroAddressManipulatins(oldAccount_, newAccount_);
-        address orig = _originalAddress(oldAccount_);
+        _avoidZeroAddressManipulatins(_oldAccount, _newAccount);
+        address orig = _originalAddress(_oldAccount);
 
         // We don't disallow joining several accounts together to consolidate salaries for different projects.
-        // require(originalAddresses[newAccount_] == 0, "Account is taken.")
+        // require(originalAddresses[_newAccount] == 0, "Account is taken.")
 
-        newToOldAccount[newAccount_] = oldAccount_;
-        originalAddresses[newAccount_] = orig;
-        currentAddresses[orig] = newAccount_;
+        newToOldAccount[_newAccount] = _oldAccount;
+        originalAddresses[_newAccount] = orig;
+        currentAddresses[orig] = _newAccount;
         // Auditor: Check that the above invariant hold.
-        emit AccountRestored(oldAccount_, newAccount_);
+        emit AccountRestored(_oldAccount, _newAccount);
     }
 
     /// This function is intented to be called by an attorney.
-    /// @param oldAccount_ is an old current address.
-    /// @param newAccount_ is a new address.
-    /// We don't allow this to be called by `msg.sender == oldAccount_`, because
+    /// @param _oldAccount is an old current address.
+    /// @param _newAccount is a new address.
+    /// We don't allow this to be called by `msg.sender == _oldAccount`, because
     /// it would allow to keep stealing the salary by hijacked old account.
-    function dispermitRestoreAccount(address oldAccount_, address newAccount_) public {
-        checkAllowedUnrestoreAccount(oldAccount_, newAccount_); // only authorized "attorneys" or attorney DAOs
-        _avoidZeroAddressManipulatins(oldAccount_, newAccount_);
-        newToOldAccount[newAccount_] = address(0);
-        currentAddresses[oldAccount_] = address(0);
-        originalAddresses[newAccount_] = address(0);
+    function dispermitRestoreAccount(address _oldAccount, address _newAccount) public {
+        checkAllowedUnrestoreAccount(_oldAccount, _newAccount); // only authorized "attorneys" or attorney DAOs
+        _avoidZeroAddressManipulatins(_oldAccount, _newAccount);
+        newToOldAccount[_newAccount] = address(0);
+        currentAddresses[_oldAccount] = address(0);
+        originalAddresses[_newAccount] = address(0);
         // Auditor: Check that the above invariants hold.
-        emit AccountUnrestored(oldAccount_, newAccount_);
+        emit AccountUnrestored(_oldAccount, _newAccount);
     }
 
     /// Move the entire balance of a token from an old account to a new account of the same user.
-    /// @param oldAccount_ Old account.
-    /// @param newAccount_ New account.
-    /// @param token_ The ERC-1155 token ID.
+    /// @param _oldAccount Old account.
+    /// @param _newAccount New account.
+    /// @param _token The ERC-1155 token ID.
     /// This function can be called by the affected user.
     ///
     /// Remark: We intentionally create no new tokens as on a regular transfer, because it isn't a transfer to a trader.
-    function restoreFunds(address oldAccount_, address newAccount_, uint256 token_) public
-        checkMovedOwner(oldAccount_, newAccount_)
+    function restoreFunds(address _oldAccount, address _newAccount, uint256 _token) public
+        checkMovedOwner(_oldAccount, _newAccount)
     {
-        uint256 amount = _balances[token_][oldAccount_];
+        uint256 amount = _balances[_token][_oldAccount];
 
-        _balances[token_][newAccount_] = _balances[token_][oldAccount_];
-        _balances[token_][oldAccount_] = 0;
+        _balances[_token][_newAccount] = _balances[_token][_oldAccount];
+        _balances[_token][_oldAccount] = 0;
 
-        emit TransferSingle(_msgSender(), oldAccount_, newAccount_, token_, amount);
+        emit TransferSingle(_msgSender(), _oldAccount, _newAccount, _token, amount);
     }
 
     /// Move the entire balance of tokens from an old account to a new account of the same user.
-    /// @param oldAccount_ Old account.
-    /// @param newAccount_ New account.
-    /// @param tokens_ The ERC-1155 token IDs.
+    /// @param _oldAccount Old account.
+    /// @param _newAccount New account.
+    /// @param _tokens The ERC-1155 token IDs.
     /// This function can be called by the affected user.
     ///
     /// Remark: We intentionally create no new tokens as on a regular transfer, because it isn't a transfer to a trader.
-    function restoreFundsBatch(address oldAccount_, address newAccount_, uint256[] calldata tokens_) public
-        checkMovedOwner(oldAccount_, newAccount_)
+    function restoreFundsBatch(address _oldAccount, address _newAccount, uint256[] calldata _tokens) public
+        checkMovedOwner(_oldAccount, _newAccount)
     {
-        uint256[] memory amounts = new uint256[](tokens_.length);
-        for (uint i = 0; i < tokens_.length; ++i) {
-            uint256 token = tokens_[i];
-            uint256 amount = _balances[token][oldAccount_];
+        uint256[] memory amounts = new uint256[](_tokens.length);
+        for (uint i = 0; i < _tokens.length; ++i) {
+            uint256 token = _tokens[i];
+            uint256 amount = _balances[token][_oldAccount];
             amounts[i] = amount;
 
-            _balances[token][newAccount_] = _balances[token][oldAccount_];
-            _balances[token][oldAccount_] = 0;
+            _balances[token][_newAccount] = _balances[token][_oldAccount];
+            _balances[token][_oldAccount] = 0;
         }
 
-        emit TransferBatch(_msgSender(), oldAccount_, newAccount_, tokens_, amounts);
+        emit TransferBatch(_msgSender(), _oldAccount, _newAccount, _tokens, amounts);
     }
 
     /// Check if `msg.sender` is an attorney allowed to restore a user's account.
-    function checkAllowedRestoreAccount(address /*oldAccount_*/, address /*newAccount_*/) public virtual;
+    function checkAllowedRestoreAccount(address /*_oldAccount*/, address /*_newAccount*/) public virtual;
 
     /// Check if `msg.sender` is an attorney allowed to unrestore a user's account.
-    function checkAllowedUnrestoreAccount(address /*oldAccount_*/, address /*newAccount_*/) public virtual;
+    function checkAllowedUnrestoreAccount(address /*_oldAccount*/, address /*_newAccount*/) public virtual;
 
     /// Find the original address of a given account.
     /// @param account The current address.
-    function _originalAddress(address account) internal view virtual returns (address) {
-        address newAddress = originalAddresses[account];
-        return newAddress != address(0) ? newAddress : account;
+    function _originalAddress(address _account) internal view virtual returns (address) {
+        address newAddress = originalAddresses[_account];
+        return newAddress != address(0) ? newAddress : _account;
     }
 
     // Internal functions //
 
-    function _avoidZeroAddressManipulatins(address oldAccount_, address newAccount_) internal view {
+    function _avoidZeroAddressManipulatins(address _oldAccount, address _newAccount) internal view {
         // To avoid make-rich-quick manipulations with lost funds:
-        require(oldAccount_ != address(0) && newAccount_ != address(0) &&
-                originalAddresses[newAccount_] != address(0) && newToOldAccount[newAccount_] != address(0),
+        require(_oldAccount != address(0) && _newAccount != address(0) &&
+                originalAddresses[_newAccount] != address(0) && newToOldAccount[_newAccount] != address(0),
                 "Trying to get nobody's funds.");
     }
 
@@ -129,20 +129,20 @@ abstract contract BaseRestorableSalary is BaseSalary {
 
     /// Find the current address for an original address.
     /// @param conditional The original address.
-    function currentAddress(address conditional) internal virtual override returns (address) {
-        return currentAddresses[conditional];
+    function currentAddress(address _conditional) internal virtual override returns (address) {
+        return currentAddresses[_conditional];
     }
 
     // Modifiers //
 
     /// We also allow funds restoration by attorneys for convenience of users.
     /// This is not an increased security risk, because a dishonest attorney can anyway tranfer money to himself.
-    modifier checkMovedOwner(address oldAccount_, address newAccount_) virtual {
-        if (_msgSender() != newAccount_) {
-            checkAllowedRestoreAccount(oldAccount_, newAccount_); // only authorized "attorneys" or attorney DAOs
+    modifier checkMovedOwner(address _oldAccount, address _newAccount) virtual {
+        if (_msgSender() != _newAccount) {
+            checkAllowedRestoreAccount(_oldAccount, _newAccount); // only authorized "attorneys" or attorney DAOs
         }
 
-        for (address account = oldAccount_; account != newAccount_; account = newToOldAccount[account]) {
+        for (address account = _oldAccount; account != _newAccount; account = newToOldAccount[account]) {
             require(account != address(0), "Not a moved owner");
         }
 

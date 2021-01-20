@@ -24,7 +24,7 @@ contract BidOnAddresses is BaseBidOnAddresses {
         bytes data
     );
 
-    constructor(string memory uri_) BaseBidOnAddresses(uri_) {
+    constructor(string memory _uri) BaseBidOnAddresses(_uri) {
         _registerInterface(
             BidOnAddresses(0).onERC1155Received.selector ^
             BidOnAddresses(0).onERC1155BatchReceived.selector
@@ -50,10 +50,10 @@ contract BidOnAddresses is BaseBidOnAddresses {
     /// - It requires to install MetaMask.
     /// - It bothers the person to sign something, when he could just be hesitant to get what he needs.
     /// - It somehow complicates this contract.
-    function registerCustomer(address customer, uint64 oracleId, bytes calldata data) external {
-        require(oracleId <= maxOracleId, "Oracle doesn't exist.");
-        uint256 _conditionId = _createCondition(customer);
-        _mintToCustomer(customer, _conditionId, INITIAL_CUSTOMER_BALANCE, data);
-        emit CustomerRegistered(msg.sender, customer, data);
+    function registerCustomer(address _customer, uint64 _oracleId, bytes calldata _data) external {
+        require(_oracleId <= maxOracleId, "Oracle doesn't exist.");
+        uint256 _conditionId = _createCondition(_customer);
+        _mintToCustomer(_customer, _conditionId, INITIAL_CUSTOMER_BALANCE, _data);
+        emit CustomerRegistered(msg.sender, _customer, _data);
     }
 }

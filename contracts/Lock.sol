@@ -26,45 +26,45 @@ contract Lock is BaseLock {
     /// Mapping (oracleId => external conditional token).
     mapping(uint64 => ERC1155Token) public externalConditionals;
 
-    constructor(string memory uri_) BaseLock(uri_) { }
+    constructor(string memory _uri) BaseLock(_uri) { }
 
     /// Create a new oracle
-    function createOracle(ERC1155Token calldata token) external returns (uint64) {
-        uint64 oracleId = _createOracle();
-        externalConditionals[oracleId] = token;
-        emit OracleToken(token);
+    function createOracle(ERC1155Token calldata _token) external returns (uint64) {
+        uint64 _oracleId = _createOracle();
+        externalConditionals[_oracleId] = _token;
+        emit OracleToken(_token);
         return oracleId;
     }
 
     /// Reverts if called after redeem.
-    function mintConditional(uint64 oracleId, uint256 conditionalTokenId, uint256 amount, bytes calldata data)
-        public checkIsConditional(conditionalTokenId)
+    function mintConditional(uint64 _oracleId, uint256 _conditionalTokenId, uint256 _amount, bytes calldata _data)
+        public checkIsConditional(_conditionalTokenId)
     {
-        ERC1155Token storage externalConditional = externalConditionals[oracleId];
-        _mintToCustomer(msg.sender, conditionalTokenId, amount, data);
-        externalConditional.contractAddress.safeTransferFrom(msg.sender, address(this), externalConditional.tokenId, amount, data); // last against reentrancy attack
+        ERC1155Token storage externalConditional = externalConditionals[_oracleId];
+        _mintToCustomer(msg.sender, _conditionalTokenId, _amount, _data);
+        externalConditional.contractAddress.safeTransferFrom(msg.sender, address(this), externalConditional.tokenId, _amount, _data); // last against reentrancy attack
     }
 
     /// Reverts if called after redeem.
-    function burnConditional(uint64 oracleId, uint256 conditionalTokenId, address to, uint256 amount, bytes calldata data)
-        public checkIsConditional(conditionalTokenId)
+    function burnConditional(uint64 _oracleId, uint256 _conditionalTokenId, address _to, uint256 _amount, bytes calldata _data)
+        public checkIsConditional(_conditionalTokenId)
     {
-        ERC1155Token storage externalConditional = externalConditionals[oracleId];
-        _burn(msg.sender, conditionalTokenId, amount);
-        externalConditional.contractAddress.safeTransferFrom(address(this), to, externalConditional.tokenId, amount, data); // last against reentrancy attack
+        ERC1155Token storage externalConditional = externalConditionals[_oracleId];
+        _burn(msg.sender, _conditionalTokenId, _amount);
+        externalConditional.contractAddress.safeTransferFrom(address(this), _to, externalConditional.tokenId, _amount, _data); // last against reentrancy attack
     }
 
-    function _calcRewardShare(uint64 /*oracleId*/, uint256 condition)
+    function _calcRewardShare(uint64 /*oracleId*/, uint256 _condition)
         internal virtual override view returns (int128)
     {
-        require(condition == 1, "We support only one condition.");
+        require(_condition == 1, "We support only one condition.");
         return int128(1).div(1);
     }
 
     // We have just one token, so the multiplier is one.
-    function _calcMultiplier(uint64 /*oracleId*/, uint256 /*condition*/, int128 oracleShare)
+    function _calcMultiplier(uint64 /*oracleId*/, uint256 /*condition*/, int128 _oracleShare)
         internal virtual override view returns (int128)
     {
-        return oracleShare;
+        return _oracleShare;
     }
 }

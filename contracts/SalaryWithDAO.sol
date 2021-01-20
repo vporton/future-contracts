@@ -23,8 +23,8 @@ contract SalaryWithDAO is BaseRestorableSalary {
     // DAO share will be zero to prevent theft by voters and because it can be done instead by future voting.
     // int128 public daoShare = int128(0).div(1); // zero by default
 
-    constructor(DAOInterface _daoPlugin, string memory uri_)
-        BaseRestorableSalary(uri_)
+    constructor(DAOInterface _daoPlugin, string memory _uri)
+        BaseRestorableSalary(_uri)
     {
         daoPlugin = _daoPlugin;
     }
@@ -33,14 +33,14 @@ contract SalaryWithDAO is BaseRestorableSalary {
         return _createOracle();
     }
 
-    function registerCustomer(address customer, uint64 oracleId, bool _underDAOControl, bytes calldata data)
+    function registerCustomer(address _customer, uint64 _oracleId, bool _underDAOControl, bytes calldata _data)
         virtual public returns (uint256)
     {
-        address orig = _originalAddress(customer);
+        address orig = _originalAddress(_customer);
         // Auditor: Check that this value is set to false, when (and if) necessary.
-        accountHasSalary[customer] = true;
-        underDAOControl[customer] = _underDAOControl; // We don't trigger and event to reduce gas usage.
-        return super._registerCustomer(orig, oracleId, data);
+        accountHasSalary[_customer] = true;
+        underDAOControl[_customer] = _underDAOControl; // We don't trigger and event to reduce gas usage.
+        return super._registerCustomer(orig, _oracleId, _data);
     }
 
     /// A user can agree for DAO control. Then his account can be restored by DAO for the expense
@@ -62,30 +62,32 @@ contract SalaryWithDAO is BaseRestorableSalary {
     }
 
     /// Set the token URI.
-    function setURI(string memory newuri) public onlyDAO {
-        _setURI(newuri);
+    function setURI(string memory _newuri) public onlyDAO {
+        _setURI(_newuri);
     }
 
-    function _mintToCustomer(address customer, uint256 conditionalTokenId, uint256 amount, bytes calldata data) internal virtual override {
-        super._mintToCustomer(customer, conditionalTokenId, amount, data);
+    function _mintToCustomer(address _customer, uint256 _conditionalTokenId, uint256 _amount, bytes calldata _data)
+        internal virtual override
+    {
+        super._mintToCustomer(_customer, _conditionalTokenId, _amount, _data);
     }
 
     // Overrides ///
 
-    function checkAllowedRestoreAccount(address oldAccount_, address newAccount_)
-        public virtual override isUnderDAOControl(oldAccount_)
+    function checkAllowedRestoreAccount(address _oldAccount, address _newAccount)
+        public virtual override isUnderDAOControl(_oldAccount)
     {
-        daoPlugin.checkAllowedRestoreAccount(oldAccount_, newAccount_);
+        daoPlugin.checkAllowedRestoreAccount(_oldAccount, _newAccount);
     }
 
     /// Allow the user to unrestore by himself?
-    /// We won't not allow it to `oldAccount_` because it may be a stolen private key.
-    /// We could allow it to `newAccount_`, but this makes no much sense, because
+    /// We won't not allow it to `_oldAccount` because it may be a stolen private key.
+    /// We could allow it to `_newAccount`, but this makes no much sense, because
     /// it would only prevent the user to do a theft by himself, let only DAO could be allowed to do.
-    function checkAllowedUnrestoreAccount(address oldAccount_, address newAccount_)
-        public virtual override isUnderDAOControl(oldAccount_)
+    function checkAllowedUnrestoreAccount(address _oldAccount, address _newAccount)
+        public virtual override isUnderDAOControl(_oldAccount)
     {
-        daoPlugin.checkAllowedUnrestoreAccount(oldAccount_, newAccount_);
+        daoPlugin.checkAllowedUnrestoreAccount(_oldAccount, _newAccount);
     }
 
     // Internal //
@@ -102,8 +104,8 @@ contract SalaryWithDAO is BaseRestorableSalary {
     }
 
     /// @param customer The current address.
-    modifier isUnderDAOControl(address customer) {
-        require(underDAOControl[customer], "Not under DAO control.");
+    modifier isUnderDAOControl(address _customer) {
+        require(underDAOControl[_customer], "Not under DAO control.");
         _;
     }
 }
