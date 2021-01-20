@@ -12,6 +12,11 @@ import { IERC1155 } from "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 ///
 /// One can also donate/bequest a smart wallet (explain how).
 ///
+/// We have two kinds of ERC-1155 token IDs:
+/// - conditional tokens: numbers < 2**64
+/// - a combination of a collateral contract address and collateral token ID
+///   (a counter of donated amount of collateral tokens, don't confuse with collateral tokens themselves)
+///
 /// Inheriting from here don't forget to create `createOracle()` external method.
 abstract contract BaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
     using ABDKMath64x64 for int128;

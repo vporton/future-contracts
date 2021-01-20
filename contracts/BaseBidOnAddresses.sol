@@ -10,10 +10,6 @@ import { BaseLock } from "./BaseLock.sol";
 /// This allows anyone claim conditional tokens in order for him to transfer money from the future.
 /// See `docs/future-money.rst`.
 ///
-/// We have two kinds of ERC-1155 token IDs:
-/// - a combination of market ID, collateral address, and customer address (conditional tokens)
-/// - a combination of a collateral contract address and collateral token ID (a counter of donated amount of collateral tokens)
-///
 /// In functions of this contact `condition` is always a customer's original address.
 abstract contract BaseBidOnAddresses is BaseLock {
     using ABDKMath64x64 for int128;
