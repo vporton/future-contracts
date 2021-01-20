@@ -445,7 +445,7 @@ abstract contract BaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
         _;
     }
 
-    modifier myConditional(uint256 tokenId) {
+    modifier isConditional(uint256 tokenId) {
         // Zero 2**-192 probability that tokenId < (1<<64) if it's not a conditional.
         // Note to auditor: It's a hack, check for no errors carefully.
         require(tokenId < (1<<64), "It's not your conditional.");

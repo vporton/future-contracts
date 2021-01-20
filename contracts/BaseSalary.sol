@@ -39,7 +39,7 @@ contract BaseSalary is BaseBidOnAddresses {
     constructor(string memory uri_) BaseBidOnAddresses(uri_) { }
 
     function mintSalary(uint64 oracleId, uint64 condition, bytes calldata data)
-        myConditional(condition) ensureLastConditionInChain(condition) external
+        isConditional(condition) ensureLastConditionInChain(condition) external
     {
         uint lastSalaryDate = lastSalaryDates[msg.sender][condition];
         require(lastSalaryDate != 0, "You are not registered.");
@@ -60,8 +60,9 @@ contract BaseSalary is BaseBidOnAddresses {
     /// - calling this function regularly (e.g. every week)?
     ///
     /// This function also withdraws the old token.
+    ///
+    /// TODO: Move this function up in the inheritance?
     function recreateCondition(uint256 condition) public returns (uint256) {
-        require(salaryReceivers[condition] == msg.sender, "Not the recipient.");
         return _recreateCondition(condition);
     }
 
@@ -107,9 +108,12 @@ contract BaseSalary is BaseBidOnAddresses {
     /// It's strongly recommended that an app that uses this contract provides its own swap/exchange UI
     /// and warns the user not to use arbitrary exchanges as being an incentive to kill the user.
     ///
-    /// TODO: Allow to be called by anyone, not only the account owner or DAO?
+    /// We allow anybody (not just the account owner or DAO) to recreate a condition, because:
+    /// - Exchanges can create a "composite" token that allows to withdraw any of the tokens in the chain
+    ///   up to a certain period of time (using on-chain `conditionCreationDates`).
+    /// - Therefore somebody's token can be withdrawn even if its ID changes arbitrarily often.
     function _recreateCondition(uint256 _condition)
-        internal _canRecreatePermissions(_condition) ensureLastConditionInChain(_condition) returns (uint256)
+        internal isConditional(_condition) ensureLastConditionInChain(_condition) returns (uint256)
     {
         address customer = salaryReceivers[_condition];
         uint256 _newCondition = _doCreateCondition(customer);
@@ -156,16 +160,7 @@ contract BaseSalary is BaseBidOnAddresses {
         return _condition;
     }
 
-    function _checkRecreatePermissions(uint256 _condition)
-        internal virtual myConditional(_condition)
-    { }
-
-    modifier _canRecreatePermissions(uint256 _condition) {
-        _checkRecreatePermissions(_condition);
-        _;
-    }
-
-    // TODO: It is always used together with myConditional(), should we optimize?
+    // TODO: It is always used together with isConditional(), should we optimize?
     modifier ensureLastConditionInChain(uint256 id) {
         require(id != 0 && isLastConditionInChain(id), "Only for the last salary token.");
         _;

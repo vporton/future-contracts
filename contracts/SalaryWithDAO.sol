@@ -78,6 +78,8 @@ contract SalaryWithDAO is BaseRestorableSalary {
     ///
     /// TODO: Maybe allow forcing recalculation by anybody, not just the DAO? We can wrap several tokens into one anyway,
     /// so it would not much disturb the user.
+    ///
+    /// TODO: duplicate functionality
     function forciblyRecalculateSalary(uint256 condition) public onlyDAO {
         _recreateCondition(condition);
     }
@@ -96,13 +98,6 @@ contract SalaryWithDAO is BaseRestorableSalary {
         public virtual override isUnderDAOControl(oldAccount_)
     {
         daoPlugin.checkAllowedUnrestoreAccount(oldAccount_, newAccount_);
-    }
-
-    function _checkRecreatePermissions(uint256 _condition) internal virtual override
-    {
-        if (!_isDAO()) {
-            super._checkRecreatePermissions(_condition);
-        }
     }
 
     // Internal //
