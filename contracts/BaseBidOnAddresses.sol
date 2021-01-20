@@ -61,7 +61,7 @@ abstract contract BaseBidOnAddresses is BaseLock {
 
     /// Called by the oracle owner for reporting results of conditions.
     /// @param _oracleId The oracle ID.
-    /// @param _condition The condition (the original receiver of a conditional token).
+    /// @param _condition The condition.
     /// @param _numerator The relative score of the condition.
     /// Note: We could make oracles easily verificable by a hash of all the data, but
     ///       - It may need allowing to set a numerator only once.
@@ -76,7 +76,7 @@ abstract contract BaseBidOnAddresses is BaseLock {
 
     /// Called by the oracle owner for reporting results of several conditions.
     /// @param _oracleId The oracle ID.
-    /// @param _conditions The conditions (the original receiver of a conditional token).
+    /// @param _conditions The conditions.
     /// @param _numerators The relative scores of the condition.
     function reportNumeratorsBatch(uint64 _oracleId, uint64[] calldata _conditions, uint256[] calldata _numerators) external
         _isOracle(_oracleId)
