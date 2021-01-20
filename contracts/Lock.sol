@@ -38,7 +38,7 @@ contract Lock is BaseLock {
 
     /// Reverts if called after redeem.
     function mintConditional(uint64 oracleId, uint256 conditionalTokenId, uint256 amount, bytes calldata data)
-        public isConditional(conditionalTokenId)
+        public checkIsConditional(conditionalTokenId)
     {
         ERC1155Token storage externalConditional = externalConditionals[oracleId];
         _mintToCustomer(msg.sender, conditionalTokenId, amount, data);
@@ -47,7 +47,7 @@ contract Lock is BaseLock {
 
     /// Reverts if called after redeem.
     function burnConditional(uint64 oracleId, uint256 conditionalTokenId, address to, uint256 amount, bytes calldata data)
-        public isConditional(conditionalTokenId)
+        public checkIsConditional(conditionalTokenId)
     {
         ERC1155Token storage externalConditional = externalConditionals[oracleId];
         _burn(msg.sender, conditionalTokenId, amount);

@@ -440,15 +440,19 @@ abstract contract BaseLock is ERC1155WithTotals , IERC1155TokenReceiver {
         return _conditionId;
     }
 
+    function _isConditional(uint256 tokenId) internal pure returns (bool) {
+        // Zero 2**-192 probability that tokenId < (1<<64) if it's not a conditional.
+        // Note to auditor: It's a hack, check for no errors carefully.
+        return tokenId < (1<<64);
+    }
+
     modifier _isOracle(uint64 oracleId) {
         require(oracleOwnersMap[oracleId] == msg.sender, "Not the oracle owner.");
         _;
     }
 
-    modifier isConditional(uint256 tokenId) {
-        // Zero 2**-192 probability that tokenId < (1<<64) if it's not a conditional.
-        // Note to auditor: It's a hack, check for no errors carefully.
-        require(tokenId < (1<<64), "It's not your conditional.");
+    modifier checkIsConditional(uint256 tokenId) {
+        require(_isConditional(tokenId), "It's not your conditional.");
         _;
     }
 }

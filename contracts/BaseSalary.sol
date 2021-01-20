@@ -39,7 +39,7 @@ contract BaseSalary is BaseBidOnAddresses {
     constructor(string memory uri_) BaseBidOnAddresses(uri_) { }
 
     function mintSalary(uint64 oracleId, uint64 condition, bytes calldata data)
-        isConditional(condition) ensureLastConditionInChain(condition) external
+        ensureLastConditionInChain(condition) external
     {
         uint lastSalaryDate = lastSalaryDates[msg.sender][condition];
         require(lastSalaryDate != 0, "You are not registered.");
@@ -113,7 +113,7 @@ contract BaseSalary is BaseBidOnAddresses {
     ///   up to a certain period of time (using on-chain `conditionCreationDates`).
     /// - Therefore somebody's token can be withdrawn even if its ID changes arbitrarily often.
     function _recreateCondition(uint256 _condition)
-        internal isConditional(_condition) ensureLastConditionInChain(_condition) returns (uint256)
+        internal ensureLastConditionInChain(_condition) returns (uint256)
     {
         address customer = salaryReceivers[_condition];
         uint256 _newCondition = _doCreateCondition(customer);
@@ -159,9 +159,8 @@ contract BaseSalary is BaseBidOnAddresses {
         return _condition;
     }
 
-    // TODO: It is always used together with isConditional(), should we optimize?
     modifier ensureLastConditionInChain(uint256 id) {
-        require(id != 0 && isLastConditionInChain(id), "Only for the last salary token.");
+        require(_isConditional(id) && id != 0 && isLastConditionInChain(id), "Only for the last salary token.");
         _;
     }
 }
