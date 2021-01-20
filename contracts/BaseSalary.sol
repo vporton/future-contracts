@@ -50,10 +50,10 @@ contract BaseSalary is BaseBidOnAddresses {
         uint256 indexed newCondition
     );
 
-    /// Mapping (original address => (condition ID => registration time)).
-    mapping(address => mapping(uint256 => uint)) public conditionCreationDates;
-    /// Mapping (original address => salary block time).
-    mapping(address => mapping(uint256 => uint)) public lastSalaryDates;
+    // Mapping (original address => (condition ID => registration time)).
+    mapping(address => mapping(uint256 => uint)) private conditionCreationDates;
+    // Mapping (original address => (condition ID => salary block time)).
+    mapping(address => mapping(uint256 => uint)) private lastSalaryDates;
     /// Mapping (condition ID => account) - salary recipients.
     mapping(uint256 => address) public salaryReceivers;
 
@@ -85,6 +85,20 @@ contract BaseSalary is BaseBidOnAddresses {
     /// This function also withdraws the old token.
     function recreateCondition(uint256 _condition) public returns (uint256) {
         return _recreateCondition(_condition);
+    }
+
+    /// Get the condition creation time.
+    /// @param _customer Original address of the customer.
+    /// @param _condition The conditon ID.
+    function getConditionCreationDate(address _customer, uint256 _condition) public view returns (uint) {
+        return conditionCreationDates[_customer][_condition];
+    }
+
+    /// Get the last salary date for a condition.
+    /// @param _customer Original address of the customer.
+    /// @param _condition The conditon ID.
+    function getLastSalaryDate(address _customer, uint256 _condition) public view returns (uint) {
+        return lastSalaryDates[_customer][_condition];
     }
 
     function _doCreateCondition(address _customer) internal virtual override returns (uint256) {
