@@ -189,6 +189,7 @@ abstract contract BaseLock is ERC1155WithTotals, IERC1155TokenReceiver {
             balanceOf(address(this), _donatedPerOracleCollateralTokenId) /
             balanceOf(address(this), _donatedCollateralTokenId);
 
+        // Last to avoid reentrancy vulnerability.
         donate(
             _collateralContractAddress,
             _collateralTokenId,
