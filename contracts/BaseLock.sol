@@ -141,8 +141,6 @@ abstract contract BaseLock is ERC1155WithTotals, IERC1155TokenReceiver {
     ///
     /// It also mints a token (with a different ID), that counts donations in that token.
     ///
-    /// If we put a DeFi collateral directly as a donation, the APY is lost.
-    /// It can be worked around by donating or bequesting a smart wallet with the token.
     /// @param _collateralContractAddress The collateral ERC-1155 contract address.
     /// @param _collateralTokenId The collateral ERC-1155 token ID.
     /// @param _oracleId The oracle ID to whose ecosystem to donate to.
@@ -157,12 +155,48 @@ abstract contract BaseLock is ERC1155WithTotals, IERC1155TokenReceiver {
         uint256 _amount,
         address _from,
         address _to,
-        bytes calldata _data) external
+        bytes calldata _data) public
     {
-        uint _donatedCollateralTokenId = _collateralDonatedTokenId(_collateralContractAddress, _collateralTokenId, _oracleId);
+        uint _donatedPerOracleCollateralTokenId = _collateralDonatedPerOracleTokenId(_collateralContractAddress, _collateralTokenId, _oracleId);
+        _mint(_to, _donatedPerOracleCollateralTokenId, _amount, _data);
+        uint _donatedCollateralTokenId = _collateralDonatedTokenId(_collateralContractAddress, _collateralTokenId);
         _mint(_to, _donatedCollateralTokenId, _amount, _data);
         emit DonateCollateral(_collateralContractAddress, _collateralTokenId, _from, _amount, _to, _data);
         _collateralContractAddress.safeTransferFrom(_from, address(this), _collateralTokenId, _amount, _data); // last against reentrancy attack
+    }
+
+    /// Gather a DeFi profit of a token previous donated to this contact.
+    /// @param _collateralContractAddress The collateral ERC-1155 contract address.
+    /// @param _collateralTokenId The collateral ERC-1155 token ID.
+    /// @param _oracleId The oracle ID to whose ecosystem to donate to.
+    /// @param _data Additional transaction data.
+    function gatherDeFiProfit(
+        IERC1155 _collateralContractAddress,
+        uint256 _collateralTokenId,
+        uint64 _oracleId,
+        bytes calldata _data) external
+    {
+        uint _donatedPerOracleCollateralTokenId = _collateralDonatedPerOracleTokenId(_collateralContractAddress, _collateralTokenId, _oracleId);
+        uint _donatedCollateralTokenId = _collateralDonatedTokenId(_collateralContractAddress, _collateralTokenId);
+
+        // We consider an overflow an error and just revert:
+        // FIXME: Impossible due to reentrancy vulnerability? (Really? It's a view!)
+        uint256 _difference =
+            _collateralContractAddress.balanceOf(address(this), _collateralTokenId).sub(
+                balanceOf(address(this), _donatedCollateralTokenId));
+        uint256 _amount = // rounding down to prevent overflows
+            _difference *
+            balanceOf(address(this), _donatedPerOracleCollateralTokenId) /
+            balanceOf(address(this), _donatedCollateralTokenId);
+
+        donate(
+            _collateralContractAddress,
+            _collateralTokenId,
+            _oracleId,
+            _amount,
+            address(this),
+            address(this),
+            _data);
     }
 
     /// Calculate how much collateral is owed to a user.
@@ -211,18 +245,18 @@ abstract contract BaseLock is ERC1155WithTotals, IERC1155TokenReceiver {
         bool _inFirstRound = _isInFirstRound(_oracleId);
         userUsedRedeemMap[msg.sender][_condition] = true;
         // _burn(msg.sender, _condition, conditionalBalance); // Burning it would break using the same token for multiple markets.
-        (uint _donatedCollateralTokenId, uint256 _owingDonated) =
+        (uint _donatedPerOracleCollateralTokenId, uint256 _owingDonated) =
             _collateralOwingBase(_collateralContractAddress, _collateralTokenId, _oracleId, _condition, msg.sender, _inFirstRound);
 
         // Against rounding errors. Not necessary because of rounding down.
         // if(_owing > balanceOf(address(this), _collateralTokenId)) _owing = balanceOf(address(this), _collateralTokenId);
 
         if (_owingDonated != 0) {
-            uint256 _newTotal = totalBalanceOf(_donatedCollateralTokenId);
+            uint256 _newTotal = totalBalanceOf(_donatedPerOracleCollateralTokenId);
             if (_inFirstRound) {
-                lastCollateralBalanceFirstRoundMap[_donatedCollateralTokenId][msg.sender] = _newTotal;
+                lastCollateralBalanceFirstRoundMap[_donatedPerOracleCollateralTokenId][msg.sender] = _newTotal;
             } else {
-                lastCollateralBalanceSecondRoundMap[_donatedCollateralTokenId][msg.sender] = _newTotal;
+                lastCollateralBalanceSecondRoundMap[_donatedPerOracleCollateralTokenId][msg.sender] = _newTotal;
             }
         }
         if (!_inFirstRound) {
@@ -356,15 +390,25 @@ abstract contract BaseLock is ERC1155WithTotals, IERC1155TokenReceiver {
 
     // Internal //
 
-    /// Generate the ERC-1155 token ID that counts amount of donations for a ERC-1155 collateral token.
+    /// Generate the ERC-1155 token ID that counts amount of donations per oracle for a ERC-1155 collateral token.
     /// @param _collateralContractAddress The ERC-1155 contract of the collateral token.
     /// @param _collateralTokenId The ERC-1155 ID of the collateral token.
     /// @param _oracleId The oracle ID.
     /// Note: It does not conflict with other tokens kinds, becase the only other one is the uint64 conditional.
-    function _collateralDonatedTokenId(IERC1155 _collateralContractAddress, uint256 _collateralTokenId, uint64 _oracleId)
+    function _collateralDonatedPerOracleTokenId(IERC1155 _collateralContractAddress, uint256 _collateralTokenId, uint64 _oracleId)
         internal pure returns (uint256)
     {
         return uint256(keccak256(abi.encodePacked(_collateralContractAddress, _collateralTokenId, _oracleId)));
+    }
+
+    /// Generate the ERC-1155 token ID that counts amount of donations for a ERC-1155 collateral token.
+    /// @param _collateralContractAddress The ERC-1155 contract of the collateral token.
+    /// @param _collateralTokenId The ERC-1155 ID of the collateral token.
+    /// Note: It does not conflict with other tokens kinds, becase the only other one is the uint64 conditional.
+    function _collateralDonatedTokenId(IERC1155 _collateralContractAddress, uint256 _collateralTokenId)
+        internal pure returns (uint256)
+    {
+        return uint256(keccak256(abi.encodePacked(_collateralContractAddress, _collateralTokenId)));
     }
 
     function _checkTransferAllowed(uint256 _id, address _from) internal view {
@@ -451,19 +495,19 @@ abstract contract BaseLock is ERC1155WithTotals, IERC1155TokenReceiver {
         address _user,
         bool _inFirstRound
     )
-        private view returns (uint _donatedCollateralTokenId, uint256 _donated)
+        private view returns (uint _donatedPerOracleCollateralTokenId, uint256 _donated)
     {
         uint256 _conditionalBalance = balanceOf(_user, _condition);
         uint256 _totalConditionalBalance =
             _inFirstRound ? totalBalanceOf(_condition) : usersWithdrewInFirstRound[_oracleId];
-        _donatedCollateralTokenId = _collateralDonatedTokenId(_collateralContractAddress, _collateralTokenId, _oracleId);
+        _donatedPerOracleCollateralTokenId = _collateralDonatedPerOracleTokenId(_collateralContractAddress, _collateralTokenId, _oracleId);
         // Rounded to below for no out-of-funds:
         int128 _oracleShare = ABDKMath64x64.divu(_conditionalBalance, _totalConditionalBalance);
         uint256 _newDividendsDonated =
-            totalBalanceOf(_donatedCollateralTokenId) -
+            totalBalanceOf(_donatedPerOracleCollateralTokenId) -
             (_inFirstRound
-                ? lastCollateralBalanceFirstRoundMap[_donatedCollateralTokenId][_user] 
-                : lastCollateralBalanceSecondRoundMap[_donatedCollateralTokenId][_user]);
+                ? lastCollateralBalanceFirstRoundMap[_donatedPerOracleCollateralTokenId][_user] 
+                : lastCollateralBalanceSecondRoundMap[_donatedPerOracleCollateralTokenId][_user]);
         int128 _multiplier = _calcMultiplier(_oracleId, _condition, _oracleShare);
         _donated = _multiplier.mulu(_newDividendsDonated);
     }
