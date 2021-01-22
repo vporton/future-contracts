@@ -19,7 +19,7 @@ import { IERC1155 } from "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 ///
 /// Inheriting from here don't forget to create `createOracle()` external method.
 ///
-/// TODO: Ability to claim profits of donated DeFi tokens.
+/// TODO: Ability to claim profits of donated DeFi tokens. This also requires incoming batch transfers.
 /// (Note that it can't be done through donating on a separate contract,
 /// because anyone could withdraw the donation immediately.)
 abstract contract BaseLock is ERC1155WithTotals, IERC1155TokenReceiver {
