@@ -18,6 +18,10 @@ import { IERC1155 } from "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 ///   (a counter of donated amount of collateral tokens, don't confuse with collateral tokens themselves)
 ///
 /// Inheriting from here don't forget to create `createOracle()` external method.
+///
+/// TODO: Ability to claim profits of donated DeFi tokens.
+/// (Note that it can't be done through donating on a separate contract,
+/// because anyone could withdraw the donation immediately.)
 abstract contract BaseLock is ERC1155WithTotals, IERC1155TokenReceiver {
     using ABDKMath64x64 for int128;
     using SafeMath for uint256;
