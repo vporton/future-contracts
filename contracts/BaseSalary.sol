@@ -55,8 +55,8 @@ contract BaseSalary is BaseBidOnAddresses {
 
     // Mapping (original address => (condition ID => registration time)).
     mapping(address => mapping(uint256 => uint)) private conditionCreationDates;
-    // Mapping (original address => (condition ID => salary block time)).
-    mapping(address => mapping(uint256 => uint)) private lastSalaryDates;
+    // Mapping (condition ID => salary block time).
+    mapping(uint256 => uint) public lastSalaryDates;
     /// Mapping (condition ID => account) - salary recipients.
     mapping(uint256 => address) public salaryReceivers;
 
@@ -72,13 +72,13 @@ contract BaseSalary is BaseBidOnAddresses {
     function mintSalary(uint64 _oracleId, uint256 _condition, bytes calldata _data)
         ensureLastConditionInChain(_condition) external
     {
-        uint _lastSalaryDate = lastSalaryDates[msg.sender][_condition];
+        uint _lastSalaryDate = lastSalaryDates[_condition];
         require(_lastSalaryDate != 0, "You are not registered.");
         // Note: Even if you withdraw once per 20 years, you will get only 630,720,000 tokens.
         // This number is probably not to big to be displayed well in UIs.
         uint256 _amount = (_lastSalaryDate - block.timestamp) * 10**18; // one token per second
         _mintToCustomer(msg.sender, _condition, _amount, _data);
-        lastSalaryDates[msg.sender][_condition] = block.timestamp;
+        lastSalaryDates[_condition] = block.timestamp;
         emit SalaryMinted(msg.sender, _oracleId, _amount, _data);
     }
 
@@ -108,13 +108,6 @@ contract BaseSalary is BaseBidOnAddresses {
     /// @param _condition The conditon ID.
     function getConditionCreationDate(address _customer, uint256 _condition) public view returns (uint) {
         return conditionCreationDates[_customer][_condition];
-    }
-
-    /// Get the last salary date for a condition.
-    /// @param _customer Original address of the customer.
-    /// @param _condition The conditon ID.
-    function getLastSalaryDate(address _customer, uint256 _condition) public view returns (uint) {
-        return lastSalaryDates[_customer][_condition];
     }
 
     function _doCreateCondition(address _customer) internal virtual override returns (uint256) {
@@ -179,8 +172,8 @@ contract BaseSalary is BaseBidOnAddresses {
         emit TransferSingle(msg.sender, _customer, address(0), _condition, _amount);
         emit TransferSingle(msg.sender, address(0), _customer, _newCondition, _amount);
 
-        lastSalaryDates[_customer][_newCondition] = lastSalaryDates[_customer][_condition];
-        // TODO: Should we here set `lastSalaryDates[_customer][oracleId][_condition] = 0` to save storage space?
+        lastSalaryDates[_newCondition] = lastSalaryDates[_condition];
+        // TODO: Should we here set `lastSalaryDates[_condition] = 0` to save storage space?
 
         emit ConditionReCreate(_customer, _condition, _newCondition);
         return _newCondition;
@@ -210,7 +203,7 @@ contract BaseSalary is BaseBidOnAddresses {
         virtual internal returns (uint256)
     {
         uint256 _condition = _doCreateCondition(_customer);
-        lastSalaryDates[_customer][_condition] = block.timestamp;
+        lastSalaryDates[_condition] = block.timestamp;
         emit CustomerRegistered(msg.sender, _oracleId, _data);
         return _condition;
     }
