@@ -324,6 +324,8 @@ abstract contract BaseLock is ERC1155WithTotals, IERC1155TokenReceiver {
         return this.onERC1155BatchReceived.selector; // useful together with `gatherDeFiProfit()`
     }
 
+    // TODO: We need also enable receiving ERC-721?
+
     // Getters //
 
     /// Get the oracle owner.
