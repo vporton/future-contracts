@@ -366,7 +366,7 @@ abstract contract BaseLock is ERC1155WithTotals, IERC1155TokenReceiver {
         return _originalAddress;
     }
 
-    /// Miny a conditional to a customer.
+    /// Mint a conditional to a customer.
     function _mintToCustomer(address _customer, uint256 _condition, uint256 _amount, bytes calldata _data)
         internal virtual
     {
