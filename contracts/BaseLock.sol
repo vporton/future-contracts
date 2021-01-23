@@ -18,10 +18,6 @@ import { IERC1155 } from "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 ///   (a counter of donated amount of collateral tokens, don't confuse with collateral tokens themselves)
 ///
 /// Inheriting from here don't forget to create `createOracle()` external method.
-///
-/// TODO: Ability to claim profits of donated DeFi tokens. This also requires incoming batch transfers.
-/// (Note that it can't be done through donating on a separate contract,
-/// because anyone could withdraw the donation immediately.)
 abstract contract BaseLock is ERC1155WithTotals, IERC1155TokenReceiver {
     using ABDKMath64x64 for int128;
     using SafeMath for uint256;
@@ -325,7 +321,7 @@ abstract contract BaseLock is ERC1155WithTotals, IERC1155TokenReceiver {
     function onERC1155BatchReceived(address, address, uint256[] calldata, uint256[] calldata, bytes calldata)
         public pure override returns(bytes4)
     {
-        return bytes4(0); // We should never receive batch transfers.
+        return this.onERC1155BatchReceived.selector; // useful together with `gatherDeFiProfit()`
     }
 
     // Getters //
