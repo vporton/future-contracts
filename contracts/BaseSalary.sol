@@ -53,8 +53,8 @@ contract BaseSalary is BaseBidOnAddresses {
         uint256 indexed newCondition
     );
 
-    // Mapping (original address => (condition ID => registration time)).
-    mapping(address => mapping(uint256 => uint)) private conditionCreationDates;
+    // Mapping (condition ID => registration time).
+    mapping(uint256 => uint) public conditionCreationDates;
     // Mapping (condition ID => salary block time).
     mapping(uint256 => uint) public lastSalaryDates;
     /// Mapping (condition ID => account) - salary recipients.
@@ -107,13 +107,13 @@ contract BaseSalary is BaseBidOnAddresses {
     /// @param _customer Original address of the customer.
     /// @param _condition The conditon ID.
     function getConditionCreationDate(address _customer, uint256 _condition) public view returns (uint) {
-        return conditionCreationDates[_customer][_condition];
+        return conditionCreationDates[_condition];
     }
 
     function _doCreateCondition(address _customer) internal virtual override returns (uint256) {
         uint256 _condition = super._doCreateCondition(_customer);
         salaryReceivers[_condition] = _customer;
-        conditionCreationDates[_customer][_condition] = block.timestamp;
+        conditionCreationDates[_condition] = block.timestamp;
         return _condition;
     }
 
