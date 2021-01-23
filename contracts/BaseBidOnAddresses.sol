@@ -93,6 +93,8 @@ abstract contract BaseBidOnAddresses is BaseLock {
     /// @param _oracleId The oracle ID.
     ///
     /// You should set grace period end time before calling this method.
+    ///
+    /// TODO: Maybe it makes sense to allow to sett finish time in a point of the future?
     function finishOracle(uint64 _oracleId) external
         _isOracle(_oracleId)
     {
