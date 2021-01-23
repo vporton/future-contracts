@@ -103,13 +103,6 @@ contract BaseSalary is BaseBidOnAddresses {
         return _recreateCondition(_condition);
     }
 
-    /// Get the condition creation time.
-    /// @param _customer Original address of the customer.
-    /// @param _condition The conditon ID.
-    function getConditionCreationDate(address _customer, uint256 _condition) public view returns (uint) {
-        return conditionCreationDates[_condition];
-    }
-
     function _doCreateCondition(address _customer) internal virtual override returns (uint256) {
         uint256 _condition = super._doCreateCondition(_customer);
         salaryReceivers[_condition] = _customer;
