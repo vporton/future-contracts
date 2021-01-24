@@ -47,12 +47,11 @@ contract BaseSalary is BaseBidOnAddresses {
 
     /// Salary token recreated (salary recalculation request).
     /// @param customer The customer address.
-    /// @param oldCondition The old token ID.
+    /// @param originalCondition The original token ID.
     /// @param newCondition The new token ID.
-    /// FIXME: Rename the `uint256` arguments (also in the UI).
     event ConditionReCreate(
         address indexed customer,
-        uint256 indexed oldCondition,
+        uint256 indexed originalCondition,
         uint256 indexed newCondition
     );
 
@@ -164,26 +163,39 @@ contract BaseSalary is BaseBidOnAddresses {
     /// - Exchanges can create a "composite" token that allows to withdraw any of the tokens in the chain
     ///   up to a certain period of time (using on-chain `conditionCreationDates`).
     /// - Therefore somebody's token can be withdrawn even if its ID changes arbitrarily often.
+    ///
+    /// @param _condition The condition ID.
     function _recreateCondition(uint256 _condition)
-        internal ensureLastConditionInChain(_condition) returns (uint256)
+        internal ensureFirstConditionInChain(_condition) returns (uint256)
     {
         address _customer = salaryReceivers[_condition];
+        uint256 _oldCondition = firstToLastConditionInChain[_condition];
         uint256 _newCondition = _doCreateCondition(_customer);
-        firstConditionInChain[_newCondition] = firstConditionInChain[_condition];
+        firstConditionInChain[_newCondition] = _condition;
 
-        uint256 _amount = _balances[_condition][_customer];
+        uint256 _amount = _balances[_oldCondition][_customer];
         _balances[_newCondition][_customer] = _amount;
-        _balances[_condition][_customer] = 0;
+        _balances[_oldCondition][_customer] = 0;
 
         // TODO: Should we swap two following lines?
         emit TransferSingle(msg.sender, _customer, address(0), _condition, _amount);
         emit TransferSingle(msg.sender, address(0), _customer, _newCondition, _amount);
 
         lastSalaryDates[_newCondition] = lastSalaryDates[_condition];
-        // TODO: Should we here set `lastSalaryDates[_condition] = 0` to save storage space?
+        // TODO: Should we here set `lastSalaryDates[_condition] = 0` to save storage space? // TODO: It would also eliminate the need to check in mint function.
 
         emit ConditionReCreate(_customer, _condition, _newCondition);
         return _newCondition;
+    }
+
+    /// Check if it is the first condition in a chain of conditions.
+    /// @param _id The condition ID.
+    ///
+    /// Must be called with `_id != 0`.
+    ///
+    /// TODO: Should make this function public?
+    function isFirstConditionInChain(uint256 _id) internal view returns (bool) {
+        return firstConditionInChain[_id] == _id;
     }
 
     /// Check if it is the last condition in a chain of conditions.
@@ -215,7 +227,14 @@ contract BaseSalary is BaseBidOnAddresses {
         return _condition;
     }
 
+    modifier ensureFirstConditionInChain(uint256 _id) {
+        // TODO: Is `_id != 0` check needed?
+        require(_isConditional(_id) && _id != 0 && isFirstConditionInChain(_id), "Only for the last salary token.");
+        _;
+    }
+
     modifier ensureLastConditionInChain(uint256 _id) {
+        // TODO: Is `_id != 0` check needed?
         require(_isConditional(_id) && _id != 0 && isLastConditionInChain(_id), "Only for the last salary token.");
         _;
     }
