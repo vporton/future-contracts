@@ -26,10 +26,10 @@ abstract contract ERC1155WithTotals is ERC1155 {
     //     return super._burnBatch(_originalAddress(account), ids, amounts);
     // }
 
-    /// Total supply of a token.
+    /// Total supply of a token (conforms to `IERC1155Views`).
     /// @param id Token ID.
     /// @return Total supply.
-    function totalBalanceOf(uint256 id) public view returns (uint256) {
+    function totalSupply(uint256 id) public view returns (uint256) {
         return totalBalances[id];
     }
 

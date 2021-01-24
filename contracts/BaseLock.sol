@@ -255,7 +255,7 @@ abstract contract BaseLock is
         // if(_owing > balanceOf(address(this), _collateralTokenId)) _owing = balanceOf(address(this), _collateralTokenId);
 
         if (_owingDonated != 0) {
-            uint256 _newTotal = totalBalanceOf(_donatedPerOracleCollateralTokenId);
+            uint256 _newTotal = totalSupply(_donatedPerOracleCollateralTokenId);
             if (_inFirstRound) {
                 lastCollateralBalanceFirstRoundMap[_donatedPerOracleCollateralTokenId][msg.sender] = _newTotal;
             } else {
@@ -484,12 +484,12 @@ abstract contract BaseLock is
     {
         uint256 _conditionalBalance = balanceOf(_user, _condition);
         uint256 _totalConditionalBalance =
-            _inFirstRound ? totalBalanceOf(_condition) : usersWithdrewInFirstRound[_oracleId];
+            _inFirstRound ? totalSupply(_condition) : usersWithdrewInFirstRound[_oracleId];
         _donatedPerOracleCollateralTokenId = _collateralDonatedPerOracleTokenId(_collateralContractAddress, _collateralTokenId, _oracleId);
         // Rounded to below for no out-of-funds:
         int128 _oracleShare = ABDKMath64x64.divu(_conditionalBalance, _totalConditionalBalance);
         uint256 _newDividendsDonated =
-            totalBalanceOf(_donatedPerOracleCollateralTokenId) -
+            totalSupply(_donatedPerOracleCollateralTokenId) -
             (_inFirstRound
                 ? lastCollateralBalanceFirstRoundMap[_donatedPerOracleCollateralTokenId][_user] 
                 : lastCollateralBalanceSecondRoundMap[_donatedPerOracleCollateralTokenId][_user]);
