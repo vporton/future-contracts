@@ -47,6 +47,7 @@ contract BaseSalary is BaseBidOnAddresses {
     /// @param customer The customer address.
     /// @param oldCondition The old token ID.
     /// @param newCondition The new token ID.
+    /// FIXME: Rename the `uint256` arguments (also in the UI).
     event ConditionReCreate(
         address indexed customer,
         uint256 indexed oldCondition,
