@@ -3,7 +3,7 @@ pragma solidity ^0.7.1;
 import { SafeMath } from "@openzeppelin/contracts/math/SafeMath.sol";
 import { ABDKMath64x64 } from "abdk-libraries-solidity/ABDKMath64x64.sol";
 import { ERC1155WithTotals } from "./ERC1155/ERC1155WithTotals.sol";
-import { IERC1155TokenReceiver } from "./ERC1155/IERC1155TokenReceiver.sol";
+import { ERC1155Holder } from "@openzeppelin/contracts/token/ERC1155/ERC1155Holder.sol";
 import { IERC1155 } from "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 import { ERC721Holder } from "@openzeppelin/contracts/token/ERC721/ERC721Holder.sol";
 
@@ -21,7 +21,7 @@ import { ERC721Holder } from "@openzeppelin/contracts/token/ERC721/ERC721Holder.
 /// Inheriting from here don't forget to create `createOracle()` external method.
 abstract contract BaseLock is
     ERC1155WithTotals,
-    IERC1155TokenReceiver, // You are recommended to use `donate()` function instead.
+    ERC1155Holder, // You are recommended to use `donate()` function instead.
     ERC721Holder // It can be used through an ERC-1155 wrapper.
 {
     using ABDKMath64x64 for int128;
@@ -310,24 +310,6 @@ abstract contract BaseLock is
             _checkTransferAllowed(_ids[_i], _from);
         }
         _baseSafeBatchTransferFrom(_from, _to, _ids, _values, _data);
-    }
-
-    /// An ERC-1155 function.
-    ///
-    /// Don't send funds to us directy (they will be lost!), use the smart contract API.
-    ///
-    /// TODO: We can use `data` of the transfer to accept only smart transfers to prevent the loss. Worth?
-    function onERC1155Received(address, address, uint256, uint256, bytes calldata) public pure override returns(bytes4) {
-        return this.onERC1155Received.selector; // to accept transfers
-    }
-
-    /// An ERC-1155 function.
-    ///
-    /// Always reject batch transfers.
-    function onERC1155BatchReceived(address, address, uint256[] calldata, uint256[] calldata, bytes calldata)
-        public pure override returns(bytes4)
-    {
-        return this.onERC1155BatchReceived.selector; // useful together with `gatherDeFiProfit()`
     }
 
     // Getters //
