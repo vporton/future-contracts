@@ -8,16 +8,16 @@ import "./Salary.sol";
 abstract contract BaseRestorableSalary is BaseSalary {
     // INVARIANT: `_originalAddress(newToOldAccount[newAccount]) == _originalAddress(newAccount)`
     //            if `newToOldAccount[newAccount] != address(0)` for every `newAccount`
-    // INVARIANT: originalAddresses and currentAddresses are mutually inverse.
+    // INVARIANT: originalAddresses and originalToCurrentAddresses are mutually inverse.
     //            That is:
-    //            - `originalAddresses[currentAddresses[x]] == x` if `currentAddresses[x] != address(0)`
-    //            - `currentAddresses[originalAddresses[x]] == x` if `originalAddresses[x] != address(0)`
+    //            - `originalAddresses[originalToCurrentAddresses[x]] == x` if `originalToCurrentAddresses[x] != address(0)`
+    //            - `originalToCurrentAddresses[originalAddresses[x]] == x` if `originalAddresses[x] != address(0)`
 
     /// Mapping (current address => very first address an account had).
     mapping(address => address) public originalAddresses;
 
     /// Mapping (very first address an account had => current address).
-    mapping(address => address) public currentAddresses;
+    mapping(address => address) public originalToCurrentAddresses;
 
     // Mapping from old to new account addresses (created after every change of an address).
     mapping(address => address) public newToOldAccount;
@@ -45,7 +45,7 @@ abstract contract BaseRestorableSalary is BaseSalary {
 
         newToOldAccount[_newAccount] = _oldAccount;
         originalAddresses[_newAccount] = _orig;
-        currentAddresses[_orig] = _newAccount;
+        originalToCurrentAddresses[_orig] = _newAccount;
         // Auditor: Check that the above invariant hold.
         emit AccountRestored(_oldAccount, _newAccount);
     }
@@ -61,7 +61,7 @@ abstract contract BaseRestorableSalary is BaseSalary {
         checkAllowedUnrestoreAccount(_oldAccount, _newAccount); // only authorized "attorneys" or attorney DAOs
         _avoidZeroAddressManipulatins(_oldAccount, _newAccount);
         newToOldAccount[_newAccount] = address(0);
-        currentAddresses[_oldAccount] = address(0);
+        originalToCurrentAddresses[_oldAccount] = address(0);
         originalAddresses[_newAccount] = address(0);
         // Auditor: Check that the above invariants hold.
         emit AccountUnrestored(_oldAccount, _newAccount);
@@ -137,10 +137,16 @@ abstract contract BaseRestorableSalary is BaseSalary {
 
     // Find the current address for an original address.
     // @param _conditional The original address.
-    function currentAddress(address _customer) internal virtual override returns (address) {
-        address current = currentAddresses[_customer];
+    function originalToCurrentAddress(address _customer) internal virtual override returns (address) {
+        address current = originalToCurrentAddresses[_customer];
         return current != address(0) ? current : _customer;
     }
+
+    // TODO: Is the following function useful to save gas in other contracts?
+    // function getCurrent(address _account) public returns (uint256) {
+    //     address _original = originalAddresses[_account];
+    //     return _original == 0 ? 0 : originalToCurrentAddress(_original);
+    // }
 
     // Modifiers //
 

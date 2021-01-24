@@ -346,7 +346,7 @@ abstract contract BaseLock is
 
     /// Current address of a user.
     /// @param _originalAddress The original address of the user.
-    function currentAddress(address _originalAddress) internal virtual returns (address) {
+    function originalToCurrentAddress(address _originalAddress) internal virtual returns (address) {
         return _originalAddress;
     }
 
@@ -355,7 +355,7 @@ abstract contract BaseLock is
         internal virtual
     {
         require(conditionOwners[_condition] == _customer, "Other's salary get attempt.");
-        _mint(currentAddress(_customer), _condition, _amount, _data);
+        _mint(originalToCurrentAddress(_customer), _condition, _amount, _data);
     }
 
     /// Calculate the share of a conditon in an oracle's market.
