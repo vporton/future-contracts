@@ -138,7 +138,8 @@ abstract contract BaseRestorableSalary is BaseSalary {
     // Find the current address for an original address.
     // @param _conditional The original address.
     function currentAddress(address _customer) internal virtual override returns (address) {
-        return currentAddresses[_customer];
+        address current = currentAddresses[_customer];
+        return current != address(0) ? current : _customer;
     }
 
     // Modifiers //
