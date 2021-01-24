@@ -114,7 +114,7 @@ abstract contract BaseLock is
         );
     }
 
-    /// No need for this function because it would produce a condition with zero tokens.
+    /// This function makes no sense, because it would produce a condition with zero tokens.
     // function createCondition() public returns (uint64) {
     //     return _createCondition();
     // }
