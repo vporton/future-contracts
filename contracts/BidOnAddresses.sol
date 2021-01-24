@@ -26,6 +26,7 @@ contract BidOnAddresses is BaseBidOnAddresses {
     event CustomerRegistered(
         address sender,
         address customer,
+        uint256 condition,
         bytes data
     );
 
@@ -63,6 +64,6 @@ contract BidOnAddresses is BaseBidOnAddresses {
         require(_oracleId <= maxOracleId, "Oracle doesn't exist.");
         uint256 _conditionId = _createCondition(_customer);
         _mintToCustomer(_customer, _conditionId, INITIAL_CUSTOMER_BALANCE, _data);
-        emit CustomerRegistered(msg.sender, _customer, _data);
+        emit CustomerRegistered(msg.sender, _customer, _conditionId, _data);
     }
 }

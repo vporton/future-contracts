@@ -25,9 +25,10 @@ contract BaseSalary is BaseBidOnAddresses {
     /// @param customer The customer address.
     /// @param oracleId The oracle ID for which he registers.
     /// @param data Additional data.
-    event CustomerRegistered(
+    event CustomerRegistered( // FIXME: Here and in other places indexed params
         address customer,
         uint64 oracleId,
+        uint256 conditionId,
         bytes data
     );
 
@@ -39,6 +40,7 @@ contract BaseSalary is BaseBidOnAddresses {
     event SalaryMinted(
         address customer,
         uint64 oracleId,
+        uint256 conditionId,
         uint256 amount,
         bytes data
     );
@@ -89,7 +91,7 @@ contract BaseSalary is BaseBidOnAddresses {
         uint256 _amount = (block.timestamp - _lastSalaryDate) * 10**18; // one token per second
         _mintToCustomer(msg.sender, firstToLastConditionInChain[_condition], _amount, _data);
         lastSalaryDates[_condition] = block.timestamp;
-        emit SalaryMinted(msg.sender, _oracleId, _amount, _data); // FIXME: Should include conditionId.
+        emit SalaryMinted(msg.sender, _oracleId, _condition, _amount, _data);
     }
 
     /// Make a new condition that replaces the old one.
@@ -209,7 +211,7 @@ contract BaseSalary is BaseBidOnAddresses {
     {
         uint256 _condition = _doCreateCondition(_customer);
         lastSalaryDates[_condition] = block.timestamp;
-        emit CustomerRegistered(msg.sender, _oracleId, _data);
+        emit CustomerRegistered(msg.sender, _oracleId, _condition, _data);
         return _condition;
     }
 
