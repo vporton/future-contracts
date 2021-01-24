@@ -5,6 +5,7 @@ import { ABDKMath64x64 } from "abdk-libraries-solidity/ABDKMath64x64.sol";
 import { ERC1155WithTotals } from "./ERC1155/ERC1155WithTotals.sol";
 import { IERC1155TokenReceiver } from "./ERC1155/IERC1155TokenReceiver.sol";
 import { IERC1155 } from "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
+import { ERC721Holder } from "@openzeppelin/contracts/token/ERC721/ERC721Holder.sol";
 
 /// @title A base class to lock collaterals and distribute them proportional to an oracle result.
 /// @author Victor Porton
@@ -18,7 +19,11 @@ import { IERC1155 } from "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 ///   (a counter of donated amount of collateral tokens, don't confuse with collateral tokens themselves)
 ///
 /// Inheriting from here don't forget to create `createOracle()` external method.
-abstract contract BaseLock is ERC1155WithTotals, IERC1155TokenReceiver {
+abstract contract BaseLock is
+    ERC1155WithTotals,
+    IERC1155TokenReceiver, // You are recommended to use `donate()` function instead.
+    ERC721Holder // It can be used through an ERC-1155 wrapper.
+{
     using ABDKMath64x64 for int128;
     using SafeMath for uint256;
 
@@ -104,7 +109,8 @@ abstract contract BaseLock is ERC1155WithTotals, IERC1155TokenReceiver {
     constructor(string memory _uri) ERC1155WithTotals(_uri) {
         _registerInterface(
             BaseLock(0).onERC1155Received.selector ^
-            BaseLock(0).onERC1155BatchReceived.selector
+            BaseLock(0).onERC1155BatchReceived.selector ^
+            BaseLock(0).onERC721Received.selector
         );
     }
 
@@ -323,8 +329,6 @@ abstract contract BaseLock is ERC1155WithTotals, IERC1155TokenReceiver {
     {
         return this.onERC1155BatchReceived.selector; // useful together with `gatherDeFiProfit()`
     }
-
-    // TODO: We need also enable receiving ERC-721?
 
     // Getters //
 
