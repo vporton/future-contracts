@@ -77,7 +77,7 @@ contract BaseSalary is BaseBidOnAddresses {
         require(_lastSalaryDate != 0, "You are not registered.");
         // Note: Even if you withdraw once per 20 years, you will get only 630,720,000 tokens.
         // This number is probably not to big to be displayed well in UIs.
-        uint256 _amount = (_lastSalaryDate - block.timestamp) * 10**18; // one token per second
+        uint256 _amount = (block.timestamp - _lastSalaryDate) * 10**18; // one token per second
         _mintToCustomer(msg.sender, _condition, _amount, _data);
         lastSalaryDates[_condition] = block.timestamp;
         emit SalaryMinted(msg.sender, _oracleId, _amount, _data);
