@@ -80,7 +80,7 @@ contract BaseSalary is BaseBidOnAddresses {
         uint256 _amount = (block.timestamp - _lastSalaryDate) * 10**18; // one token per second
         _mintToCustomer(msg.sender, _condition, _amount, _data);
         lastSalaryDates[_condition] = block.timestamp;
-        emit SalaryMinted(msg.sender, _oracleId, _amount, _data);
+        emit SalaryMinted(msg.sender, _oracleId, _amount, _data); // FIXME: Should include conditionId.
     }
 
     /// Make a new condition that replaces the old one.
