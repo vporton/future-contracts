@@ -61,6 +61,15 @@ contract BaseSalary is BaseBidOnAddresses {
     /// Mapping (condition ID => account) - salary recipients.
     mapping(uint256 => address) public salaryReceivers;
 
+    /// Mapping (condition ID => first condition ID in the chain)
+    ///
+    /// I call _chain_ of conditions the list of conditions resulting from creating and recreating conditions.
+    mapping(uint256 => uint256) public firstConditionInChain;
+    /// Mapping (first condition ID in the chain => last condition ID in the chain)
+    ///
+    /// I call _chain_ of conditions the list of conditions resulting from creating and recreating conditions.
+    mapping(uint256 => uint256) public firstToLastConditionInChain;
+
     /// Constructor.
     /// @param _uri The ERC-1155 token URI.
     constructor(string memory _uri) BaseBidOnAddresses(_uri) { }
@@ -108,6 +117,8 @@ contract BaseSalary is BaseBidOnAddresses {
         uint256 _condition = super._doCreateCondition(_customer);
         salaryReceivers[_condition] = _customer;
         conditionCreationDates[_condition] = block.timestamp;
+        firstConditionInChain[_condition] = _condition;
+        firstToLastConditionInChain[_condition] = _condition;
         return _condition;
     }
 

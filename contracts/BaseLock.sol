@@ -95,14 +95,6 @@ abstract contract BaseLock is
 
     // Mapping (condition ID => original account)
     mapping(uint256 => address) public conditionOwners;
-    /// Mapping (condition ID => first condition ID in the chain)
-    ///
-    /// I call _chain_ of conditions the list of conditions resulting from creating and recreating conditions.
-    mapping(uint256 => uint256) public firstConditionInChain;
-    /// Mapping (first condition ID in the chain => last condition ID in the chain)
-    ///
-    /// I call _chain_ of conditions the list of conditions resulting from creating and recreating conditions.
-    mapping(uint256 => uint256) public firstToLastConditionInChain;
 
     /// Constructor.
     /// @param _uri Our ERC-1155 tokens description URI.
@@ -464,8 +456,6 @@ abstract contract BaseLock is
         uint64 _conditionId = ++maxConditionId;
 
         conditionOwners[_conditionId] = _customer;
-        firstConditionInChain[_conditionId] = _conditionId;
-        firstToLastConditionInChain[_conditionId] = _conditionId;
 
         emit ConditionCreated(msg.sender, _customer, _conditionId);
 
