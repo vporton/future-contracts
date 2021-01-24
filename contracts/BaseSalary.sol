@@ -25,10 +25,10 @@ contract BaseSalary is BaseBidOnAddresses {
     /// @param customer The customer address.
     /// @param oracleId The oracle ID for which he registers.
     /// @param data Additional data.
-    event CustomerRegistered( // FIXME: Here and in other places indexed params
-        address customer,
-        uint64 oracleId,
-        uint256 conditionId,
+    event CustomerRegistered(
+        address indexed customer,
+        uint64 indexed oracleId,
+        uint256 indexed conditionId,
         bytes data
     );
 
@@ -38,9 +38,9 @@ contract BaseSalary is BaseBidOnAddresses {
     /// @param amount The minted amount.
     /// @param data Additional data.
     event SalaryMinted(
-        address customer,
-        uint64 oracleId,
-        uint256 conditionId,
+        address indexed customer,
+        uint64 indexed oracleId,
+        uint256 indexed conditionId,
         uint256 amount,
         bytes data
     );

@@ -24,9 +24,9 @@ contract BidOnAddresses is BaseBidOnAddresses {
     /// @param customer The customer address.
     /// @param data Additional data.
     event CustomerRegistered(
-        address sender,
-        address customer,
-        uint256 condition,
+        address indexed sender,
+        address indexed customer,
+        uint256 indexed condition,
         bytes data
     );
 

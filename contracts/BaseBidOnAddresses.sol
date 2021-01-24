@@ -19,7 +19,7 @@ abstract contract BaseBidOnAddresses is BaseLock {
     /// @param numerator The relative score provided by the oracle.
     event ReportedNumerator(
         uint64 indexed oracleId,
-        uint256 condition,
+        uint256 indexed condition,
         uint256 numerator
     );
 
@@ -29,7 +29,7 @@ abstract contract BaseBidOnAddresses is BaseLock {
     /// @param numerators The relative scores provided by the oracle.
     event ReportedNumeratorsBatch(
         uint64 indexed oracleId,
-        uint64[] conditions,
+        uint64[] indexed conditions,
         uint256[] numerators
     );
 

@@ -24,7 +24,7 @@ contract Lock is BaseLock {
     /// Assign a token to an orcle
     /// @param oracleId The oracle ID.
     /// @param token The token.
-    event OracleToken(uint64 oracleId, ERC1155Token token);
+    event OracleToken(uint64 indexed oracleId, ERC1155Token indexed token);
 
     /// Mapping (oracleId => external conditional token).
     mapping(uint64 => ERC1155Token) public externalConditionals;

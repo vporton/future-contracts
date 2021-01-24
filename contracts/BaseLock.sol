@@ -34,7 +34,7 @@ abstract contract BaseLock is
     /// Emitted when an oracle owner is set.
     /// @param oracleOwner Who created an oracle
     /// @param oracleId The ID of the oracle.
-    event OracleOwnerChanged(address oracleOwner, uint64 oracleId);
+    event OracleOwnerChanged(address indexed oracleOwner, uint64 indexed oracleId);
 
     /// Emitted when an oracle owner is set.
     /// @param sender Who created the condition
@@ -50,9 +50,9 @@ abstract contract BaseLock is
     /// @param to Whose account the donation is assigned to.
     /// @param data Additional transaction data.
     event DonateCollateral(
-        IERC1155 collateralContractAddress,
-        uint256 collateralTokenId,
-        address sender,
+        IERC1155 indexed collateralContractAddress,
+        uint256 indexed collateralTokenId,
+        address indexed sender,
         uint256 amount,
         address to,
         bytes data
@@ -69,9 +69,9 @@ abstract contract BaseLock is
     /// @param user Who has withdrawn.
     /// @param amount The amount withdrawn.
     event CollateralWithdrawn(
-        IERC1155 contractAddress,
-        uint256 collateralTokenId,
-        uint64 oracleId,
+        IERC1155 indexed contractAddress,
+        uint256 indexed collateralTokenId,
+        uint64 indexed oracleId,
         address user,
         uint256 amount
     );

@@ -168,7 +168,7 @@ abstract contract BaseRestorableSalary is BaseSalary {
 
     // Events //
 
-    event AccountRestored(address oldAccount, address newAccount);
+    event AccountRestored(address indexed oldAccount, address indexed newAccount);
 
-    event AccountUnrestored(address oldAccount, address newAccount);
+    event AccountUnrestored(address indexed oldAccount, address indexed newAccount);
 }
