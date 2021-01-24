@@ -28,7 +28,7 @@ contract BaseSalary is BaseBidOnAddresses {
     event CustomerRegistered(
         address indexed customer,
         uint64 indexed oracleId,
-        uint256 indexed conditionId,
+        uint256 indexed condition,
         bytes data
     );
 
@@ -40,7 +40,7 @@ contract BaseSalary is BaseBidOnAddresses {
     event SalaryMinted(
         address indexed customer,
         uint64 indexed oracleId,
-        uint256 indexed conditionId,
+        uint256 indexed condition,
         uint256 amount,
         bytes data
     );

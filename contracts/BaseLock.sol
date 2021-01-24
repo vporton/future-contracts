@@ -453,13 +453,13 @@ abstract contract BaseLock is
     ///
     /// TODO: Use uint64 variables instead?
     function _doCreateCondition(address _customer) internal virtual returns (uint256) {
-        uint64 _conditionId = ++maxConditionId;
+        uint64 _condition = ++maxConditionId;
 
-        conditionOwners[_conditionId] = _customer;
+        conditionOwners[_condition] = _customer;
 
-        emit ConditionCreated(msg.sender, _customer, _conditionId);
+        emit ConditionCreated(msg.sender, _customer, _condition);
 
-        return _conditionId;
+        return _condition;
     }
 
     function _collateralOwingBase(

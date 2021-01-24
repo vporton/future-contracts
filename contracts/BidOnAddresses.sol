@@ -62,8 +62,8 @@ contract BidOnAddresses is BaseBidOnAddresses {
     /// @param _data Additional data.
     function registerCustomer(address _customer, uint64 _oracleId, bytes calldata _data) external {
         require(_oracleId <= maxOracleId, "Oracle doesn't exist.");
-        uint256 _conditionId = _createCondition(_customer);
-        _mintToCustomer(_customer, _conditionId, INITIAL_CUSTOMER_BALANCE, _data);
-        emit CustomerRegistered(msg.sender, _customer, _conditionId, _data);
+        uint256 _condition = _createCondition(_customer);
+        _mintToCustomer(_customer, _condition, INITIAL_CUSTOMER_BALANCE, _data);
+        emit CustomerRegistered(msg.sender, _customer, _condition, _data);
     }
 }
