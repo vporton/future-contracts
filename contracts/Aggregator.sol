@@ -42,6 +42,7 @@ contract Aggregator {
     }
 
     /// Can be called by anybody.
+    ///
     /// FIXME: Can the Locker take ERC-20?
     function takeDonationERC20(ModuleManager _safe, IERC20 _erc20Contract) public {
         uint256 _amount = _erc20Contract.balanceOf(address(_safe));
@@ -56,6 +57,8 @@ contract Aggregator {
     // TODO: ERC-721
 
     /// Can be called by anybody.
+    ///
+    /// FIXME: We should not send to an arbitrary oracle!
     function sendDonation(IERC1155 _contractAddress, uint256 _tokenId, uint64 _oracleId, bytes calldata _data) public {
         uint256 _amount = _contractAddress.balanceOf(address(this), _tokenId);
         locker.donate(
