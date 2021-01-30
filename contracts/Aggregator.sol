@@ -23,6 +23,7 @@ interface IBequestModule {
         external returns (bytes memory returnData);
 }
 
+// FIXME: 1155 and 721 receiver.
 contract Aggregator {
     using SafeMath for uint256;
 
