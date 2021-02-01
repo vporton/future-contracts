@@ -32,14 +32,17 @@ contract Aggregator is ERC721Holder, ERC1155Holder {
     BaseLock locker;
     IBequestModule bequest;
     IERC1155 erc20Wrapper;
+    IERC1155 erc721Wrapper;
 
     mapping(uint64 => uint256) public oracleBalances;
 
-    constructor(BaseLock _locker, IBequestModule _bequest, IERC1155 _erc20Wrapper) {
+    constructor(BaseLock _locker, IBequestModule _bequest, IERC1155 _erc20Wrapper, IERC1155 _erc721Wrapper) {
         locker = _locker;
         bequest = _bequest;
         erc20Wrapper = _erc20Wrapper;
+        erc721Wrapper = _erc721Wrapper;
         _erc20Wrapper.setApprovalForAll(address(_erc20Wrapper), true);
+        _erc721Wrapper.setApprovalForAll(address(_erc721Wrapper), true);
     }
 
     /// Can be called by anybody.
@@ -60,7 +63,11 @@ contract Aggregator is ERC721Holder, ERC1155Holder {
         takeDonationERC1155(_oracleId, _safe, erc20Wrapper, uint256(address(_erc20Contract)), _data);
     }
 
-    // TODO: ERC-721
+    /// Can be called by anybody.
+    function takeDonationERC721(uint64 _oracleId, ModuleManager _safe, IERC721 _erc721Contract) public {
+        bytes memory _data;
+        takeDonationERC1155(_oracleId, _safe, erc721Wrapper, uint256(address(_erc721Contract)), _data);
+    }
 
     /// Can be called by anybody.
     function sendDonation(uint64 _oracleId, IERC1155 _contractAddress, uint256 _tokenId, bytes calldata _data) public {
