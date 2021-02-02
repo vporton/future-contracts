@@ -71,6 +71,20 @@ const config = {
       port: 8545,
       network_id: "97"
     },
+    mumbai: {
+      provider: function() {
+        return new HDWalletProvider({
+          privateKeys: [process.env.TESTNET_PRIVATE_KEY],
+          providerOrUrl:
+            "https://rpc-mumbai.maticvigil.com/v1/" + process.env.MATIC_KEY
+        });
+      },
+      accounts: process.env.TESTNET_PRIVATE_KEY
+        ? [process.env.TESTNET_PRIVATE_KEY]
+        : [],
+      gasPrice: 1000000000, // 1 Gwei
+      network_id: 80001
+    },
     xdai: {
       host: "localhost",
       port: 8545,
