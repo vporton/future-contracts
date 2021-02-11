@@ -52,7 +52,7 @@ const config = {
     bsc: {
       provider: function() {
         return new HDWalletProvider({
-          privateKeys: [process.env.TESTNET_PRIVATE_KEY],
+          privateKeys: [process.env.MAINNET_PRIVATE_KEY],
           providerOrUrl: `https://bsc-dataseed1.binance.org`
         });
       },
