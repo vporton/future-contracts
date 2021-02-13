@@ -192,8 +192,6 @@ contract BaseSalary is BaseBidOnAddresses {
     /// @param _id The condition ID.
     ///
     /// Must be called with `_id != 0`.
-    ///
-    /// TODO: Should make this function public?
     function isFirstConditionInChain(uint256 _id) internal view returns (bool) {
         return firstConditionInChain[_id] == _id;
     }
