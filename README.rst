@@ -9,6 +9,8 @@ It's implemented in https://github.com/vporton/donations Web app.
 
 See also https://reward.portonvictor.org
 
+For deployments see [Binance Smart Chain](BSC.txt).
+
 License
 -------
 

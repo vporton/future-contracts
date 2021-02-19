@@ -1,0 +1,229 @@
+
+Compiling your contracts...
+===========================
+> Everything is up to date, there is nothing to compile.
+
+
+
+Starting migrations...
+======================
+> Network name:    'bsc'
+> Network id:      56
+> Block gas limit: 30000000 (0x1c9c380)
+
+
+1_initial_migration.js
+======================
+
+   Deploying 'Migrations'
+   ----------------------
+   > transaction hash:    0xc20af2199a2b18f898b7b13e0f62603fa86a1ee0fd2b42fad1b703d4eedb4dfd
+   > Blocks: 2            Seconds: 4
+   > contract address:    0x3BcF959a03Dac4C8106ABE516FAFC5C9f9dfBC11
+   > block number:        4718648
+   > block timestamp:     1612840914
+   > account:             0x722cE03C15670c313f9596544CDB582c19f810e2
+   > balance:             0.14379062
+   > gas used:            168274 (0x29152)
+   > gas price:           20 gwei
+   > value sent:          0 ETH
+   > total cost:          0.00336548 ETH
+
+
+   > Saving migration to chain.
+   > Saving artifacts
+   -------------------------------------
+   > Total cost:          0.00336548 ETH
+
+
+Starting migrations...
+======================
+> Network name:    'bsc'
+> Network id:      56
+> Block gas limit: 30000000 (0x1c9c380)
+
+
+2_deploy_safe.js
+================
+
+   Deploying 'GnosisSafe'
+   ----------------------
+   > transaction hash:    0x76a649eac4a12848785e9915b7e5dd18085ad5cc57813ad00ab675bb04981efd
+   > Blocks: 4            Seconds: 12
+   > contract address:    0x951e473fDEd05d15E4Bbb4B56C715EEe8C27B5A6
+   > block number:        4720388
+   > block timestamp:     1612846160
+   > account:             0x722cE03C15670c313f9596544CDB582c19f810e2
+   > balance:             0.71426995
+   > gas used:            3166885 (0x3052a5)
+   > gas price:           20 gwei
+   > value sent:          0 ETH
+   > total cost:          0.0633377 ETH
+
+
+   > Saving migration to chain.
+   > Saving artifacts
+   -------------------------------------
+   > Total cost:           0.0633377 ETH
+
+
+3_deploy_factories.js
+=====================
+
+   Deploying 'GnosisSafeProxyFactory'
+   ----------------------------------
+   > transaction hash:    0xece50854c1810ab5a078bb7555761f3372724a85552e7db456c487168e1ea1db
+   > Blocks: 2            Seconds: 4
+   > contract address:    0x795ea5ABE5EbE4b1E35c2Ff0538C1EEaD2AFc66E
+   > block number:        4720394
+   > block timestamp:     1612846178
+   > account:             0x722cE03C15670c313f9596544CDB582c19f810e2
+   > balance:             0.70085443
+   > gas used:            643497 (0x9d1a9)
+   > gas price:           20 gwei
+   > value sent:          0 ETH
+   > total cost:          0.01286994 ETH
+
+
+   > Saving migration to chain.
+   > Saving artifacts
+   -------------------------------------
+   > Total cost:          0.01286994 ETH
+
+
+4_deploy_libraries.js
+=====================
+
+   Deploying 'CreateAndAddModules'
+   -------------------------------
+   > transaction hash:    0x89db1becde2cc35972d6a0571afadc3727d4e1f45a5a1ca4a0cf486aceb71dda
+   > Blocks: 2            Seconds: 4
+   > contract address:    0x4305e8Defe50144983d82890FE1Ef4e7f7a9dd6A
+   > block number:        4720399
+   > block timestamp:     1612846193
+   > account:             0x722cE03C15670c313f9596544CDB582c19f810e2
+   > balance:             0.69690899
+   > gas used:            169993 (0x29809)
+   > gas price:           20 gwei
+   > value sent:          0 ETH
+   > total cost:          0.00339986 ETH
+
+
+   Deploying 'MultiSend'
+   ---------------------
+   > transaction hash:    0x552258e943870b33dc9110c8391d78777ca41cb63b3ca5af1cbf24049ad8bc90
+   > Blocks: 1            Seconds: 4
+   > contract address:    0x04E7D15ec81F51B4Ac6BF34B79468A9A7A0477B0
+   > block number:        4720402
+   > block timestamp:     1612846202
+   > account:             0x722cE03C15670c313f9596544CDB582c19f810e2
+   > balance:             0.69298141
+   > gas used:            196379 (0x2ff1b)
+   > gas price:           20 gwei
+   > value sent:          0 ETH
+   > total cost:          0.00392758 ETH
+
+
+   > Saving migration to chain.
+   > Saving artifacts
+   -------------------------------------
+   > Total cost:          0.00732744 ETH
+
+
+5_deploy_modules.js
+===================
+
+   Deploying 'StateChannelModule'
+   ------------------------------
+   > transaction hash:    0x99472bafe215abeed2bcc077a3a7fc73bdeee5f13c10d09173afb9f8e6b31073
+   > Blocks: 1            Seconds: 4
+   > contract address:    0xaB9F1FCbF40cBAf51f1136B1BB3FaDbBEc18786C
+   > block number:        4720407
+   > block timestamp:     1612846217
+   > account:             0x722cE03C15670c313f9596544CDB582c19f810e2
+   > balance:             0.67875513
+   > gas used:            684035 (0xa7003)
+   > gas price:           20 gwei
+   > value sent:          0 ETH
+   > total cost:          0.0136807 ETH
+
+
+   Deploying 'DailyLimitModule'
+   ----------------------------
+   > transaction hash:    0xd2778828765c4ddc26214dfa1c004fb96e48c35155b9eb7e2b0f14aca0376799
+   > Blocks: 1            Seconds: 4
+   > contract address:    0x590EE09078Ab548912836cEf8af3E4F42FD6E655
+   > block number:        4720410
+   > block timestamp:     1612846226
+   > account:             0x722cE03C15670c313f9596544CDB582c19f810e2
+   > balance:             0.66416809
+   > gas used:            686447 (0xa796f)
+   > gas price:           20 gwei
+   > value sent:          0 ETH
+   > total cost:          0.01372894 ETH
+
+
+   Deploying 'SocialRecoveryModule'
+   --------------------------------
+   > transaction hash:    0xe4401221d9ce59806f0a0fb585ad13252611daa74f0aba0a5bca50d0ef4cbe55
+   > Blocks: 1            Seconds: 4
+   > contract address:    0x9e477955025c729666d19b008034CB976443dB26
+   > block number:        4720413
+   > block timestamp:     1612846235
+   > account:             0x722cE03C15670c313f9596544CDB582c19f810e2
+   > balance:             0.64681605
+   > gas used:            823471 (0xc90af)
+   > gas price:           20 gwei
+   > value sent:          0 ETH
+   > total cost:          0.01646942 ETH
+
+
+   Deploying 'WhitelistModule'
+   ---------------------------
+   > transaction hash:    0x69932cae1abd109cffb1a894c1511b37ead9383c341f52312c6907b5c56314e3
+   > Blocks: 3            Seconds: 8
+   > contract address:    0x7eE65eE581ABC8883A1782ac7526A627c598F0d8
+   > block number:        4720417
+   > block timestamp:     1612846247
+   > account:             0x722cE03C15670c313f9596544CDB582c19f810e2
+   > balance:             0.63019527
+   > gas used:            659974 (0xa1206)
+   > gas price:           20 gwei
+   > value sent:          0 ETH
+   > total cost:          0.01319948 ETH
+
+
+   > Saving migration to chain.
+   > Saving artifacts
+   -------------------------------------
+   > Total cost:          0.05707854 ETH
+
+
+Summary
+=======
+> Total deployments:   8
+> Final cost:          0.14061362 ETH
+
+
+6_deploy_default_callback.js
+============================
+
+   Deploying 'DefaultCallbackHandler'
+   ----------------------------------
+   > transaction hash:    0xaff23ef611f750f3715bc639e39f953bdafa46d384d621c804abf71f24fd647a
+   > Blocks: 1            Seconds: 5
+   > contract address:    0x07B4F26503502B23ee4A5CcdA23DC24db874103f
+   > block number:        4771355
+   > block timestamp:     1612999229
+   > account:             0x722cE03C15670c313f9596544CDB582c19f810e2
+   > balance:             0.551308973
+   > gas used:            331384 (0x50e78)
+   > gas price:           20 gwei
+   > value sent:          0 ETH
+   > total cost:          0.00662768 ETH
+
+
+   > Saving migration to chain.
+   > Saving artifacts
+   -------------------------------------
+   > Total cost:          0.00662768 ETH
