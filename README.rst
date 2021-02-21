@@ -11,6 +11,8 @@ See also https://reward.portonvictor.org
 
 For deployments see .. _Binance Smart Chain: ./BSC.txt
 
+See the files in `docs/` for audit status.
+
 License
 -------
 
