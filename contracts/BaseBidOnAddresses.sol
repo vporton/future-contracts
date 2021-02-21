@@ -38,7 +38,7 @@ abstract contract BaseBidOnAddresses is BaseLock {
     // Mapping (oracleId => (condition => numerator)) for payout numerators.
     mapping(uint64 => mapping(uint256 => uint256)) private payoutNumeratorsMap;
     // Mapping (oracleId => denominator) for payout denominators.
-    mapping(uint256 => uint) private payoutDenominatorMap;
+    mapping(uint256 => uint) private payoutDenominatorsMap;
 
     /// Constructor.
     /// @param _uri Our ERC-1155 tokens description URI.
@@ -56,7 +56,7 @@ abstract contract BaseBidOnAddresses is BaseLock {
     /// @param _oracleId The oracle ID.
     /// The result can't change if the oracle has finished.
     function payoutDenominator(uint64 _oracleId) public view returns (uint256) {
-        return payoutDenominatorMap[_oracleId];
+        return payoutDenominatorsMap[_oracleId];
     }
 
     /// Called by the oracle owner for reporting results of conditions.
@@ -110,7 +110,7 @@ abstract contract BaseBidOnAddresses is BaseLock {
     }
 
     function _updateNumerator(uint64 _oracleId, uint256 _numerator, uint256 _condition) private {
-        payoutDenominatorMap[_oracleId] = payoutDenominatorMap[_oracleId].add(_numerator).sub(payoutNumeratorsMap[_oracleId][_condition]);
+        payoutDenominatorsMap[_oracleId] = payoutDenominatorsMap[_oracleId].add(_numerator).sub(payoutNumeratorsMap[_oracleId][_condition]);
         payoutNumeratorsMap[_oracleId][_condition] = _numerator;
     }
 
@@ -118,7 +118,7 @@ abstract contract BaseBidOnAddresses is BaseLock {
 
     function _calcRewardShare(uint64 _oracleId, uint256 _condition) internal virtual override view returns (int128) {
         uint256 _numerator = payoutNumeratorsMap[_oracleId][_condition];
-        uint256 _denominator = payoutDenominatorMap[_oracleId];
+        uint256 _denominator = payoutDenominatorsMap[_oracleId];
         return ABDKMath64x64.divu(_numerator, _denominator);
     }
 
