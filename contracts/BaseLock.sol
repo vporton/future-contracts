@@ -230,8 +230,6 @@ abstract contract BaseLock is
     ///   (needed for multi-level transfers).
     /// - After this function is called, it becomes impossible to transfer the corresponding conditional token
     ///   of `msg.sender` (to prevent its repeated withdrawal).
-    ///
-    /// FIXME: Forgotten to check if the condition is owned by you. (Also upgrade the salaries contracts with upgradeable tokens!)
     function withdrawCollateral(
         IERC1155 _collateralContractAddress,
         uint256 _collateralTokenId,
