@@ -164,7 +164,6 @@ abstract contract BaseLock is
     /// @param _collateralTokenId The collateral ERC-1155 token ID.
     /// @param _oracleId The oracle ID to whose ecosystem to donate to.
     /// @param _data Additional transaction data.
-    /// TODO: Batch calls in several tokens and/or to several oracles for less gas usage?
     function gatherDeFiProfit(
         IERC1155 _collateralContractAddress,
         uint256 _collateralTokenId,
@@ -175,7 +174,6 @@ abstract contract BaseLock is
         uint _donatedCollateralTokenId = _collateralDonatedTokenId(_collateralContractAddress, _collateralTokenId);
 
         // We consider an overflow an error and just revert:
-        // FIXME: Impossible due to reentrancy vulnerability? (Really? It's a view!)
         uint256 _difference =
             _collateralContractAddress.balanceOf(address(this), _collateralTokenId).sub(
                 balanceOf(address(this), _donatedCollateralTokenId));

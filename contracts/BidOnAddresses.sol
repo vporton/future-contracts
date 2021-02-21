@@ -57,7 +57,7 @@ contract BidOnAddresses is BaseBidOnAddresses {
     /// - It requires to install MetaMask.
     /// - It bothers the person to sign something, when he could just be hesitant to get what he needs.
     /// - It somehow complicates this contract.
-    /// @param _customer The address of the customer. // TODO: current or original
+    /// @param _customer The address of the customer.
     /// @param _oracleId The oracle ID.
     /// @param _data Additional data.
     function registerCustomer(address _customer, uint64 _oracleId, bytes calldata _data) external {
