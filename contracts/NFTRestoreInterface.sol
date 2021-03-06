@@ -10,8 +10,9 @@ import "./DAOInterface.sol";
 contract NFTRestoreInterface is DAOInterface, ERC721 {
     constructor() ERC721("Right to control your salary.", "TakeMySalary") { }
 
-    function mintRestoreRight(address to, bytes memory _data) public virtual {
-        _safeMint(to, uint256(uint160(msg.sender)), _data);
+    /// We can mint only to msg.sender, because MetaMask does not warn about calling this function, that allows fishing.
+    function mintRestoreRight(bytes memory _data) public virtual {
+        _safeMint(msg.sender, uint256(uint160(msg.sender)), _data);
     }
 
     function checkAllowedRestoreAccount(address _oldAccount, address /*_newAccount*/)
