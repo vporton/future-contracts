@@ -7,7 +7,7 @@ import "./DAOInterface.sol";
 /// @notice Account restoration contract controlled by NFT.
 /// @author Victor Porton
 /// @notice Not audited, not enough tested.
-contract NFTRestoreInterface is DAOInterface, ERC721 {
+contract NFTRestoreContract is DAOInterface, ERC721 {
     constructor() ERC721("Right to control your salary.", "TakeMySalary") { }
 
     /// We can mint only to msg.sender, because MetaMask does not warn about calling this function, that allows fishing.
