@@ -8,7 +8,7 @@ import "./DAOInterface.sol";
 /// @author Victor Porton
 /// @notice Not audited, not enough tested.
 contract NFTRestoreInterface is DAOInterface, ERC721 {
-    constructor() ERC721("Right to restore my account", "RESTORE") { }
+    constructor() ERC721("Right to control your salary.", "TakeMySalary") { }
 
     function mintRestoreRight(address to, bytes memory _data) public virtual {
         _safeMint(to, uint256(uint160(msg.sender)), _data);
