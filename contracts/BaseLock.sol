@@ -9,7 +9,6 @@ import { ERC721Holder } from "@openzeppelin/contracts/token/ERC721/ERC721Holder.
 
 /// @title A base class to lock collaterals and distribute them proportional to an oracle result.
 /// @author Victor Porton
-/// @notice Not audited, not enough tested.
 ///
 /// One can also donate/bequest a smart wallet (explain how).
 ///

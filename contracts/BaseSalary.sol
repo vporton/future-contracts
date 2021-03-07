@@ -4,7 +4,6 @@ import "./BaseBidOnAddresses.sol";
 
 /// @title Base class for a "salary" that is paid one token per second using minted conditionals.
 /// @author Victor Porton
-/// @notice Not audited, not enough tested.
 /// It was considered to allow the DAO to adjust registration date to pay salary retrospectively,
 /// but this seems giving too much rights to the DAO similarly as if it had the right to declare anyone dead.
 ///
@@ -23,11 +22,9 @@ import "./BaseBidOnAddresses.sol";
 contract BaseSalary is BaseBidOnAddresses {
     /// Salary receiver registered.
     /// @param customer The customer address.
-    /// @param oracleId The oracle ID for which he registers.
     /// @param data Additional data.
     event CustomerRegistered(
         address indexed customer,
-        uint64 indexed oracleId,
         uint256 indexed condition,
         bytes data
     );
@@ -212,12 +209,12 @@ contract BaseSalary is BaseBidOnAddresses {
         }
     }
 
-    function _registerCustomer(address _customer, uint64 _oracleId, bytes calldata _data)
+    function _registerCustomer(address _customer, bytes calldata _data)
         virtual internal returns (uint256)
     {
         uint256 _condition = _doCreateCondition(_customer);
         lastSalaryDates[_condition] = block.timestamp;
-        emit CustomerRegistered(msg.sender, _oracleId, _condition, _data);
+        emit CustomerRegistered(msg.sender, _condition, _data);
         return _condition;
     }
 

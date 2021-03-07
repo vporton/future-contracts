@@ -3,7 +3,6 @@ pragma solidity ^0.7.1;
 import "./Salary.sol";
 
 /// @author Victor Porton
-/// @notice Not audited, not enough tested.
 /// A base class for salary with receiver accounts that can be restored by an "attorney".
 abstract contract BaseRestorableSalary is BaseSalary {
     // INVARIANT: `_originalAddress(newToOldAccounts[newAccount]) == _originalAddress(newAccount)`

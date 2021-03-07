@@ -6,7 +6,6 @@ import { BaseLock } from "./BaseLock.sol";
 
 /// @title Bidding on Ethereum addresses
 /// @author Victor Porton
-/// @notice Not audited, not enough tested.
 /// This allows anyone claim conditional tokens in order for him to transfer money from the future.
 /// See `docs/future-money.rst`.
 abstract contract BaseBidOnAddresses is BaseLock {

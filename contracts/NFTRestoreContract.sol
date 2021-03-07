@@ -6,7 +6,6 @@ import "./DAOInterface.sol";
 
 /// @notice Account restoration contract controlled by NFT.
 /// @author Victor Porton
-/// @notice Not audited, not enough tested.
 contract NFTRestoreContract is DAOInterface, ERC721 {
     constructor() ERC721("Right to control your salary.", "TakeMySalary") { }
 

@@ -6,7 +6,6 @@ import "./DAOInterface.sol";
 
 /// Salary system with a "DAO" that can assign attorneys to restore lost Ethereum accounts.
 /// @author Victor Porton
-/// @notice Not audited, not enough tested.
 contract SalaryWithDAO is BaseRestorableSalary {
     using ABDKMath64x64 for int128;
 
@@ -50,17 +49,16 @@ contract SalaryWithDAO is BaseRestorableSalary {
     /// Registering another person is giving him money against his will (forcing to hire bodyguards, etc.),
     /// but if one does not want, he can just not associate this address with his identity in his publications.
     /// @param _customer The original address.
-    /// @param _oracleId The oracle ID.
     /// @param _underDAOControl If the registered address will be under DAO control.
     /// @param _data The current data.
-    function registerCustomer(address _customer, uint64 _oracleId, bool _underDAOControl, bytes calldata _data)
+    function registerCustomer(address _customer, bool _underDAOControl, bytes calldata _data)
         virtual public returns (uint256)
     {
         address _orig = _originalAddress(_customer);
         // Auditor: Check that this value is set to false, when (and if) necessary.
         accountHasSalary[_customer] = true;
         underDAOControl[_customer] = _underDAOControl; // We don't trigger and event to reduce gas usage.
-        return super._registerCustomer(_orig, _oracleId, _data);
+        return super._registerCustomer(_orig, _data);
     }
 
     /// A user can agree for DAO control. Then his account can be restored by DAO for the expense
