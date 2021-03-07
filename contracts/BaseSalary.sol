@@ -34,12 +34,10 @@ contract BaseSalary is BaseBidOnAddresses {
 
     /// Salary tokens minted.
     /// @param customer The customer address.
-    /// @param oracleId The oracle ID.
     /// @param amount The minted amount.
     /// @param data Additional data.
     event SalaryMinted(
         address indexed customer,
-        uint64 indexed oracleId,
         uint256 indexed condition,
         uint256 amount,
         bytes data
@@ -76,11 +74,10 @@ contract BaseSalary is BaseBidOnAddresses {
     constructor(string memory _uri) BaseBidOnAddresses(_uri) { }
 
     /// Mint a salary token.
-    /// @param _oracleId The oracle ID.
     /// @param _condition The condition ID.
     /// @param _data Additional data.
     /// This method can be called only by the salary receiver.
-    function mintSalary(uint64 _oracleId, uint256 _condition, bytes calldata _data)
+    function mintSalary(uint256 _condition, bytes calldata _data)
         ensureLastConditionInChain(_condition) external
     {
         uint _lastSalaryDate = lastSalaryDates[_condition];
@@ -90,7 +87,7 @@ contract BaseSalary is BaseBidOnAddresses {
         uint256 _amount = (block.timestamp - _lastSalaryDate) * 10**18; // one token per second
         _mintToCustomer(msg.sender, firstToLastConditionInChain[_condition], _amount, _data);
         lastSalaryDates[_condition] = block.timestamp;
-        emit SalaryMinted(msg.sender, _oracleId, _condition, _amount, _data);
+        emit SalaryMinted(msg.sender, _condition, _amount, _data);
     }
 
     /// Make a new condition that replaces the old one.
