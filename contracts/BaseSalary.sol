@@ -20,15 +20,6 @@ import "./BaseBidOnAddresses.sol";
 /// The salary is paid in minted tokens groups into "chains":
 /// the original salary token and anyone can replace it by another token, next in the chain.
 contract BaseSalary is BaseBidOnAddresses {
-    /// Salary receiver registered.
-    /// @param customer The customer address.
-    /// @param data Additional data.
-    event CustomerRegistered(
-        address indexed customer,
-        uint256 indexed condition,
-        bytes data
-    );
-
     /// Salary tokens minted.
     /// @param customer The customer address.
     /// @param amount The minted amount.
