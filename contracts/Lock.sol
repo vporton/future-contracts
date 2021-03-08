@@ -34,8 +34,8 @@ contract Lock is BaseLock {
     constructor(string memory _uri) BaseLock(_uri) { }
 
     /// Create a new oracle
-    function createOracle(ERC1155Token calldata _token) external returns (uint64) {
-        uint64 _oracleId = _createOracle();
+    function createOracle(address _oracleOwner, ERC1155Token calldata _token) external returns (uint64) {
+        uint64 _oracleId = _createOracle(_oracleOwner);
         externalConditionals[_oracleId] = _token;
         emit OracleToken(_oracleId, _token);
         return _oracleId;

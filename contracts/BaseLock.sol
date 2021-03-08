@@ -28,7 +28,7 @@ abstract contract BaseLock is
 
     /// Emitted when an oracle is created.
     /// @param oracleId The ID of the created oracle.
-    event OracleCreated(uint64 oracleId);
+    event OracleCreated(address sender, uint64 oracleId);
 
     /// Emitted when an oracle owner is set.
     /// @param oracleOwner Who created an oracle
@@ -432,11 +432,11 @@ abstract contract BaseLock is
         _doSafeBatchTransferAcceptanceCheck(msg.sender, _from, _to, _ids, _values, _data);
     }
 
-    function _createOracle() internal returns (uint64) {
+    function _createOracle(address _oracleOwner) internal returns (uint64) {
         uint64 _oracleId = ++maxOracleId;
-        oracleOwnersMap[_oracleId] = msg.sender;
-        emit OracleCreated(_oracleId);
-        emit OracleOwnerChanged(msg.sender, _oracleId);
+        oracleOwnersMap[_oracleId] = _oracleOwner;
+        emit OracleCreated(msg.sender, _oracleId);
+        emit OracleOwnerChanged(_oracleOwner, _oracleId);
         return _oracleId;
     }
 

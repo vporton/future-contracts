@@ -36,8 +36,8 @@ contract SalaryWithDAO is BaseRestorableSalary {
     }
 
     /// Create an oracle for caclcualting salary amounts.
-    function createOracle() external returns (uint64) {
-        return _createOracle();
+    function createOracle(address _oracleOwner) external returns (uint64) {
+        return _createOracle(_oracleOwner);
     }
 
     /// Register a salary recipient.
