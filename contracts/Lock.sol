@@ -46,7 +46,7 @@ contract Lock is BaseLock {
     /// @param _conditionalTokenId The conditional token ID.
     /// @param _amount The minted amount.
     /// @param _data Additional data.
-    function mintConditional(uint64 _oracleId, uint256 _conditionalTokenId, uint256 _amount, bytes calldata _data)
+    function mintConditional(uint64 _oracleId, uint256 _conditionalTokenId, uint256 _amount, bytes memory _data)
         public checkIsConditional(_conditionalTokenId)
     {
         ERC1155Token storage _externalConditional = externalConditionals[_oracleId];

@@ -74,7 +74,7 @@ contract BaseSalary is BaseBidOnAddresses {
     /// @param _condition The condition ID.
     /// @param _data Additional data.
     /// This method can be called only by the salary receiver.
-    function mintSalary(uint256 _condition, bytes calldata _data)
+    function mintSalary(uint256 _condition, bytes memory _data)
         ensureLastConditionInChain(_condition) external
     {
         uint _lastSalaryDate = lastSalaryDates[_condition];
@@ -104,12 +104,12 @@ contract BaseSalary is BaseBidOnAddresses {
     /// - calling this function regularly (e.g. every week)?
     ///
     /// This function also withdraws the old token.
-    function recreateCondition(uint256 _condition) public returns (uint256) {
-        return _recreateCondition(_condition);
+    function recreateCondition(uint256 _condition, bytes memory _data) public returns (uint256) {
+        return _recreateCondition(_condition, _data);
     }
 
-    function _doCreateCondition(address _customer) internal virtual override returns (uint256) {
-        uint256 _condition = super._doCreateCondition(_customer);
+    function _doCreateCondition(address _customer, bytes memory _data) internal virtual override returns (uint256) {
+        uint256 _condition = super._doCreateCondition(_customer, _data);
         salaryReceivers[_condition] = _customer;
         conditionCreationDates[_condition] = block.timestamp;
         firstConditionInChain[_condition] = _condition;
@@ -159,12 +159,12 @@ contract BaseSalary is BaseBidOnAddresses {
     /// - Therefore somebody's token can be withdrawn even if its ID changes arbitrarily often.
     ///
     /// @param _condition The condition ID.
-    function _recreateCondition(uint256 _condition)
+    function _recreateCondition(uint256 _condition, bytes memory _data)
         internal ensureFirstConditionInChain(_condition) returns (uint256)
     {
         address _customer = salaryReceivers[_condition];
         uint256 _oldCondition = firstToLastConditionInChain[_condition];
-        uint256 _newCondition = _doCreateCondition(_customer);
+        uint256 _newCondition = _doCreateCondition(_customer, _data);
         firstConditionInChain[_newCondition] = _condition;
 
         uint256 _amount = _balances[_oldCondition][_customer];
@@ -203,8 +203,9 @@ contract BaseSalary is BaseBidOnAddresses {
         super._doTransfer(_id, _from, _to, _value);
 
         if (_id != 0 && salaryReceivers[_id] == msg.sender) {
+            bytes memory _data;
             if (isLastConditionInChain(_id)) { // correct because `_id != 0`
-                _recreateCondition(_id);
+                _recreateCondition(_id, _data);
             }
         }
     }
@@ -212,9 +213,8 @@ contract BaseSalary is BaseBidOnAddresses {
     function _registerCustomer(address _customer, bytes calldata _data)
         virtual internal returns (uint256)
     {
-        uint256 _condition = _doCreateCondition(_customer);
+        uint256 _condition = _doCreateCondition(_customer, _data);
         lastSalaryDates[_condition] = block.timestamp;
-        emit CustomerRegistered(msg.sender, _condition, _data);
         return _condition;
     }
 

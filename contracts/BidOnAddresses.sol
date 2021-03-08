@@ -59,9 +59,10 @@ contract BidOnAddresses is BaseBidOnAddresses {
     /// - It somehow complicates this contract.
     /// @param _customer The address of the customer.
     /// @param _data Additional data.
-    function registerCustomer(address _customer, bytes calldata _data) external {
-        uint256 _condition = _createCondition(_customer);
-        _mintToCustomer(_customer, _condition, INITIAL_CUSTOMER_BALANCE, _data);
+    function registerCustomer(address _customer, bytes memory _data) external {
+        uint256 _condition = _createCondition(_customer, _data);
+        bytes memory _data2;
+        _mintToCustomer(_customer, _condition, INITIAL_CUSTOMER_BALANCE, _data2);
         emit CustomerRegistered(msg.sender, _customer, _condition, _data);
     }
 }

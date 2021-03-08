@@ -39,7 +39,7 @@ abstract contract BaseLock is
     /// @param sender Who created the condition
     /// @param customer The owner of the condition.
     /// @param condition The created condition ID.
-    event ConditionCreated(address indexed sender, address indexed customer, uint256 indexed condition);
+    event ConditionCreated(address indexed sender, address indexed customer, uint256 indexed condition, bytes data);
 
     /// Emitted when a collateral is donated.
     /// @param collateralContractAddress The ERC-1155 contract of the donated token.
@@ -341,7 +341,7 @@ abstract contract BaseLock is
     }
 
     /// Mint a conditional to a customer.
-    function _mintToCustomer(address _customer, uint256 _condition, uint256 _amount, bytes calldata _data)
+    function _mintToCustomer(address _customer, uint256 _condition, uint256 _amount, bytes memory _data)
         internal virtual
     {
         require(conditionOwners[_condition] == _customer, "Other's salary get attempt.");
@@ -443,19 +443,19 @@ abstract contract BaseLock is
     /// Start with 1, not 0, to avoid glitch with `conditionalTokens` variable.
     ///
     /// TODO: Use uint64 variables instead?
-    function _createCondition(address _customer) internal returns (uint256) {
-        return _doCreateCondition(_customer);
+    function _createCondition(address _customer, bytes memory _data) internal returns (uint256) {
+        return _doCreateCondition(_customer, _data);
     }
 
     /// Start with 1, not 0, to avoid glitch with `conditionalTokens` variable.
     ///
     /// TODO: Use uint64 variables instead?
-    function _doCreateCondition(address _customer) internal virtual returns (uint256) {
+    function _doCreateCondition(address _customer, bytes memory _data) internal virtual returns (uint256) {
         uint64 _condition = ++maxConditionId;
 
         conditionOwners[_condition] = _customer;
 
-        emit ConditionCreated(msg.sender, _customer, _condition);
+        emit ConditionCreated(msg.sender, _customer, _condition, _data);
 
         return _condition;
     }
