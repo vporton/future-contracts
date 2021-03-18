@@ -5,8 +5,6 @@ import "./Salary.sol";
 /// @author Victor Porton
 /// A base class for salary with receiver accounts that can be restored by an "attorney".
 abstract contract BaseRestorableSalary is BaseSalary {
-    // INVARIANT: `_originalAddress(newToOldAccounts[newAccount]) == _originalAddress(newAccount)`
-    //            if `newToOldAccounts[newAccount] != address(0)` for every `newAccount`
     // INVARIANT: originalAddresses and originalToCurrentAddresses are mutually inverse.
     //            That is:
     //            - `originalAddresses[originalToCurrentAddresses[x]] == x` if `originalToCurrentAddresses[x] != address(0)`
@@ -18,53 +16,11 @@ abstract contract BaseRestorableSalary is BaseSalary {
     /// Mapping (very first address an account had => current address).
     mapping(address => address) public originalToCurrentAddresses;
 
-    // Mapping from old to new account addresses (created after every change of an address).
-    mapping(address => address) public newToOldAccounts;
-
     /// Constructor.
     /// @param _uri Our ERC-1155 tokens description URI.
     constructor (string memory _uri) BaseSalary(_uri) { }
 
     /// Below copied from https://github.com/vporton/restorable-funds/blob/f6192fd23cad529b84155d52ae202430cd97db23/contracts/RestorableERC1155.sol
-
-    /// Give the user the "permission" to move funds from `_oldAccount` to `_newAccount`.
-    ///
-    /// This function is intended to be called by an attorney or the user to move to a new account.
-    /// @param _oldAccount is a current address.
-    /// @param _newAccount is a new address.
-    function permitRestoreAccount(address _oldAccount, address _newAccount) public {
-        if (msg.sender != _oldAccount) {
-            checkAllowedRestoreAccount(_oldAccount, _newAccount); // only authorized "attorneys" or attorney DAOs
-        }
-        _avoidZeroAddressManipulatins(_oldAccount, _newAccount);
-        address _orig = _originalAddress(_oldAccount);
-
-        // We don't disallow joining several accounts together to consolidate salaries for different projects.
-        // require(originalAddresses[_newAccount] == 0, "Account is taken.")
-
-        newToOldAccounts[_newAccount] = _oldAccount;
-        originalAddresses[_newAccount] = _orig;
-        originalToCurrentAddresses[_orig] = _newAccount;
-        // Auditor: Check that the above invariant hold.
-        emit AccountRestored(_oldAccount, _newAccount);
-    }
-
-    /// Retire the user's "permission" to move funds from `_oldAccount` to `_newAccount`.
-    ///
-    /// This function is intended to be called by an attorney.
-    /// @param _oldAccount is an old current address.
-    /// @param _newAccount is a new address.
-    /// (In general) it isn't allowed to be called by `msg.sender == _oldAccount`,
-    /// because it would allow to keep stealing the salary by hijacked old account.
-    function dispermitRestoreAccount(address _oldAccount, address _newAccount) public {
-        checkAllowedUnrestoreAccount(_oldAccount, _newAccount); // only authorized "attorneys" or attorney DAOs
-        _avoidZeroAddressManipulatins(_oldAccount, _newAccount);
-        newToOldAccounts[_newAccount] = address(0);
-        originalToCurrentAddresses[_oldAccount] = address(0);
-        originalAddresses[_newAccount] = address(0);
-        // Auditor: Check that the above invariants hold.
-        emit AccountUnrestored(_oldAccount, _newAccount);
-    }
 
     /// Move the entire balance of a token from an old account to a new account of the same user.
     /// @param _oldAccount Old account.
@@ -109,22 +65,10 @@ abstract contract BaseRestorableSalary is BaseSalary {
         emit TransferBatch(_msgSender(), _oldAccount, _newAccount, _tokens, _amounts);
     }
 
-    // Internal functions //
-
-    function _avoidZeroAddressManipulatins(address _oldAccount, address _newAccount) internal view {
-        // To avoid make-rich-quick manipulations with lost funds:
-        require(_oldAccount != address(0) && _newAccount != address(0) &&
-                originalAddresses[_newAccount] != address(0) && newToOldAccounts[_newAccount] != address(0),
-                "Trying to get nobody's funds.");
-    }
-
     // Virtual functions //
 
     /// Check if `msg.sender` is an attorney allowed to restore a user's account.
     function checkAllowedRestoreAccount(address /*_oldAccount*/, address /*_newAccount*/) public virtual;
-
-    /// Check if `msg.sender` is an attorney allowed to unrestore a user's account.
-    function checkAllowedUnrestoreAccount(address /*_oldAccount*/, address /*_newAccount*/) public virtual;
 
     /// Find the original address of a given account.
     /// This function is internal, because it can be calculated off-chain.
@@ -154,14 +98,7 @@ abstract contract BaseRestorableSalary is BaseSalary {
     /// We also allow funds restoration by attorneys for convenience of users.
     /// This is not an increased security risk, because a dishonest attorney can anyway transfer money to himself.
     modifier checkMovedOwner(address _oldAccount, address _newAccount) virtual {
-        if (_msgSender() != _newAccount) {
-            checkAllowedRestoreAccount(_oldAccount, _newAccount); // only authorized "attorneys" or attorney DAOs
-        }
-
-        for (address _account = _oldAccount; _account != _newAccount; _account = newToOldAccounts[_account]) {
-            require(_account != address(0), "Not a moved owner");
-        }
-
+        checkAllowedRestoreAccount(_oldAccount, _newAccount); // only authorized "attorneys" or attorney DAOs
         _;
     }
 

@@ -8,8 +8,4 @@ contract DefaultDAOInterface is DAOInterface {
     function checkAllowedRestoreAccount(address /*_oldAccount*/, address /*_newAccount*/) external pure override {
         revert("unimplemented");
     }
-
-    function checkAllowedUnrestoreAccount(address /*_oldAccount*/, address /*_newAccount*/) external pure override {
-        revert("unimplemented");
-    }
 }
