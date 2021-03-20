@@ -344,7 +344,7 @@ abstract contract BaseLock is
     function _mintToCustomer(address _customer, uint256 _condition, uint256 _amount, bytes memory _data)
         internal virtual
     {
-        require(conditionOwners[_condition] == _customer, "Other's salary get attempt.");
+        require(conditionOwners[_condition] == _customer, "Other's salary get attempt."); // FIXME: `salaryRecipients` instead.
         _mint(originalToCurrentAddress(_customer), _condition, _amount, _data);
     }
 
