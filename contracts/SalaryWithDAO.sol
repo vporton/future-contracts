@@ -12,14 +12,6 @@ contract SalaryWithDAO is BaseRestorableSalary {
     /// The DAO interface.
     DAOInterface public daoPlugin;
 
-    /// When set to true, your account can't be moved to new address (by the DAO).
-    ///
-    /// By default new users are not under DAO control to avoid front-running of resigning control
-    /// by an evil DAO.
-    ///
-    /// Mapping (current address => under control)
-    mapping (address => bool) public underDAOControl;
-
     /// Mapping (current address => account has at least one salary).
     mapping (address => bool) public accountHasSalary;
 
@@ -49,30 +41,14 @@ contract SalaryWithDAO is BaseRestorableSalary {
     /// Registering another person is giving him money against his will (forcing to hire bodyguards, etc.),
     /// but if one does not want, he can just not associate this address with his identity in his publications.
     /// @param _customer The original address.
-    /// @param _underDAOControl If the registered address will be under DAO control.
     /// @param _data The current data.
-    function registerCustomer(address _customer, bool _underDAOControl, bytes calldata _data)
+    function registerCustomer(address _customer, bytes calldata _data)
         virtual public returns (uint256)
     {
         address _orig = _originalAddress(_customer);
         // Auditor: Check that this value is set to false, when (and if) necessary.
         accountHasSalary[_customer] = true;
-        underDAOControl[_customer] = _underDAOControl; // We don't trigger and event to reduce gas usage.
         return super._registerCustomer(_orig, _data);
-    }
-
-    /// A user can agree for DAO control. Then his account can be restored by DAO for the expense
-    /// of the DAO assigned personnel or software being able to steal his funds.
-    ///
-    /// Be exteremely careful calling this method: If you refuse and lose your key, your funds are lost!
-    ///
-    /// Fishers may trick one to resign mistakenly. However, it's no much worse than just fishing for
-    /// withdrawing the salary token, because a user could just register anew and notify traders/oracles
-    /// that it's the same person.
-    function setDAOControl(bool _underControl) public {
-        address _orig = _originalAddress(msg.sender);
-        require(accountHasSalary[_orig], "Cannot resign account receiving a salary.");
-        underDAOControl[_orig] = _underControl; // We don't trigger and event to reduce gas usage.
     }
 
     /// The DAO can replace itself.
@@ -87,10 +63,10 @@ contract SalaryWithDAO is BaseRestorableSalary {
 
     // Overrides ///
 
-    function checkAllowedRestoreAccount(address _oldAccount, address _newAccount)
-        public virtual override isUnderDAOControl(_oldAccount)
+    function checkAllowedRestoreAccount(address _sender, address _oldAccount)
+        public virtual override
     {
-        daoPlugin.checkAllowedRestoreAccount(_oldAccount, _newAccount);
+        daoPlugin.checkAllowedRestoreAccount(_sender, _oldAccount);
     }
 
     // Internal //
@@ -103,12 +79,6 @@ contract SalaryWithDAO is BaseRestorableSalary {
 
     modifier onlyDAO() {
         require(_isDAO(), "Only DAO can do.");
-        _;
-    }
-
-    /// @param _customer The current address.
-    modifier isUnderDAOControl(address _customer) {
-        require(underDAOControl[_customer], "Not under DAO control.");
         _;
     }
 }
