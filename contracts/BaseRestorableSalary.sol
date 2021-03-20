@@ -26,7 +26,6 @@ abstract contract BaseRestorableSalary is BaseSalary {
     /// @param _oldAccount Old account.
     /// @param _newAccount New account.
     /// @param _token The ERC-1155 token ID.
-    /// This function can be called by the affected user.
     ///
     /// Remark: We don't need to create new tokens like as on a regular transfer,
     /// because it isn't a transfer to a trader.
@@ -35,6 +34,7 @@ abstract contract BaseRestorableSalary is BaseSalary {
     {
         uint256 _amount = _balances[_token][_oldAccount];
 
+        salaryReceivers[_token] = _newAccount;
         _balances[_token][_newAccount] = _balances[_token][_oldAccount];
         _balances[_token][_oldAccount] = 0;
 
@@ -45,7 +45,6 @@ abstract contract BaseRestorableSalary is BaseSalary {
     /// @param _oldAccount Old account.
     /// @param _newAccount New account.
     /// @param _tokens The ERC-1155 token IDs.
-    /// This function can be called by the affected user.
     ///
     /// Remark: We don't need to create new tokens like as on a regular transfer,
     /// because it isn't a transfer to a trader.
@@ -54,12 +53,7 @@ abstract contract BaseRestorableSalary is BaseSalary {
     {
         uint256[] memory _amounts = new uint256[](_tokens.length);
         for (uint _i = 0; _i < _tokens.length; ++_i) {
-            uint256 _token = _tokens[_i];
-            uint256 _amount = _balances[_token][_oldAccount];
-            _amounts[_i] = _amount;
-
-            _balances[_token][_newAccount] = _balances[_token][_oldAccount];
-            _balances[_token][_oldAccount] = 0;
+            restoreFunds(_oldAccount, _newAccount, _tokens[_i]);
         }
 
         emit TransferBatch(_msgSender(), _oldAccount, _newAccount, _tokens, _amounts);
