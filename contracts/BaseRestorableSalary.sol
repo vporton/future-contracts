@@ -31,7 +31,7 @@ abstract contract BaseRestorableSalary is BaseSalary {
     /// Remark: We don't need to create new tokens like as on a regular transfer,
     /// because it isn't a transfer to a trader.
     function restoreFunds(address _oldAccount, address _newAccount, uint256 _token) public
-        checkMovedOwner(_newAccount)
+        checkMovedOwner(_oldAccount)
     {
         uint256 _amount = _balances[_token][_oldAccount];
 
@@ -50,7 +50,7 @@ abstract contract BaseRestorableSalary is BaseSalary {
     /// Remark: We don't need to create new tokens like as on a regular transfer,
     /// because it isn't a transfer to a trader.
     function restoreFundsBatch(address _oldAccount, address _newAccount, uint256[] calldata _tokens) public
-        checkMovedOwner(_newAccount)
+        checkMovedOwner(_oldAccount)
     {
         uint256[] memory _amounts = new uint256[](_tokens.length);
         for (uint _i = 0; _i < _tokens.length; ++_i) {
