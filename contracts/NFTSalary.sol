@@ -18,6 +18,6 @@ contract NFTSalary is ERC721, Ownable {
 
     function _transfer(address from, address to, uint256 tokenId) internal virtual override {
         super._transfer(from, to, tokenId);
-        IRestorable(owner()).restoreFunds(from, to, tokenId);
+        IRestorable(owner()).restoreFunds(from, to, tokenId); // FIXME: calling with wrong permissions
     }
 }
