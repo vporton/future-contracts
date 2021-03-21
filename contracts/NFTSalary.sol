@@ -12,7 +12,7 @@ import { IRestorable } from "./IRestorable.sol";
 contract NFTSalary is ERC721, Ownable {
     IRestorable salary;
 
-    constructor(IRestorable _salary) ERC721("Salary recipient.", "MySalary") {
+    constructor(IRestorable _salary) ERC721("Salary recipient", "MySalary") {
         salary = _salary;
     }
 
