@@ -23,22 +23,22 @@ abstract contract BaseRestorableSalary is BaseSalary {
 
     /// Below copied from https://github.com/vporton/restorable-funds/blob/f6192fd23cad529b84155d52ae202430cd97db23/contracts/RestorableERC1155.sol
 
-    /// Move the entire balance of tokens from an old account to a new account of the same user.
+    /// Move the entire balance of a token from an old account to a new account of the same user.
     /// @param _oldAccount Old account.
     /// @param _newAccount New account.
-    /// @param _tokens The ERC-1155 token IDs.
+    /// @param _token The ERC-1155 token ID.
     ///
     /// Remark: We don't need to create new tokens like as on a regular transfer,
     /// because it isn't a transfer to a trader.
-    function restoreFundsBatch(address _oldAccount, address _newAccount, uint256[] calldata _tokens) public
+    function restoreFunds(address _oldAccount, address _newAccount, uint256 _token) public
         checkMovedOwner(_oldAccount)
     {
-        uint256[] memory _amounts = new uint256[](_tokens.length);
-        for (uint _i = 0; _i < _tokens.length; ++_i) {
-            restoreFunds(_oldAccount, _newAccount, _tokens[_i]);
-        }
+        uint256 _amount = _balances[_token][_oldAccount];
 
-        emit TransferBatch(_msgSender(), _oldAccount, _newAccount, _tokens, _amounts);
+        _balances[_token][_newAccount] = _balances[_token][_oldAccount];
+        _balances[_token][_oldAccount] = 0;
+
+        emit TransferSingle(_msgSender(), _oldAccount, _newAccount, _token, _amount);
     }
 
     // Virtual functions //

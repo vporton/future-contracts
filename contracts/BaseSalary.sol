@@ -45,8 +45,6 @@ contract BaseSalary is BaseBidOnAddresses {
     mapping(uint256 => uint) public conditionCreationDates;
     // Mapping (condition ID => salary block time).
     mapping(uint256 => uint) public lastSalaryDates;
-    /// Mapping (condition ID => account) - salary recipients.
-    mapping(uint256 => address) public salaryReceivers; // FIXME: remove
 
     /// Mapping (condition ID => first condition ID in the chain)
     ///
@@ -101,7 +99,6 @@ contract BaseSalary is BaseBidOnAddresses {
 
     function _doCreateCondition(address _customer, bytes memory _data) internal virtual override returns (uint256) {
         uint256 _condition = super._doCreateCondition(_customer, _data);
-        salaryReceivers[_condition] = _customer;
         conditionCreationDates[_condition] = block.timestamp;
         firstConditionInChain[_condition] = _condition;
         firstToLastConditionInChain[_condition] = _condition;
@@ -153,7 +150,7 @@ contract BaseSalary is BaseBidOnAddresses {
     function _recreateCondition(uint256 _condition, bytes memory _data)
         internal ensureFirstConditionInChain(_condition) returns (uint256)
     {
-        address _customer = salaryReceivers[_condition];
+        address _customer = nftSalary.ownerOf(_condition);
         uint256 _oldCondition = firstToLastConditionInChain[_condition];
         uint256 _newCondition = _doCreateCondition(_customer, _data);
         firstConditionInChain[_newCondition] = _condition;
@@ -193,7 +190,7 @@ contract BaseSalary is BaseBidOnAddresses {
     function _doTransfer(uint256 _id, address _from, address _to, uint256 _value) internal virtual override {
         super._doTransfer(_id, _from, _to, _value);
 
-        if (_id != 0 && salaryReceivers[_id] == msg.sender) {
+        if (_id != 0 && nftSalary.ownerOf(_id) == msg.sender) {
             bytes memory _data;
             if (isLastConditionInChain(_id)) { // correct because `_id != 0`
                 _recreateCondition(_id, _data);
