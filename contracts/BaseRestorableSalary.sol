@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: LGPL-3.0-or-later
 pragma solidity ^0.7.1;
 import "./Salary.sol";
+import { NFTSalary } from "./NFTSalary.sol";
 
 /// @author Victor Porton
 /// A base class for salary with receiver accounts that can be restored by an "attorney".
@@ -18,7 +19,7 @@ abstract contract BaseRestorableSalary is BaseSalary {
 
     /// Constructor.
     /// @param _uri Our ERC-1155 tokens description URI.
-    constructor (string memory _uri) BaseSalary(_uri) { }
+    constructor (NFTSalary _nftSalary, string memory _uri) BaseSalary(_nftSalary, _uri) { }
 
     /// Below copied from https://github.com/vporton/restorable-funds/blob/f6192fd23cad529b84155d52ae202430cd97db23/contracts/RestorableERC1155.sol
 

@@ -3,6 +3,7 @@ pragma solidity ^0.7.1;
 import { SafeMath } from "@openzeppelin/contracts/math/SafeMath.sol";
 import { ABDKMath64x64 } from "abdk-libraries-solidity/ABDKMath64x64.sol";
 import { BaseLock } from "./BaseLock.sol";
+import { NFTSalary } from "./NFTSalary.sol";
 
 /// @title Bidding on Ethereum addresses
 /// @author Victor Porton
@@ -41,7 +42,7 @@ abstract contract BaseBidOnAddresses is BaseLock {
 
     /// Constructor.
     /// @param _uri Our ERC-1155 tokens description URI.
-    constructor(string memory _uri) BaseLock(_uri) { }
+    constructor(NFTSalary _nftSalary, string memory _uri) BaseLock(_nftSalary, _uri) { }
 
     /// Retrieve the last stored payout numerator (relative score of a condition).
     /// @param _oracleId The oracle ID.

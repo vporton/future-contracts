@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: LGPL-3.0-or-later
 pragma solidity ^0.7.1;
 import "./BaseBidOnAddresses.sol";
+import { NFTSalary } from "./NFTSalary.sol";
 
 /// @title Bidding on Ethereum addresses
 /// @author Victor Porton
@@ -31,7 +32,7 @@ contract BidOnAddresses is BaseBidOnAddresses {
     );
 
     /// @param _uri The ERC-1155 token URI.
-    constructor(string memory _uri) BaseBidOnAddresses(_uri) {
+    constructor(NFTSalary _nftSalary, string memory _uri) BaseBidOnAddresses(_nftSalary, _uri) {
         _registerInterface(
             BidOnAddresses(0).onERC1155Received.selector ^
             BidOnAddresses(0).onERC1155BatchReceived.selector

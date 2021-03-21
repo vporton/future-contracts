@@ -6,6 +6,7 @@ import { ERC1155WithTotals } from "./ERC1155/ERC1155WithTotals.sol";
 import { ERC1155Holder } from "@openzeppelin/contracts/token/ERC1155/ERC1155Holder.sol";
 import { IERC1155 } from "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 import { ERC721Holder } from "@openzeppelin/contracts/token/ERC721/ERC721Holder.sol";
+import { NFTSalary } from "./NFTSalary.sol";
 
 /// @title A base class to lock collaterals and distribute them proportional to an oracle result.
 /// @author Victor Porton
@@ -75,6 +76,8 @@ abstract contract BaseLock is
         uint256 amount
     );
 
+    NFTSalary nftSalary;
+
     // Next ID.
     uint64 public maxOracleId; // It doesn't really need to be public.
     uint64 public maxConditionId; // It doesn't really need to be public.
@@ -92,17 +95,17 @@ abstract contract BaseLock is
     /// Mapping (oracleId => amount user withdrew in first round) (see `docs/Calculations.md`).
     mapping(uint64 => uint256) public usersWithdrewInFirstRound;
 
-    // Mapping (condition ID => original account)
-    mapping(uint256 => address) public conditionOwners;
-
     /// Constructor.
     /// @param _uri Our ERC-1155 tokens description URI.
-    constructor(string memory _uri) ERC1155WithTotals(_uri) {
+    constructor(NFTSalary _nftSalary, string memory _uri)
+        ERC1155WithTotals(_uri)
+    {
         _registerInterface(
             BaseLock(0).onERC1155Received.selector ^
             BaseLock(0).onERC1155BatchReceived.selector ^
             BaseLock(0).onERC721Received.selector
         );
+        nftSalary = _nftSalary;
     }
 
     /// This function makes no sense, because it would produce a condition with zero tokens.
@@ -344,7 +347,7 @@ abstract contract BaseLock is
     function _mintToCustomer(address _customer, uint256 _condition, uint256 _amount, bytes memory _data)
         internal virtual
     {
-        require(conditionOwners[_condition] == _customer, "Other's salary get attempt."); // FIXME: `salaryRecipients` instead.
+        require(nftSalary.ownerOf(_condition) == _customer, "Other's salary get attempt."); // FIXME: `salaryRecipients` instead.
         _mint(originalToCurrentAddress(_customer), _condition, _amount, _data);
     }
 
@@ -453,7 +456,7 @@ abstract contract BaseLock is
     function _doCreateCondition(address _customer, bytes memory _data) internal virtual returns (uint256) {
         uint64 _condition = ++maxConditionId;
 
-        conditionOwners[_condition] = _customer;
+        nftSalary.mint(_customer, _condition, _data);
 
         emit ConditionCreated(msg.sender, _customer, _condition, _data);
 

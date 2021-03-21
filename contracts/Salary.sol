@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: LGPL-3.0-or-later
 pragma solidity ^0.7.1;
 import "./BaseSalary.sol";
+import { NFTSalary } from "./NFTSalary.sol";
 
 /// @title "Salary" that is paid one token per second using minted conditionals.
 /// @author Victor Porton
 contract Salary is BaseSalary {
     /// @param _uri The ERC-1155 token URI.
-    constructor(string memory _uri) BaseSalary(_uri) { }
+    constructor(NFTSalary _nftSalary, string memory _uri) BaseSalary(_nftSalary, _uri) { }
 
     /// Register a salary recipient.
     ///

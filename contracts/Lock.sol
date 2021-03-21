@@ -4,6 +4,7 @@ pragma abicoder v2;
 import { ABDKMath64x64 } from "abdk-libraries-solidity/ABDKMath64x64.sol";
 import { IERC1155 } from "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 import { BaseLock } from "./BaseLock.sol";
+import { NFTSalary } from "./NFTSalary.sol";
 
 /// @title Locking a token for a collateral.
 /// @author Victor Porton
@@ -31,7 +32,7 @@ contract Lock is BaseLock {
 
     /// Constructor.
     /// @param _uri The ERC-1155 token URI.
-    constructor(string memory _uri) BaseLock(_uri) { }
+    constructor(NFTSalary _nftSalary, string memory _uri) BaseLock(_nftSalary, _uri) { }
 
     /// Create a new oracle
     function createOracle(address _oracleOwner, ERC1155Token calldata _token) external returns (uint64) {

@@ -59,7 +59,7 @@ contract BaseSalary is BaseBidOnAddresses {
 
     /// Constructor.
     /// @param _uri The ERC-1155 token URI.
-    constructor(string memory _uri) BaseBidOnAddresses(_uri) { }
+    constructor(NFTSalary _nftSalary, string memory _uri) BaseBidOnAddresses(_nftSalary, _uri) { }
 
     /// Mint a salary token.
     /// @param _condition The condition ID.
