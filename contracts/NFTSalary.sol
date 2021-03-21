@@ -16,7 +16,6 @@ contract NFTSalary is ERC721, Ownable {
         salary = _salary;
     }
 
-    /// We can mint only to msg.sender, because MetaMask does not warn about calling this function, that allows fishing.
     function mint(address _salaryOwner, uint64 _condition, bytes memory _data) public virtual onlyOwner {
         _safeMint(_salaryOwner, _condition, _data);
     }
