@@ -10,11 +10,7 @@ import { IRestorable } from "./IRestorable.sol";
 /// The NFT holder is a salary's recipient.
 /// Owner of this contract is `BaseRestorableSalary`.
 contract NFTSalary is ERC721, Ownable {
-    IRestorable salary;
-
-    constructor(IRestorable _salary) ERC721("Salary recipient", "MySalary") {
-        salary = _salary;
-    }
+    constructor(IRestorable _salary) ERC721("Salary recipient", "MySalary") { }
 
     function mint(address _salaryOwner, uint64 _condition, bytes memory _data) public virtual onlyOwner {
         _safeMint(_salaryOwner, _condition, _data);
@@ -22,6 +18,6 @@ contract NFTSalary is ERC721, Ownable {
 
     function _transfer(address from, address to, uint256 tokenId) internal virtual override {
         super._transfer(from, to, tokenId);
-        salary.restoreFunds(from, to, tokenId);
+        IRestorable(owner()).restoreFunds(from, to, tokenId);
     }
 }
