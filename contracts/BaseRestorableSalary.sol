@@ -30,8 +30,10 @@ abstract contract BaseRestorableSalary is BaseSalary {
     ///
     /// Remark: We don't need to create new tokens like as on a regular transfer,
     /// because it isn't a transfer to a trader.
+    ///
+    /// FIXME: conditionId or current token ID?
     function restoreFunds(address _oldAccount, address _newAccount, uint256 _token) public
-        checkMovedOwner(_oldAccount)
+        checkMovedOwner(_oldAccount, _token)
     {
         uint256 _amount = _balances[_token][_oldAccount];
 
@@ -44,7 +46,7 @@ abstract contract BaseRestorableSalary is BaseSalary {
     // Virtual functions //
 
     /// Check if `msg.sender` is an attorney allowed to restore a user's account.
-    function checkAllowedRestoreAccount(address _sender, address /*_oldAccount*/) public virtual;
+    function checkAllowedRestoreAccount(address _sender, uint256 _token) public virtual;
 
     /// Find the original address of a given account.
     /// This function is internal, because it can be calculated off-chain.
@@ -73,8 +75,10 @@ abstract contract BaseRestorableSalary is BaseSalary {
     ///
     /// We also allow funds restoration by attorneys for convenience of users.
     /// This is not an increased security risk, because a dishonest attorney can anyway transfer money to himself.
-    modifier checkMovedOwner(address _oldAccount) virtual {
-        checkAllowedRestoreAccount(msg.sender, _oldAccount); // only authorized "attorneys" or attorney DAOs
+    modifier checkMovedOwner(address _oldAccount, uint256 _token) virtual {
+        if (_oldAccount != msg.sender) {
+            checkAllowedRestoreAccount(msg.sender, _token); // only authorized "attorneys" or attorney DAOs
+        }
         _;
     }
 

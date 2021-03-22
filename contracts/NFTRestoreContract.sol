@@ -14,13 +14,12 @@ contract NFTRestoreContract is DAOInterface, ERC721 {
         _safeMint(msg.sender, uint256(uint160(msg.sender)), _data);
     }
 
-    function checkAllowedRestoreAccount(address _sender, address _oldAccount)
-        public view override right(_sender, _oldAccount)
+    function checkAllowedRestoreAccount(address _sender, uint256 _token)
+        public view override right(_sender, _token)
     { }
 
-    modifier right(address _sender, address _oldAccount) {
-        address orig = _oldAccount; // FIXME
-        require(ownerOf(uint256(orig)) == _sender, "No restore right."); // FIXME: Messed owner and conditionId.
+    modifier right(address _sender, uint256 _token) {
+        require(ownerOf(uint256(_token)) == _sender, "No restore right."); // FIXME: Messed owner and conditionId.
         _;
     }
 }

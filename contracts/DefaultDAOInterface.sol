@@ -5,7 +5,7 @@ import "./DAOInterface.sol";
 /// @notice "Default" contract for `DAOInterface`.
 /// @author Victor Porton
 contract DefaultDAOInterface is DAOInterface {
-    function checkAllowedRestoreAccount(address /*_sender*/, address /*_oldAccount*/) external pure override {
+    function checkAllowedRestoreAccount(address /*_sender*/, uint256 /*_token*/) external pure override {
         revert("unimplemented");
     }
 }
