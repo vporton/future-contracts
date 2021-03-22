@@ -31,7 +31,7 @@ abstract contract BaseRestorableSalary is BaseSalary {
     /// Remark: We don't need to create new tokens like as on a regular transfer,
     /// because it isn't a transfer to a trader.
     ///
-    /// FIXME: conditionId or current token ID?
+    /// FIXME: conditionId or current token ID? If current, then it's a race condition.
     function restoreFunds(address _oldAccount, address _newAccount, uint256 _token) public
         checkMovedOwner(_oldAccount, _token)
     {
