@@ -26,27 +26,35 @@ abstract contract BaseRestorableSalary is BaseSalary {
     /// Move the entire balance of a token from an old account to a new account of the same user.
     /// @param _oldAccount Old account.
     /// @param _newAccount New account.
-    /// @param _token The ERC-1155 token ID.
+    /// @param _conditionId The ERC-1155 token ID.
+    /// It can be called only by a salary NFT.
     ///
     /// Remark: We don't need to create new tokens like as on a regular transfer,
     /// because it isn't a transfer to a trader.
-    ///
-    /// FIXME: conditionId or current token ID? If current, then it's a race condition.
-    function restoreFunds(address _oldAccount, address _newAccount, uint256 _token) public
-        checkMovedOwner(_oldAccount, _token)
+    /// TODO: `_conditionId` is `uint64`?
+    function restoreFunds(address _oldAccount, address _newAccount, uint256 _conditionId)
+        public checkIsConditional(_conditionId)
     {
-        uint256 _amount = _balances[_token][_oldAccount];
+        require(msg.sender == address(nftSalary), "system function");
 
-        _balances[_token][_newAccount] = _balances[_token][_oldAccount];
-        _balances[_token][_oldAccount] = 0;
+        if (_oldAccount != msg.sender) {
+            checkAllowedRestoreAccount(msg.sender, _conditionId);
+        }
 
-        emit TransferSingle(_msgSender(), _oldAccount, _newAccount, _token, _amount);
+        uint256 _current = firstToLastConditionInChain[_conditionId];
+
+        uint256 _amount = _balances[_current][_oldAccount];
+
+        _balances[_current][_newAccount] = _balances[_current][_oldAccount];
+        _balances[_current][_oldAccount] = 0;
+
+        emit TransferSingle(_msgSender(), _oldAccount, _newAccount, _current, _amount);
     }
 
     // Virtual functions //
 
     /// Check if `msg.sender` is an attorney allowed to restore a user's account.
-    function checkAllowedRestoreAccount(address _sender, uint256 _token) public virtual;
+    function checkAllowedRestoreAccount(address _sender, uint256 _conditionId) public virtual;
 
     /// Find the original address of a given account.
     /// This function is internal, because it can be calculated off-chain.
@@ -70,17 +78,6 @@ abstract contract BaseRestorableSalary is BaseSalary {
     // }
 
     // Modifiers //
-
-    /// Check that `_newAccount` is the user that has the right to restore funds from `_oldAccount`.
-    ///
-    /// We also allow funds restoration by attorneys for convenience of users.
-    /// This is not an increased security risk, because a dishonest attorney can anyway transfer money to himself.
-    modifier checkMovedOwner(address _oldAccount, uint256 _token) virtual {
-        if (_oldAccount != msg.sender) {
-            checkAllowedRestoreAccount(msg.sender, _token); // only authorized "attorneys" or attorney DAOs
-        }
-        _;
-    }
 
     // Events //
 

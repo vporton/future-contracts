@@ -63,10 +63,10 @@ contract SalaryWithDAO is BaseRestorableSalary {
 
     // Overrides ///
 
-    function checkAllowedRestoreAccount(address _sender, uint256 _token)
+    function checkAllowedRestoreAccount(address _sender, uint256 _conditionId)
         public virtual override
     {
-        daoPlugin.checkAllowedRestoreAccount(_sender, _token);
+        daoPlugin.checkAllowedRestoreAccount(_sender, _conditionId);
     }
 
     // Internal //
