@@ -2,11 +2,10 @@
 pragma solidity ^0.7.1;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "./DAOInterface.sol";
 
 /// @notice Account restoration contract controlled by NFT.
 /// @author Victor Porton
-contract NFTRestoreContract is DAOInterface, ERC721 {
+contract NFTRestoreContract is ERC721 {
     constructor() ERC721("Right to control your salary.", "TakeMySalary") { }
 
     /// We can mint only to msg.sender, because MetaMask does not warn about calling this function, that allows fishing.
@@ -14,7 +13,7 @@ contract NFTRestoreContract is DAOInterface, ERC721 {
         _safeMint(msg.sender, uint256(uint160(msg.sender)), _data);
     }
 
-    function checkRight(address _origOldAccount) {
+    function checkRestoreRight(address _origOldAccount) public view {
         require(ownerOf(uint256(_origOldAccount)) == msg.sender, "No restore right.");
     }
 }
