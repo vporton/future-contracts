@@ -13,6 +13,8 @@ contract NFTRestoreContract is ERC721, Ownable {
         _mint(_account, _tokenId);
     }
 
+    // FIXME: The notary should have not only restore rights, but also the right to transfer our `NFTSalaryRecipient` NFT.
+
     function checkRestoreRight(address _origOldAccount) public view {
         require(ownerOf(uint256(_origOldAccount)) == msg.sender, "No restore right.");
     }
