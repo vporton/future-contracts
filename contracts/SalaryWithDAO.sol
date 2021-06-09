@@ -5,6 +5,8 @@ import "./BaseRestorableSalary.sol";
 
 /// Salary system with a "DAO" that can assign attorneys to restore lost Ethereum accounts.
 /// @author Victor Porton
+///
+/// TODO: Rename
 contract SalaryWithDAO is BaseRestorableSalary {
     using ABDKMath64x64 for int128;
 
@@ -15,10 +17,11 @@ contract SalaryWithDAO is BaseRestorableSalary {
     // int128 public daoShare = int128(0).div(1); // zero by default
 
     /// Constructor.
-    /// @param _salaryNFT The salary control contract.
+    /// @param _salaryRecipients The salary recipients contract.
+    /// @param _salaryRestoreNFT The salary control contract.
     /// @param _uri The ERC-1155 token URI.
-    constructor(NFTRestoreContract _salaryNFT, string memory _uri)
-        BaseRestorableSalary(_salaryNFT, _uri)
+    constructor(NFTSalaryRecipient _salaryRecipients, NFTRestoreContract _salaryRestoreNFT, string memory _uri)
+        BaseRestorableSalary(_salaryRecipients, _salaryRestoreNFT, _uri)
     { }
 
     /// Create an oracle for caclcualting salary amounts.

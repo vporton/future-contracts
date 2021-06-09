@@ -13,7 +13,7 @@ abstract contract BaseRestorableSalary is BaseSalary {
     //            - `originalAddresses[originalToCurrentAddresses[x]] == x` if `originalToCurrentAddresses[x] != address(0)`
     //            - `originalToCurrentAddresses[originalAddresses[x]] == x` if `originalAddresses[x] != address(0)`
 
-    NFTRestoreContract public salaryNFT;
+    NFTRestoreContract public salaryRestoreNFT;
 
     /// Mapping (current address => very first address an account had).
     mapping(address => address) public originalAddresses;
@@ -23,10 +23,10 @@ abstract contract BaseRestorableSalary is BaseSalary {
 
     /// Constructor.
     /// @param _uri Our ERC-1155 tokens description URI.
-    constructor (NFTRestoreContract _salaryNFT, string memory _uri)
-        BaseSalary(_uri)
+    constructor (NFTSalaryRecipient _salaryRecipients, NFTRestoreContract _salaryRestoreNFT, string memory _uri)
+        BaseSalary(_salaryRecipients, _uri)
     {
-        salaryNFT = _salaryNFT;
+        salaryRestoreNFT = _salaryRestoreNFT;
     }
 
     /// Below copied from https://github.com/vporton/restorable-funds/blob/f6192fd23cad529b84155d52ae202430cd97db23/contracts/RestorableERC1155.sol
@@ -40,7 +40,7 @@ abstract contract BaseRestorableSalary is BaseSalary {
     /// Remark: We don't need to create new tokens like as on a regular transfer,
     /// because it isn't a transfer to a trader.
     function restoreFunds(address _oldAccount, address _newAccount, uint256 _token) public {
-        salaryNFT.checkRestoreRight(originalAddresses[_oldAccount]);
+        salaryRestoreNFT.checkRestoreRight(originalAddresses[_oldAccount]);
 
         // FIXME: Here also change the salary receiver?
 
@@ -61,7 +61,7 @@ abstract contract BaseRestorableSalary is BaseSalary {
     /// Remark: We don't need to create new tokens like as on a regular transfer,
     /// because it isn't a transfer to a trader.
     function restoreFundsBatch(address _oldAccount, address _newAccount, uint256[] calldata _tokens) public {
-        salaryNFT.checkRestoreRight(originalAddresses[_oldAccount]);
+        salaryRestoreNFT.checkRestoreRight(originalAddresses[_oldAccount]);
 
         // FIXME: Here also change the salary receiver?
 

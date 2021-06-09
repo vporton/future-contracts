@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: LGPL-3.0-or-later
 pragma solidity ^0.7.1;
 import "./BaseBidOnAddresses.sol";
+import "./NFTSalaryRecipient.sol";
 
 /// @title Base class for a "salary" that is paid one token per second using minted conditionals.
 /// @author Victor Porton
@@ -41,13 +42,13 @@ contract BaseSalary is BaseBidOnAddresses {
         uint256 indexed newCondition
     );
 
+    NFTSalaryRecipient public salaryRecipients;
+
     // FIXME: uint64 instead?
     // Mapping (condition ID => registration time).
     mapping(uint256 => uint) public conditionCreationDates;
     // Mapping (condition ID => salary block time).
     mapping(uint256 => uint) public lastSalaryDates;
-    /// Mapping (condition ID => account) - salary recipients.
-    mapping(uint256 => address) public salaryReceivers; // FIXME: Make it an NFT instead!
 
     /// Mapping (condition ID => first condition ID in the chain)
     ///
@@ -60,7 +61,11 @@ contract BaseSalary is BaseBidOnAddresses {
 
     /// Constructor.
     /// @param _uri The ERC-1155 token URI.
-    constructor(string memory _uri) BaseBidOnAddresses(_uri) { }
+    constructor(NFTSalaryRecipient _salaryRecipients, string memory _uri)
+        BaseBidOnAddresses(_uri)
+    {
+        salaryRecipients = _salaryRecipients;
+    }
 
     /// Mint a salary token.
     /// @param _condition The condition ID.
@@ -102,10 +107,10 @@ contract BaseSalary is BaseBidOnAddresses {
 
     function _doCreateCondition(address _customer, bytes memory _data) internal virtual override returns (uint256) {
         uint256 _condition = super._doCreateCondition(_customer, _data);
-        salaryReceivers[_condition] = _customer;
         conditionCreationDates[_condition] = block.timestamp;
         firstConditionInChain[_condition] = _condition;
         firstToLastConditionInChain[_condition] = _condition;
+        salaryRecipients.mint(_customer, _condition);
         return _condition;
     }
 
@@ -154,7 +159,7 @@ contract BaseSalary is BaseBidOnAddresses {
     function _recreateCondition(uint256 _condition, bytes memory _data)
         internal ensureFirstConditionInChain(_condition) returns (uint256)
     {
-        address _customer = salaryReceivers[_condition];
+        address _customer = salaryRecipients.ownerOf(_condition);
         uint256 _oldCondition = firstToLastConditionInChain[_condition];
         uint256 _newCondition = _doCreateCondition(_customer, _data);
         firstConditionInChain[_newCondition] = _condition;
@@ -194,7 +199,7 @@ contract BaseSalary is BaseBidOnAddresses {
     function _doTransfer(uint256 _id, address _from, address _to, uint256 _value) internal virtual override {
         super._doTransfer(_id, _from, _to, _value);
 
-        if (_id != 0 && salaryReceivers[_id] == msg.sender) {
+        if (_id != 0 && salaryRecipients.ownerOf(_id) == msg.sender) {
             bytes memory _data;
             if (isLastConditionInChain(_id)) { // correct because `_id != 0`
                 _recreateCondition(_id, _data);
