@@ -41,6 +41,7 @@ contract BaseSalary is BaseBidOnAddresses {
         uint256 indexed newCondition
     );
 
+    // FIXME: uint64 instead?
     // Mapping (condition ID => registration time).
     mapping(uint256 => uint) public conditionCreationDates;
     // Mapping (condition ID => salary block time).
