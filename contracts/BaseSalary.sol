@@ -46,7 +46,7 @@ contract BaseSalary is BaseBidOnAddresses {
     // Mapping (condition ID => salary block time).
     mapping(uint256 => uint) public lastSalaryDates;
     /// Mapping (condition ID => account) - salary recipients.
-    mapping(uint256 => address) public salaryReceivers;
+    mapping(uint256 => address) public salaryReceivers; // FIXME: Make it an NFT instead!
 
     /// Mapping (condition ID => first condition ID in the chain)
     ///
