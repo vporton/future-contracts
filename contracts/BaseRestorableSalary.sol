@@ -42,6 +42,8 @@ abstract contract BaseRestorableSalary is BaseSalary {
     function restoreFunds(address _oldAccount, address _newAccount, uint256 _token) public {
         salaryNFT.checkRestoreRight(originalAddresses[_oldAccount]);
 
+        // FIXME: Here also change the salary receiver?
+
         uint256 _amount = _balances[_token][_oldAccount];
 
         _balances[_token][_newAccount] = _balances[_token][_oldAccount];
@@ -60,6 +62,8 @@ abstract contract BaseRestorableSalary is BaseSalary {
     /// because it isn't a transfer to a trader.
     function restoreFundsBatch(address _oldAccount, address _newAccount, uint256[] calldata _tokens) public {
         salaryNFT.checkRestoreRight(originalAddresses[_oldAccount]);
+
+        // FIXME: Here also change the salary receiver?
 
         uint256[] memory _amounts = new uint256[](_tokens.length);
         for (uint _i = 0; _i < _tokens.length; ++_i) {
