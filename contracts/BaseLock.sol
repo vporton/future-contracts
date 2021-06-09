@@ -443,13 +443,6 @@ abstract contract BaseLock is
     /// Start with 1, not 0, to avoid glitch with `conditionalTokens` variable.
     ///
     /// TODO: Use uint64 variables instead?
-    function _createCondition(address _customer, bytes memory _data) internal returns (uint256) {
-        return _doCreateCondition(_customer, _data);
-    }
-
-    /// Start with 1, not 0, to avoid glitch with `conditionalTokens` variable.
-    ///
-    /// TODO: Use uint64 variables instead?
     function _doCreateCondition(address _customer, bytes memory _data) internal virtual returns (uint256) {
         uint64 _condition = ++maxConditionId;
 
