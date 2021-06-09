@@ -9,6 +9,7 @@ contract NFTRestoreContract is ERC721 {
     constructor() ERC721("Right to control your salary.", "TakeMySalary") { }
 
     /// We can mint only to msg.sender, because MetaMask does not warn about calling this function, that allows fishing.
+    // FIXME: It should be associated with a condition not an account!
     function mintRestoreRight(bytes memory _data) public virtual {
         _safeMint(msg.sender, uint256(uint160(msg.sender)), _data);
     }
