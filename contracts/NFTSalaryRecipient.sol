@@ -7,9 +7,31 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 /// @notice The owner of this NFT receives a salary.
 /// @author Victor Porton
 contract NFTSalaryRecipient is ERC721, Ownable {
-    constructor() ERC721("Your salary account.", "MySalary") { }
+    ERC721 public notaries;
+
+    constructor(ERC721 _notaries) ERC721("Your salary account.", "MySalary") {
+        notaries = _notaries;
+    }
 
     function mint(address _account, uint256 _tokenId) public virtual onlyOwner {
         _mint(_account, _tokenId);
+    }
+
+    function transferFrom(address from, address to, uint256 tokenId) public virtual override {
+        _requireApproved(tokenId);
+
+        _transfer(from, to, tokenId);
+    }
+
+    function safeTransferFrom(address from, address to, uint256 tokenId, bytes memory _data) public virtual override {
+        _requireApproved(tokenId);
+
+        _safeTransfer(from, to, tokenId, _data);
+    }
+
+    // The owner or notary can transfer
+    function _requireApproved(uint256 tokenId) internal virtual {
+        //solhint-disable-next-line max-line-length
+        require(_isApprovedOrOwner(_msgSender(), tokenId) || notaries.ownerOf(tokenId) == _msgSender(), "ERC721: transfer caller is not owner nor approved");
     }
 }

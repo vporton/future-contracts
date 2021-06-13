@@ -13,8 +13,6 @@ contract NFTRestoreContract is ERC721, Ownable {
         _mint(_account, _tokenId);
     }
 
-    // FIXME: The notary should have not only restore rights, but also the right to transfer our `NFTSalaryRecipient` NFT.
-
     // FIXME: It's wrong: If the condition owner transfers his NFTSalaryRecipient but not his NFTRestoreContract to another person, technology
     // then he would not be able to restore lost funds this way. Need to modify the logic.
     // Possible solution: be able to burn notary token (by the notary) and mint it again (by the recipient).
