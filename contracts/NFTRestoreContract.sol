@@ -17,6 +17,7 @@ contract NFTRestoreContract is ERC721, Ownable {
 
     // FIXME: It's wrong: If the condition owner transfers his NFTSalaryRecipient but not his NFTRestoreContract to another person, technology
     // then he would not be able to restore lost funds this way. Need to modify the logic.
+    // Possible solution: be able to burn notary token (by the notary) and mint it again (by the recipient).
     function checkRestoreRight(address _origOldAccount) public view {
         require(ownerOf(uint256(_origOldAccount)) == msg.sender, "No restore right.");
     }
