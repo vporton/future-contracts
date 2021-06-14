@@ -7,10 +7,19 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 /// @notice Account restoration contract controlled by NFT.
 /// @author Victor Porton
 /// FIXME: Combine both NFTs to one ERC-1155 for better interoperability?
-contract NFTRestoreContract is ERC721, Ownable {
-    constructor() ERC721("Right to control your salary.", "TakeMySalary") { }
+contract NFTRestoreContract is ERC721 {
+    ERC721 public recipients;
+    
+    constructor(ERC721 _recipients) ERC721("Right to control your salary.", "TakeMySalary") {
+        recipients = _recipients;
+    }
 
-    function mint(address _account, uint256 _tokenId) public virtual onlyOwner {
+    /// For internal use.
+    function setRecipients(ERC721 _recipients) public virtual onlyRecipients {
+        recipients = _recipients;
+    }
+
+    function mint(address _account, uint256 _tokenId) public virtual onlyRecipients {
         _mint(_account, _tokenId);
     }
 
@@ -24,5 +33,10 @@ contract NFTRestoreContract is ERC721, Ownable {
     // Possible solution: be able to burn notary token (by the notary) and mint it again (by the recipient).
     function checkRestoreRight(address _origOldAccount) public view {
         require(ownerOf(uint256(_origOldAccount)) == msg.sender, "No restore right.");
+    }
+
+    modifier onlyRecipients {
+        require(msg.sender == address(recipients), "Only system");
+        _;
     }
 }
