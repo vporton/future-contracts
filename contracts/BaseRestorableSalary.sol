@@ -80,12 +80,6 @@ abstract contract BaseRestorableSalary is BaseSalary {
 
     // Virtual functions //
 
-    function _doCreateCondition(address _customer, bytes memory _data) internal virtual override returns (uint256) {
-        uint256 _condition = super._doCreateCondition(_customer, _data);
-        salaryRestoreNFT.mint(_customer, _condition);
-        return _condition;
-    }
-
     /// Find the original address of a given account.
     /// This function is internal, because it can be calculated off-chain.
     /// @param _account The current address.
