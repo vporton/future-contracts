@@ -10,7 +10,7 @@ contract NFTSalaryRecipient is ERC721 {
     ERC721 public notaries;
 
     constructor() ERC721("Your salary account.", "MySalary") {
-        notaries = msg.sender;
+        notaries = ERC721(msg.sender);
     }
 
     /// For internal use.
