@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 /// @notice The owner of this NFT receives a salary.
 /// @author Victor Porton
-contract NFTSalaryRecipient is ERC721 {
+contract NFTSalaryRecipient is ERC721, Ownable {
     ERC721 public notaries;
 
     constructor() ERC721("Your salary account.", "MySalary") {
@@ -18,7 +18,7 @@ contract NFTSalaryRecipient is ERC721 {
         notaries = _notaries;
     }
 
-    function mint(address _account, uint256 _tokenId) public virtual onlyNotaries {
+    function mint(address _account, uint256 _tokenId) public virtual onlyOwner {
         _mint(_account, _tokenId);
     }
 
