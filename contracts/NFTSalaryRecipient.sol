@@ -9,8 +9,8 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 contract NFTSalaryRecipient is ERC721 {
     ERC721 public notaries;
 
-    constructor(ERC721 _notaries) ERC721("Your salary account.", "MySalary") {
-        notaries = _notaries;
+    constructor() ERC721("Your salary account.", "MySalary") {
+        notaries = msg.sender;
     }
 
     /// For internal use.

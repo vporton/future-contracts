@@ -10,8 +10,8 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 contract NFTRestoreContract is ERC721 {
     ERC721 public recipients;
     
-    constructor(ERC721 _recipients) ERC721("Right to control your salary.", "TakeMySalary") {
-        recipients = _recipients;
+    constructor() ERC721("Right to control your salary.", "TakeMySalary") {
+        recipients = msg.sender;
     }
 
     /// For internal use.
