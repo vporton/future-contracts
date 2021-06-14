@@ -4,9 +4,8 @@ pragma solidity ^0.7.1;
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-/// @notice Account restoration contract controlled by NFT.
+/// @notice Account restoration contract ("notary") controlled by NFT.
 /// @author Victor Porton
-/// FIXME: Combine both NFTs to one ERC-1155 for better interoperability?
 contract NFTRestoreContract is ERC721 {
     ERC721 public recipients;
     
