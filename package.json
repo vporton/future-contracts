@@ -32,7 +32,7 @@
   "dependencies": {
     "@openzeppelin/contracts": "^3.3.0",
     "@vporton/safe-bequest-module": "^0.0.1",
-    "abdk-libraries-solidity": "^2.4.0"
+    "abdk-libraries-solidity": "^2.7.0"
   },
   "devDependencies": {
     "@codechecks/client": "^0.1.9",
